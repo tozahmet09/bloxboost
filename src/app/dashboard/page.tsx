@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { ChevronRight, Plus, Radio, Link2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { SCRIPT_ALIVE_MS } from "@/lib/money";
-import { GameIcon } from "@/components/GameCard";
+import { GameIcon } from "@/components/GameIcon";
+import { GoalBar } from "@/components/GoalBar";
 
 export const dynamic = "force-dynamic";
 
@@ -11,61 +13,62 @@ export default async function Dashboard() {
   const games = await db.game.findMany({
     where: { ownerId: user.id },
     orderBy: { createdAt: "desc" },
-    include: { campaigns: { where: { status: { in: ["ACTIVE", "PAUSED"] } } }, _count: { select: { tasks: { where: { status: "COMPLETED" } } } } },
+    include: {
+      campaigns: { where: { status: { in: ["ACTIVE", "PAUSED"] } } },
+      _count: { select: { tasks: { where: { status: "COMPLETED" } } } },
+    },
   });
   const alive = Date.now() - SCRIPT_ALIVE_MS;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-4">
-        <h1 className="text-2xl font-bold">Hi, {user.displayName}</h1>
-        <div className="card ml-auto flex items-center gap-4 px-4 py-3">
-          <div>
-            <div className="text-xs text-slate-400">Credits (1 = 1 player)</div>
-            <div className="text-xl font-bold">⭐ {user.credits}</div>
-          </div>
-          <Link href="/play" className="btn-ghost">Earn</Link>
-          <Link href="/dashboard/billing" className="btn">Buy</Link>
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">My games</p>
+          <h1 className="mt-1 text-3xl font-extrabold">Hi, {user.displayName}</h1>
         </div>
+        <Link href="/dashboard/games/new" className="btn"><Plus className="h-4 w-4" /> Add game</Link>
       </div>
 
       {!user.robloxVerified && (
-        <p className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-300">
-          Want free credits? <Link href="/dashboard/roblox" className="underline">Link your Roblox account</Link> and play other devs&apos; games.
-        </p>
+        <Link href="/dashboard/roblox" className="flex items-center gap-3 rounded-ctl border border-line px-4 py-3 text-sm hover:border-mute">
+          <Link2 className="h-4 w-4 text-marquee" />
+          <span className="flex-1">Link your Roblox account to earn free credits by playing.</span>
+          <ChevronRight className="h-4 w-4 text-mute" />
+        </Link>
       )}
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Your games</h2>
-        <Link href="/dashboard/games/new" className="btn-ghost">+ Add game</Link>
-      </div>
-
-      {games.length === 0 && (
-        <div className="card p-8 text-center text-slate-400">
-          Add your first game by pasting its Roblox link.
-          <div><Link href="/dashboard/games/new" className="btn mt-4">Add game</Link></div>
+      {games.length === 0 ? (
+        <div className="rounded-media border border-dashed border-line px-6 py-14 text-center">
+          <p className="text-mute">Paste your game&apos;s Roblox link to start.</p>
+          <Link href="/dashboard/games/new" className="btn mt-4"><Plus className="h-4 w-4" /> Add game</Link>
         </div>
+      ) : (
+        <ul className="divide-y divide-line border-y border-line">
+          {games.map((g) => {
+            const live = !!g.scriptLastSeen && g.scriptLastSeen.getTime() > alive;
+            const coming = g.campaigns.reduce((a, c) => a + c.targetPlayers - c.delivered, 0);
+            return (
+              <li key={g.id}>
+                <Link href={`/dashboard/games/${g.id}`} className="group flex items-center gap-4 py-4">
+                  <GameIcon url={g.iconUrl} className="h-14 w-14 shrink-0 rounded-ctl" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="truncate font-semibold group-hover:text-marquee">{g.name}</span>
+                      <span className={`chip ${live ? "bg-verified/10 text-verified" : "bg-marquee/10 text-marquee"}`}>
+                        <Radio className="h-3 w-3" /> {live ? "Tracker live" : "Install tracker"}
+                      </span>
+                      {coming > 0 && <span className="text-xs text-mute">{coming} on the way</span>}
+                    </div>
+                    <GoalBar count={g._count.tasks} compact />
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-mute group-hover:text-cream" />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       )}
-
-      {games.map((g) => {
-        const live = g.scriptLastSeen && g.scriptLastSeen.getTime() > alive;
-        const active = g.campaigns.reduce((a, c) => a + c.targetPlayers - c.delivered, 0);
-        return (
-          <Link key={g.id} href={`/dashboard/games/${g.id}`} className="card flex items-center gap-4 p-4 hover:border-brand">
-            <GameIcon url={g.iconUrl} className="h-14 w-14 rounded-xl" />
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-semibold">{g.name}</div>
-              <div className="text-xs text-slate-400">
-                {g._count.tasks} verified players · {active} still coming
-                {g.featuredUntil && g.featuredUntil > new Date() && " · 🔥 Featured"}
-              </div>
-            </div>
-            <span className={`text-xs ${live ? "text-brand" : "text-amber-300"}`}>
-              {live ? "● Tracker live" : "⚠ Install tracker"}
-            </span>
-          </Link>
-        );
-      })}
     </div>
   );
 }

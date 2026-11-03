@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { Form } from "@/components/Form";
+import { CopyButton } from "@/components/CopyButton";
 import { startRobloxLink, verifyRobloxLink } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
@@ -7,27 +8,27 @@ export const dynamic = "force-dynamic";
 export default async function LinkRoblox() {
   const user = await requireUser();
   return (
-    <div className="card mx-auto max-w-lg space-y-6 p-6">
+    <div className="mx-auto max-w-md space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Link your Roblox account</h1>
-        {user.robloxVerified && (
-          <p className="mt-2 text-sm text-brand">Linked as {user.robloxUsername}. You can link a different account below.</p>
-        )}
+        <p className="eyebrow">Roblox account</p>
+        <h1 className="mt-1 text-3xl font-extrabold">Link your account</h1>
+        {user.robloxVerified && <p className="mt-2 text-sm text-verified">Linked as {user.robloxUsername}.</p>}
       </div>
-      <Form action={startRobloxLink} submit={user.robloxVerifyCode ? "Get a new code" : "Next"}>
+      <Form action={startRobloxLink} submit={user.robloxVerifyCode ? "New code" : "Next"}>
         <div>
-          <label className="label">Roblox username</label>
-          <input name="username" required className="input" />
+          <label htmlFor="username" className="label">Roblox username</label>
+          <input id="username" name="username" required className="input" autoComplete="off" />
         </div>
       </Form>
       {user.robloxVerifyCode && (
-        <div className="space-y-3 border-t border-slate-800 pt-6">
-          <p className="text-sm">
-            Prove it&apos;s you: put this code anywhere in your Roblox profile <b>About</b> section, save, then press Verify.
-            You can remove it afterwards.
+        <div className="rule space-y-4 pt-8">
+          <p className="text-sm text-mute">
+            Paste this code into your Roblox profile <b className="text-cream">About</b>, save, then verify. You can remove it after.
           </p>
-          <code className="block rounded-lg bg-slate-800 p-3 text-center text-lg font-bold text-brand">{user.robloxVerifyCode}</code>
-          <p className="text-xs text-slate-500">Account: {user.robloxUsername?.split("#")[0]}</p>
+          <div className="flex items-center gap-3">
+            <code className="flex-1 rounded-ctl bg-panel px-4 py-3 text-center font-display text-lg font-bold tracking-wide text-marquee">{user.robloxVerifyCode}</code>
+            <CopyButton text={user.robloxVerifyCode} />
+          </div>
           <Form action={verifyRobloxLink} submit="Verify" />
         </div>
       )}
