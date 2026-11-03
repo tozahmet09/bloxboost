@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  creditCents  Int       @default(0)
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+  games        Game[]
+  payments     Payment[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Game {
+  id          String     @id @default(cuid())
+  ownerId     String
+  placeId     String
+  universeId  String?
+  name        String
+  description String     @default("")
+  iconUrl     String?
+  playing     Int        @default(0)
+  visits      Int        @default(0)
+  genre       String     @default("All")
+  createdAt   DateTime   @default(now())
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  campaigns   Campaign[]
+  clicks      Click[]
+
+  @@unique([ownerId, placeId])
+}
+
+model Campaign {
+  id               String         @id @default(cuid())
+  gameId           String
+  bidCents         Int
+  dailyBudgetCents Int
+  status           String         @default("ACTIVE") // ACTIVE | PAUSED
+  createdAt        DateTime       @default(now())
+  game             Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  stats            CampaignStat[]
+  clicks           Click[]
+}
+
+// One row per campaign per UTC day, keeps analytics cheap to query.
+model CampaignStat {
+  campaignId  String
+  day         String // YYYY-MM-DD (UTC)
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  spendCents  Int      @default(0)
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@id([campaignId, day])
+}
+
+model Click {
+  id          String    @id @default(cuid())
+  gameId      String
+  campaignId  String?
+  visitorHash String
+  day         String
+  costCents   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  game        Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  campaign    Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@index([campaignId, visitorHash, day])
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String
+  amountCents     Int
+  provider        String // stripe | test
+  externalId      String?  @unique
+  status          String   @default("PENDING") // PENDING | PAID
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
