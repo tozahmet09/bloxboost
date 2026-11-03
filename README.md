@@ -13,9 +13,11 @@ Real, verified players for new Roblox games, without a big ad budget.
 
 ## Run locally
 
+Needs a Postgres database (a free one from [neon.tech](https://neon.tech) works). Put its URL in `.env` as `DATABASE_URL`.
+
 ```bash
 npm install
-cp .env.example .env
+cp .env.example .env   # then paste your DATABASE_URL
 npm run db:push
 npm run db:seed     # optional demo data: demo@bloxboost.dev / demo12345
 npm run dev
@@ -26,7 +28,7 @@ For local testing you can set `REQUIRED_PLAY_SECONDS=60` and, in dev only, `ROBL
 
 ## Going live
 
-1. Host on Vercel / Railway / Fly. Switch `DATABASE_URL` to Postgres (change `provider` in `prisma/schema.prisma`).
+1. Vercel: *Add New → Project* → import this repo. In the project go to *Storage → Create → Neon (Postgres)* and connect it, which sets `DATABASE_URL`. Redeploy. The build creates the tables (`prisma db push`).
 2. Set `APP_URL` to the public https URL. The tracker script points there.
 3. Stripe: set `STRIPE_SECRET_KEY`, add a webhook to `/api/stripe/webhook` for `checkout.session.completed`, set `STRIPE_WEBHOOK_SECRET`.
 4. Set a random `VISITOR_SALT`.

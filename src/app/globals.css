@@ -2,9 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-body { @apply bg-slate-950 text-slate-100 antialiased; }
-.card { @apply rounded-2xl border border-slate-800 bg-slate-900/60; }
-.btn { @apply inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2 font-semibold text-slate-950 transition hover:bg-brand-dark disabled:opacity-50; }
-.btn-ghost { @apply inline-flex items-center justify-center rounded-xl border border-slate-700 px-4 py-2 font-medium hover:bg-slate-800; }
-.input { @apply w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 outline-none focus:border-brand; }
-.label { @apply mb-1 block text-sm text-slate-400; }
+@layer base {
+  body { @apply bg-ink font-body text-cream antialiased; }
+  h1, h2, h3 { @apply font-display; text-wrap: balance; }
+  :focus-visible { @apply outline outline-2 outline-offset-2 outline-marquee; }
+  ::selection { @apply bg-marquee text-ink; }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-ctl bg-marquee px-4 font-semibold text-ink
+      transition duration-150 hover:bg-marquee-deep active:scale-[.97]
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100;
+  }
+  .btn-quiet {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-ctl border border-line px-4 font-medium text-cream
+      transition duration-150 hover:border-mute active:scale-[.97]
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100;
+  }
+  .input {
+    @apply min-h-[44px] w-full rounded-ctl border border-line bg-panel px-3 py-2 text-cream outline-none
+      placeholder:text-mute/60 focus:border-marquee;
+  }
+  .label { @apply mb-1.5 block text-sm text-mute; }
+  .eyebrow { @apply font-display text-xs font-semibold uppercase tracking-[.16em] text-marquee; }
+  .chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium; }
+  .rule { @apply border-t border-line; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { createSession, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfileDescription } from "@/lib/roblox";
 import { completeTask, startTask } from "@/lib/credits";
+import { parseTrailer } from "@/lib/trailer";
 import { MIN_FEEDBACK_CHARS } from "@/lib/money";
 
 export type FormState = { error?: string; ok?: string } | undefined;
@@ -180,6 +181,18 @@ export async function refreshGame(f: FormData) {
     });
   } catch {}
   revalidatePath(`/dashboard/games/${g.id}`);
+}
+
+export async function setTrailer(_: FormState, f: FormData): Promise<FormState> {
+  const user = await requireUser();
+  const game = await db.game.findFirst({ where: { id: str(f, "gameId"), ownerId: user.id } });
+  if (!game) return { error: "Game not found." };
+  const url = str(f, "trailerUrl");
+  if (url && !parseTrailer(url))
+    return { error: "Use a YouTube link (youtube.com/watch, youtu.be or Shorts) or a direct https link to an .mp4 or .webm file." };
+  await db.game.update({ where: { id: game.id }, data: { trailerUrl: url || null } });
+  revalidatePath(`/dashboard/games/${game.id}`);
+  return { ok: url ? "Trailer saved. It now plays on the homepage." : "Trailer removed." };
 }
 
 // ---------- playing (earning side) ----------

@@ -1,3 +1,4 @@
+import { Ticket } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { CREDIT_PACKS, fmt } from "@/lib/money";
@@ -9,44 +10,53 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
   const user = await requireUser();
   const { paid } = await searchParams;
   const payments = await db.payment.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 20, include: { game: true } });
+  const best = CREDIT_PACKS[CREDIT_PACKS.length - 1].id;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="card p-6">
-        <h1 className="text-2xl font-bold">Buy player credits</h1>
-        <p className="mt-1 text-sm text-slate-400">You have ⭐ {user.credits}. 1 credit = 1 player who plays your game for 10+ minutes and leaves feedback.</p>
-        {paid && <p className="mt-3 rounded-lg bg-brand/10 p-2 text-sm text-brand">Payment received. Credits added!</p>}
-        {!stripe && (
-          <p className="mt-3 rounded-lg bg-amber-500/10 p-2 text-xs text-amber-300">
-            Test mode: no payment provider is set up, so purchases are free and instant.
-          </p>
-        )}
-        <form action="/api/checkout" method="post" className="mt-6 grid gap-3 sm:grid-cols-3">
-          <input type="hidden" name="kind" value="CREDITS" />
-          {CREDIT_PACKS.map((p) => (
-            <button key={p.id} name="pack" value={p.id} className="card p-5 text-left hover:border-brand">
-              <div className="text-sm text-slate-400">{p.label}</div>
-              <div className="text-2xl font-extrabold">{p.credits} players</div>
-              <div className="mt-2 font-semibold text-brand">{fmt(p.cents)}</div>
-              <div className="text-xs text-slate-500">{((p.cents / p.credits)).toFixed(1)}¢ per player</div>
-            </button>
-          ))}
-        </form>
+    <div className="mx-auto max-w-3xl space-y-10">
+      <div>
+        <p className="eyebrow">Credits</p>
+        <h1 className="mt-1 text-3xl font-extrabold">1 credit = 1 verified player</h1>
+        <p className="mt-2 text-mute">You have <b className="text-cream tabular-nums">{user.credits}</b>. Playing other games earns them for free.</p>
+        {paid && <p className="mt-3 text-sm text-verified">Payment received. Credits added.</p>}
+        {!stripe && <p className="mt-3 text-xs text-mute">Test mode: purchases are free and instant.</p>}
       </div>
-      {payments.length > 0 && (
-        <div className="card p-4 text-sm">
-          <h2 className="mb-2 font-semibold">History</h2>
-          {payments.map((p) => (
-            <div key={p.id} className="flex justify-between gap-2 border-t border-slate-800 py-2">
-              <span>{p.createdAt.toISOString().slice(0, 10)}</span>
-              <span className="flex-1 truncate text-slate-400">
-                {p.kind === "CREDITS" ? `${p.credits} credits` : `Featured ${p.days}d · ${p.game?.name ?? ""}`}
-              </span>
-              <span>{fmt(p.amountCents)}</span>
-              <span className={p.status === "PAID" ? "text-brand" : "text-slate-500"}>{p.status}</span>
+
+      <form action="/api/checkout" method="post" className="grid gap-3 sm:grid-cols-3">
+        <input type="hidden" name="kind" value="CREDITS" />
+        {CREDIT_PACKS.map((p) => (
+          <button
+            key={p.id}
+            name="pack"
+            value={p.id}
+            className={`group relative rounded-media border p-5 text-left transition active:scale-[.98] ${p.id === best ? "border-marquee/60 bg-marquee/[.06]" : "border-line hover:border-mute"}`}
+          >
+            {p.id === best && <span className="chip absolute right-3 top-3 bg-marquee text-ink">Best value</span>}
+            <Ticket className="h-5 w-5 text-marquee" />
+            <div className="mt-3 font-display text-3xl font-extrabold tabular-nums">{p.credits}</div>
+            <div className="text-sm text-mute">players</div>
+            <div className="mt-4 flex items-baseline justify-between">
+              <span className="text-lg font-semibold">{fmt(p.cents)}</span>
+              <span className="text-xs text-mute tabular-nums">{(p.cents / p.credits).toFixed(1)}¢ each</span>
             </div>
-          ))}
-        </div>
+          </button>
+        ))}
+      </form>
+
+      {payments.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-lg font-bold">History</h2>
+          <ul className="divide-y divide-line border-y border-line text-sm">
+            {payments.map((p) => (
+              <li key={p.id} className="flex items-center gap-3 py-2.5">
+                <span className="w-24 text-mute tabular-nums">{p.createdAt.toISOString().slice(0, 10)}</span>
+                <span className="min-w-0 flex-1 truncate">{p.kind === "CREDITS" ? `${p.credits} credits` : `Spotlight ${p.days}d · ${p.game?.name ?? ""}`}</span>
+                <span className="tabular-nums">{fmt(p.amountCents)}</span>
+                <span className={p.status === "PAID" ? "text-verified" : "text-mute"}>{p.status === "PAID" ? "Paid" : "Pending"}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

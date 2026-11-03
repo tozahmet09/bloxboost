@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -40,6 +40,8 @@ model Game {
   name           String
   description    String     @default("")
   iconUrl        String?
+  // YouTube link or direct .mp4/.webm URL shown as a muted preview on the homepage
+  trailerUrl     String?
   playing        Int        @default(0)
   visits         Int        @default(0)
   genre          String     @default("All")

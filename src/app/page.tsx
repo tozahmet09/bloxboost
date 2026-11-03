@@ -1,67 +1,91 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
-import { GameCard } from "@/components/GameCard";
+import { parseTrailer } from "@/lib/trailer";
+import { Spotlight, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
 
 export const dynamic = "force-dynamic";
 
+type Row = { id: string; name: string; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null };
+const toCard = (g: Row): TrailerGame => ({ ...g, trailer: parseTrailer(g.trailerUrl) });
+
 export default async function Home() {
   const now = new Date();
-  const featured = await db.game.findMany({ where: { featuredUntil: { gt: now } }, take: 12 });
-  // shuffle so every featured game gets the top spot sometimes
-  featured.sort(() => Math.random() - 0.5);
-  const fresh = await db.game.findMany({
-    where: { OR: [{ featuredUntil: null }, { featuredUntil: { lte: now } }] },
-    orderBy: { createdAt: "desc" },
-    take: 24,
-  });
+  const featured = (await db.game.findMany({ where: { featuredUntil: { gt: now } }, take: 12 })).map(toCard);
+  featured.sort(() => Math.random() - 0.5); // a different featured game gets the spotlight on each visit
+  const spotlight = featured.find((g) => g.trailer) ?? null;
+  const featuredRest = featured.filter((g) => g !== spotlight);
+
+  // Games with a trailer come first, newest first within each group.
+  const fresh = (
+    await db.game.findMany({
+      where: { OR: [{ featuredUntil: null }, { featuredUntil: { lte: now } }] },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    })
+  )
+    .map(toCard)
+    .sort((a, b) => Number(!!b.trailer) - Number(!!a.trailer));
 
   return (
     <div className="space-y-12">
-      <section className="py-6 text-center">
-        <h1 className="text-4xl font-extrabold sm:text-5xl">
-          Your first <span className="text-brand">100 real players</span>,<br className="hidden sm:block" /> without a big ad budget
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-          Play other developers&apos; games for 10 minutes and leave honest feedback. Each one earns you a credit.
-          Each credit brings a real player to your game, verified in-game. No time? Packs start at $5 for 50 players.
-        </p>
-        <div className="mt-6 flex justify-center gap-3">
-          <Link href="/signup" className="btn">Get players for my game</Link>
-          <Link href="/play" className="btn-ghost">Play &amp; earn credits</Link>
+      <section className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">Now showing</p>
+          <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-5xl">New Roblox games, before they blow up.</h1>
         </div>
+        <Link href="/signup" className="group flex items-center gap-1 text-sm text-mute hover:text-cream">
+          Made a game? Get players <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+        </Link>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        {[
-          ["1. Add your game", "Paste your Roblox link and drop our small tracker script into ServerScriptService."],
-          ["2. Earn or buy credits", "Play 10 min + feedback = 1 credit. Or $5 = 50, $10 = 120, $20 = 300."],
-          ["3. Get verified players", "Players only count after 10+ minutes in your game. You see every review."],
-        ].map(([t, d]) => (
-          <div key={t} className="card p-5">
-            <div className="font-bold">{t}</div>
-            <p className="mt-1 text-sm text-slate-400">{d}</p>
-          </div>
-        ))}
-      </section>
+      {spotlight && <Spotlight game={spotlight} />}
 
-      {featured.length > 0 && (
+      {featuredRest.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl font-bold">🔥 Featured today</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {featured.map((g) => <GameCard key={g.id} {...g} featured />)}
+          <h2 className="mb-4 text-xl font-bold">Featured</h2>
+          <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3">
+            {featuredRest.map((g) => (
+              <div key={g.id} className="w-[78%] shrink-0 snap-start sm:w-auto">
+                <TrailerCard game={g} featured />
+              </div>
+            ))}
           </div>
         </section>
       )}
 
       <section>
-        <h2 className="mb-4 text-xl font-bold">✨ New on BloxBoost</h2>
+        <h2 className="mb-4 text-xl font-bold">Just released</h2>
         {fresh.length === 0 ? (
-          <p className="text-slate-400">No games yet. <Link href="/signup" className="text-brand underline">Add the first one</Link>.</p>
+          <p className="text-mute">Nothing here yet. <Link href="/signup" className="text-marquee underline">Add the first game</Link>.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {fresh.map((g) => <GameCard key={g.id} {...g} />)}
+          <div className="grid gap-x-4 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+            {fresh.map((g) => <TrailerCard key={g.id} game={g} />)}
           </div>
         )}
+      </section>
+
+      <section className="rule grid gap-8 pt-10 md:grid-cols-[1fr_2fr]">
+        <div>
+          <p className="eyebrow">For developers</p>
+          <h2 className="mt-1 text-2xl font-bold">Your first 100 real players.</h2>
+          <Link href="/signup" className="btn mt-5">Get players</Link>
+        </div>
+        <ol className="grid gap-6 sm:grid-cols-3">
+          {[
+            ["Add your game", "Paste the Roblox link and a trailer."],
+            ["Earn or buy credits", "Play a game 10 min + review = 1 credit. Or 50 for $5."],
+            ["Get verified players", "Each one played 10+ minutes and left a review."],
+          ].map(([t, d], i) => (
+            <li key={t} className="flex gap-3">
+              <span className="font-display text-2xl font-extrabold text-marquee/80 tabular-nums">{i + 1}</span>
+              <div>
+                <div className="font-semibold">{t}</div>
+                <p className="mt-0.5 text-sm text-mute">{d}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
     </div>
   );

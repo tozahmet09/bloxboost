@@ -28,3 +28,6 @@ export function fmt(cents: number) {
 export function today() {
   return new Date().toISOString().slice(0, 10);
 }
+
+/** The milestone every game works toward: its first 100 verified players. */
+export const GOAL_PLAYERS = 100;
