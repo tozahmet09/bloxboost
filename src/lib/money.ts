@@ -31,3 +31,7 @@ export function today() {
 
 /** The milestone every game works toward: its first 100 verified players. */
 export const GOAL_PLAYERS = 100;
+
+/** Early-bird bonus: the first developers to sign up start with free credits so the swap has players from day one. */
+export const EARLY_BIRD_ACCOUNTS = 30;
+export const EARLY_BIRD_CREDITS = 20;

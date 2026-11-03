@@ -8,7 +8,7 @@ import { createSession, hashPassword, requireUser, verifyPassword } from "@/lib/
 import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfileDescription } from "@/lib/roblox";
 import { completeTask, startTask } from "@/lib/credits";
 import { parseTrailer } from "@/lib/trailer";
-import { MIN_FEEDBACK_CHARS } from "@/lib/money";
+import { EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS } from "@/lib/money";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -24,7 +24,11 @@ export async function signup(_: FormState, f: FormData): Promise<FormState> {
   if (password.length < 8) return { error: "Password must be at least 8 characters." };
   if (f.get("agree") !== "on") return { error: "Please confirm you're 13 or older and accept the Terms." };
   if (await db.user.findUnique({ where: { email } })) return { error: "That email is already registered." };
-  const user = await db.user.create({ data: { email, displayName, passwordHash: await hashPassword(password) } });
+  const passwordHash = await hashPassword(password);
+  const user = await db.$transaction(async (tx) => {
+    const early = (await tx.user.count()) < EARLY_BIRD_ACCOUNTS;
+    return tx.user.create({ data: { email, displayName, passwordHash, credits: early ? EARLY_BIRD_CREDITS : 0 } });
+  });
   await createSession(user.id);
   redirect("/dashboard");
 }
