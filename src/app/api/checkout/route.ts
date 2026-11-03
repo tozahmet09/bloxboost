@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
     const opt = FEATURED_OPTIONS.find((o) => o.days === Number(f.get("days")));
     const game = await db.game.findFirst({ where: { id: String(f.get("gameId")), ownerId: user.id } });
     if (!opt || !game) return NextResponse.json({ error: "bad option" }, { status: 400 });
+    // Featured slots are trailer-first, so a game needs a trailer before it can be featured.
+    if (!game.trailerUrl) return NextResponse.redirect(new URL(`/dashboard/games/${game.id}?needTrailer=1`, req.url), 303);
     item = {
       amountCents: opt.cents,
       gameId: game.id,

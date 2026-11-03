@@ -7,14 +7,14 @@ import { FEATURED_OPTIONS, SCRIPT_ALIVE_MS, fmt } from "@/lib/money";
 import { trackerScript } from "@/lib/script";
 import { GameIcon } from "@/components/GameCard";
 import { Form } from "@/components/Form";
-import { cancelCampaign, createCampaign, refreshGame, toggleCampaign } from "@/app/actions";
+import { cancelCampaign, createCampaign, refreshGame, setTrailer, toggleCampaign } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function GamePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ paid?: string }> }) {
+export default async function GamePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ paid?: string; needTrailer?: string }> }) {
   const user = await requireUser();
   const { id } = await params;
-  const { paid } = await searchParams;
+  const { paid, needTrailer } = await searchParams;
   const game = await db.game.findFirst({
     where: { id, ownerId: user.id },
     include: {
@@ -78,8 +78,19 @@ export default async function GamePage({ params, searchParams }: { params: Promi
         <textarea readOnly rows={8} className="input font-mono text-xs" value={trackerScript(appUrl, game.secret)} />
       </section>
 
+      <section className="card space-y-3 p-5">
+        <h2 className="text-lg font-bold">2. Add a trailer</h2>
+        <p className="text-sm text-slate-400">
+          The homepage is made of trailers. Games with one show up first and get far more clicks. 10 to 30 seconds of real gameplay works best.
+        </p>
+        <Form action={setTrailer} submit="Save trailer" className="flex flex-wrap items-start gap-3 [&>button]:w-auto">
+          <input type="hidden" name="gameId" value={game.id} />
+          <input name="trailerUrl" defaultValue={game.trailerUrl ?? ""} placeholder="https://youtube.com/shorts/... or https://.../trailer.mp4" className="input min-w-0 flex-1" />
+        </Form>
+      </section>
+
       <section className="card space-y-4 p-5">
-        <h2 className="text-lg font-bold">2. Get players</h2>
+        <h2 className="text-lg font-bold">3. Get players</h2>
         <Form action={createCampaign} submit="Start campaign" className="flex flex-wrap items-end gap-3">
           <input type="hidden" name="gameId" value={game.id} />
           <div>
@@ -124,13 +135,16 @@ export default async function GamePage({ params, searchParams }: { params: Promi
       </section>
 
       <section className="card space-y-3 p-5">
-        <h2 className="text-lg font-bold">3. Feature on the homepage {featured && <span className="text-sm text-brand">🔥 until {game.featuredUntil!.toISOString().slice(0, 10)}</span>}</h2>
-        <p className="text-sm text-slate-400">Show your game at the top of the BloxBoost homepage.</p>
+        <h2 className="text-lg font-bold">4. Feature on the homepage {featured && <span className="text-sm text-brand">🔥 until {game.featuredUntil!.toISOString().slice(0, 10)}</span>}</h2>
+        <p className="text-sm text-slate-400">Put your trailer in the big spot at the top of the homepage. Needs a trailer.</p>
+        {(needTrailer || !game.trailerUrl) && (
+          <p className="rounded-lg bg-amber-500/10 p-2 text-sm text-amber-300">Add a trailer above first, then you can feature your game.</p>
+        )}
         <form action="/api/checkout" method="post" className="flex flex-wrap gap-3">
           <input type="hidden" name="kind" value="FEATURED" />
           <input type="hidden" name="gameId" value={game.id} />
           {FEATURED_OPTIONS.map((o) => (
-            <button key={o.days} name="days" value={o.days} className="btn-ghost">
+            <button key={o.days} name="days" value={o.days} className="btn-ghost" disabled={!game.trailerUrl}>
               {o.days} day{o.days > 1 ? "s" : ""} · {fmt(o.cents)}
             </button>
           ))}
