@@ -50,3 +50,22 @@ export async function fetchRobloxGame(placeId: string): Promise<RobloxGameInfo> 
 export function robloxGameUrl(placeId: string) {
   return `https://www.roblox.com/games/${placeId}`;
 }
+
+/** Resolve a Roblox username to its user id. */
+export async function lookupRobloxUser(username: string): Promise<{ id: string; name: string } | null> {
+  const r = await fetch("https://users.roblox.com/v1/usernames/users", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true }),
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!r.ok) throw new Error(`Roblox API ${r.status}`);
+  const u = (await r.json()).data?.[0];
+  return u ? { id: String(u.id), name: u.name } : null;
+}
+
+/** Profile "About" text, used to verify account ownership with a one-time code. */
+export async function robloxProfileDescription(userId: string): Promise<string> {
+  const u = await getJson(`https://users.roblox.com/v1/users/${userId}`);
+  return u.description ?? "";
+}

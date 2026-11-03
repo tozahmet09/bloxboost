@@ -1,6 +1,25 @@
-export const MIN_BID_CENTS = 2; // $0.02 per click
-export const MIN_DAILY_BUDGET_CENTS = 100; // $1 / day
-export const TOPUP_OPTIONS_CENTS = [500, 1000, 2500, 5000];
+// Pricing. 1 credit = 1 verified player.
+export const CREDIT_PACKS = [
+  { id: "starter", credits: 50, cents: 500, label: "Starter" },
+  { id: "boost", credits: 120, cents: 1000, label: "Boost" },
+  { id: "launch", credits: 300, cents: 2000, label: "Launch" },
+] as const;
+
+export const FEATURED_OPTIONS = [
+  { days: 1, cents: 300 },
+  { days: 3, cents: 700 },
+  { days: 7, cents: 1000 },
+] as const;
+
+/** How long someone must play before their visit counts. Override for local testing only. */
+export const REQUIRED_SECONDS = Number(process.env.REQUIRED_PLAY_SECONDS ?? 600);
+/** Players start a game and have this long to reach the required playtime. */
+export const TASK_TTL_HOURS = 3;
+/** A player can have this many unfinished games at once. */
+export const MAX_OPEN_TASKS = 3;
+export const MIN_FEEDBACK_CHARS = 20;
+/** Script counts as installed if it pinged within this window. */
+export const SCRIPT_ALIVE_MS = 24 * 3600e3;
 
 export function fmt(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;

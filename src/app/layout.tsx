@@ -4,8 +4,8 @@ import "./globals.css";
 import { getUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "BloxBoost — discover new Roblox games",
-  description: "Find fresh Roblox games before they blow up. Developers: promote your game for cents per click.",
+  title: "BloxBoost: real players for new Roblox games",
+  description: "Play other devs' games to earn players for yours. Or grab a $5 pack. Every player is verified in-game.",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,14 +14,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en">
       <body>
         <header className="border-b border-slate-800">
-          <nav className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
-            <Link href="/" className="text-lg font-extrabold">
+          <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3 text-sm">
+            <Link href="/" className="mr-4 text-lg font-extrabold">
               Blox<span className="text-brand">Boost</span>
             </Link>
-            <div className="ml-auto flex items-center gap-2 text-sm">
+            <Link href="/play" className="btn-ghost">Play &amp; earn</Link>
+            <div className="ml-auto flex items-center gap-2">
               {user ? (
                 <>
-                  <Link href="/dashboard" className="btn-ghost">Dashboard</Link>
+                  <Link href="/dashboard/billing" className="rounded-xl bg-slate-800 px-3 py-2 font-semibold">
+                    ⭐ {user.credits} credits
+                  </Link>
+                  <Link href="/dashboard" className="btn-ghost">My games</Link>
                   <form action="/api/logout" method="post">
                     <button className="btn-ghost">Log out</button>
                   </form>
@@ -29,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               ) : (
                 <>
                   <Link href="/login" className="btn-ghost">Log in</Link>
-                  <Link href="/signup" className="btn">Promote your game</Link>
+                  <Link href="/signup" className="btn">Get players</Link>
                 </>
               )}
             </div>

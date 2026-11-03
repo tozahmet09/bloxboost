@@ -8,15 +8,21 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  displayName  String
-  creditCents  Int       @default(0)
-  createdAt    DateTime  @default(now())
-  sessions     Session[]
-  games        Game[]
-  payments     Payment[]
+  id               String     @id @default(cuid())
+  email            String     @unique
+  passwordHash     String
+  displayName      String
+  // 1 credit = 1 verified player (someone who played your game 10+ minutes and left feedback)
+  credits          Int        @default(0)
+  robloxUserId     String?    @unique
+  robloxUsername   String?
+  robloxVerifyCode String?
+  robloxVerified   Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  sessions         Session[]
+  games            Game[]
+  payments         Payment[]
+  tasks            PlayTask[]
 }
 
 model Session {
@@ -27,69 +33,87 @@ model Session {
 }
 
 model Game {
-  id          String     @id @default(cuid())
-  ownerId     String
-  placeId     String
-  universeId  String?
-  name        String
-  description String     @default("")
-  iconUrl     String?
-  playing     Int        @default(0)
-  visits      Int        @default(0)
-  genre       String     @default("All")
-  createdAt   DateTime   @default(now())
-  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  campaigns   Campaign[]
-  clicks      Click[]
-
-  @@unique([ownerId, placeId])
+  id             String     @id @default(cuid())
+  ownerId        String
+  placeId        String     @unique
+  universeId     String?
+  name           String
+  description    String     @default("")
+  iconUrl        String?
+  playing        Int        @default(0)
+  visits         Int        @default(0)
+  genre          String     @default("All")
+  // Shared secret the in-game tracker script sends with every heartbeat
+  secret         String     @unique @default(cuid())
+  scriptLastSeen DateTime?
+  featuredUntil  DateTime?
+  createdAt      DateTime   @default(now())
+  owner          User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  campaigns      Campaign[]
+  tasks          PlayTask[]
+  visitsLog      Visit[]
+  payments       Payment[]
 }
 
+// A dev spends credits to get N verified players. Credits are reserved up front.
 model Campaign {
-  id               String         @id @default(cuid())
-  gameId           String
-  bidCents         Int
-  dailyBudgetCents Int
-  status           String         @default("ACTIVE") // ACTIVE | PAUSED
-  createdAt        DateTime       @default(now())
-  game             Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  stats            CampaignStat[]
-  clicks           Click[]
+  id            String     @id @default(cuid())
+  gameId        String
+  targetPlayers Int
+  delivered     Int        @default(0)
+  status        String     @default("ACTIVE") // ACTIVE | PAUSED | DONE | CANCELLED
+  createdAt     DateTime   @default(now())
+  game          Game       @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  tasks         PlayTask[]
 }
 
-// One row per campaign per UTC day, keeps analytics cheap to query.
-model CampaignStat {
-  campaignId  String
-  day         String // YYYY-MM-DD (UTC)
-  impressions Int      @default(0)
-  clicks      Int      @default(0)
-  spendCents  Int      @default(0)
-  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+// One player trying one game. Heartbeats from the game's script add playtime.
+model PlayTask {
+  id            String    @id @default(cuid())
+  gameId        String
+  campaignId    String
+  playerId      String
+  robloxUserId  String
+  status        String    @default("PENDING") // PENDING | PLAYED | COMPLETED | EXPIRED
+  playedSeconds Int       @default(0)
+  lastPingAt    DateTime?
+  rating        Int?
+  feedback      String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+  game          Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  campaign      Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  player        User      @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  @@id([campaignId, day])
+  @@unique([gameId, playerId])
+  @@index([gameId, robloxUserId, status])
 }
 
-model Click {
-  id          String    @id @default(cuid())
+// Clicks from the public discovery page (featured + new games)
+model Visit {
+  id          String   @id @default(cuid())
   gameId      String
-  campaignId  String?
+  featured    Boolean  @default(false)
   visitorHash String
   day         String
-  costCents   Int       @default(0)
-  createdAt   DateTime  @default(now())
-  game        Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  campaign    Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
-  @@index([campaignId, visitorHash, day])
+  @@index([gameId, day])
 }
 
 model Payment {
-  id              String   @id @default(cuid())
-  userId          String
-  amountCents     Int
-  provider        String // stripe | test
-  externalId      String?  @unique
-  status          String   @default("PENDING") // PENDING | PAID
-  createdAt       DateTime @default(now())
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  userId      String
+  kind        String // CREDITS | FEATURED
+  amountCents Int
+  credits     Int      @default(0)
+  gameId      String?
+  days        Int      @default(0)
+  provider    String // stripe | test
+  externalId  String?  @unique
+  status      String   @default("PENDING") // PENDING | PAID
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game?    @relation(fields: [gameId], references: [id], onDelete: SetNull)
 }

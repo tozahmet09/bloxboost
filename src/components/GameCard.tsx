@@ -1,34 +1,25 @@
 import Link from "next/link";
 
-type Props = {
-  id: string;
-  name: string;
-  iconUrl: string | null;
-  playing: number;
-  genre: string;
-  campaignId?: string;
-};
+type Props = { id: string; name: string; iconUrl: string | null; playing: number; genre: string; featured?: boolean };
 
-export function GameCard({ id, name, iconUrl, playing, genre, campaignId }: Props) {
-  const href = `/go/${id}${campaignId ? `?c=${campaignId}` : ""}`;
+export function GameIcon({ url, className = "" }: { url: string | null; className?: string }) {
+  return url ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt="" className={`object-cover ${className}`} loading="lazy" />
+  ) : (
+    <div className={`flex items-center justify-center bg-slate-800 text-3xl ${className}`}>🎮</div>
+  );
+}
+
+export function GameCard({ id, name, iconUrl, playing, genre, featured }: Props) {
   return (
-    <Link
-      href={href}
-      prefetch={false}
-      target="_blank"
-      rel="noopener"
-      className="card group block overflow-hidden transition hover:border-brand"
-    >
-      <div className="relative aspect-square bg-slate-800">
-        {iconUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={iconUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="flex h-full items-center justify-center text-4xl">🎮</div>
-        )}
-        {campaignId && (
+    <Link href={`/go/${id}`} prefetch={false} target="_blank" rel="noopener"
+      className="card group block overflow-hidden transition hover:border-brand">
+      <div className="relative aspect-square">
+        <GameIcon url={iconUrl} className="h-full w-full" />
+        {featured && (
           <span className="absolute left-2 top-2 rounded-md bg-slate-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
-            Sponsored
+            Featured
           </span>
         )}
       </div>
