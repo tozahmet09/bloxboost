@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { FEATURED_OPTIONS, SCRIPT_ALIVE_MS, fmt } from "@/lib/money";
 import { trackerScript } from "@/lib/script";
+import { checkoutNotice } from "@/lib/payments";
 import { GameIcon } from "@/components/GameIcon";
 import { GoalBar } from "@/components/GoalBar";
 import { CopyButton } from "@/components/CopyButton";
@@ -33,11 +34,14 @@ export default async function GamePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ paid?: string; needTrailer?: string }>;
+  searchParams: Promise<{ paid?: string; needTrailer?: string; session_id?: string; payments?: string }>;
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const { paid, needTrailer } = await searchParams;
+  const q = await searchParams;
+  const { needTrailer } = q;
+  // Runs before loading the game so a just-paid spotlight already shows as featured.
+  const notice = await checkoutNotice(q, user.id);
   const game = await db.game.findFirst({
     where: { id, ownerId: user.id },
     include: {
@@ -86,7 +90,9 @@ export default async function GamePage({
           </button>
         </form>
       </header>
-      {paid && <p className="text-sm text-verified">Payment received.</p>}
+      {notice === "paid" && <p className="text-sm text-verified">Payment received.</p>}
+      {notice === "processing" && <p className="text-sm text-mute">Payment is processing. The spotlight starts as soon as Stripe confirms it.</p>}
+      {notice === "off" && <p className="text-sm text-mute">Spotlight purchases aren&apos;t open yet.</p>}
 
       <ol className="divide-y divide-line border-y border-line">
         <Step n={1} title="Install the tracker" done={live}>

@@ -23,14 +23,14 @@ npm run db:seed     # optional demo data: demo@bloxboost.dev / demo12345
 npm run dev
 ```
 
-Without `STRIPE_SECRET_KEY`, purchases run in **test mode** (free, instant).
+Without `STRIPE_SECRET_KEY`, purchases run in **test mode** (free, instant) on local dev. On the live site they are switched off until a key is set.
 For local testing you can set `REQUIRED_PLAY_SECONDS=60` and, in dev only, `ROBLOX_VERIFY_SKIP=1`.
 
 ## Going live
 
 1. Vercel: *Add New → Project* → import this repo. In the project go to *Storage → Create → Neon (Postgres)* and connect it, which sets `DATABASE_URL`. Redeploy. The build creates the tables (`prisma db push`).
 2. Set `APP_URL` to the public https URL. The tracker script points there.
-3. Stripe: set `STRIPE_SECRET_KEY`, add a webhook to `/api/stripe/webhook` for `checkout.session.completed`, set `STRIPE_WEBHOOK_SECRET`.
+3. Stripe: follow [docs/STRIPE.md](docs/STRIPE.md) (keys, webhook events, test card).
 4. Set a random `VISITOR_SALT`.
 
 ## Code map
