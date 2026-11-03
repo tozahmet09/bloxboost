@@ -22,6 +22,7 @@ export async function signup(_: FormState, f: FormData): Promise<FormState> {
   const displayName = str(f, "displayName") || email.split("@")[0];
   if (!/^\S+@\S+\.\S+$/.test(email)) return { error: "Enter a valid email." };
   if (password.length < 8) return { error: "Password must be at least 8 characters." };
+  if (f.get("agree") !== "on") return { error: "Please confirm you're 13 or older and accept the Terms." };
   if (await db.user.findUnique({ where: { email } })) return { error: "That email is already registered." };
   const user = await db.user.create({ data: { email, displayName, passwordHash: await hashPassword(password) } });
   await createSession(user.id);
