@@ -11,7 +11,8 @@ import { GameIcon } from "@/components/GameIcon";
 import { GoalBar } from "@/components/GoalBar";
 import { CopyButton } from "@/components/CopyButton";
 import { Form } from "@/components/Form";
-import { cancelCampaign, createCampaign, refreshGame, setTrailer, toggleCampaign } from "@/app/actions";
+import { TrailerUpload } from "@/components/TrailerUpload";
+import { cancelCampaign, createCampaign, refreshGame, toggleCampaign } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -112,10 +113,7 @@ export default async function GamePage({
 
         <Step n={2} title="Add a trailer" done={!!game.trailerUrl}>
           <p className="text-sm text-mute">Games with a trailer show first. 10 to 30 seconds of gameplay.</p>
-          <Form action={setTrailer} submit="Save" className="flex flex-wrap items-start gap-3" buttonClass="btn">
-            <input type="hidden" name="gameId" value={game.id} />
-            <input name="trailerUrl" aria-label="Trailer link" defaultValue={game.trailerUrl ?? ""} placeholder="YouTube link or .mp4 link" className="input min-w-0 flex-1 basis-64" />
-          </Form>
+          <TrailerUpload gameId={game.id} current={game.trailerUrl} uploadsOn={!!process.env.BLOB_READ_WRITE_TOKEN} />
         </Step>
 
         <Step n={3} title="Get players" done={running.length > 0 || game.tasks.length > 0}>

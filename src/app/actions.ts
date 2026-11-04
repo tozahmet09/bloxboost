@@ -7,7 +7,8 @@ import { db } from "@/lib/db";
 import { createSession, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfileDescription } from "@/lib/roblox";
 import { completeTask, startTask } from "@/lib/credits";
-import { parseTrailer } from "@/lib/trailer";
+import { del } from "@vercel/blob";
+import { isOwnUpload, parseTrailer } from "@/lib/trailer";
 import { EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS } from "@/lib/money";
 
 export type FormState = { error?: string; ok?: string } | undefined;
@@ -194,9 +195,13 @@ export async function setTrailer(_: FormState, f: FormData): Promise<FormState> 
   if (!game) return { error: "Game not found." };
   const url = str(f, "trailerUrl");
   if (url && !parseTrailer(url))
-    return { error: "Use a YouTube link (youtube.com/watch, youtu.be or Shorts) or a direct https link to an .mp4 or .webm file." };
+    return { error: "Use a YouTube link (youtube.com/watch, youtu.be or Shorts) or a direct https link to an .mp4, .webm or .mov file." };
   await db.game.update({ where: { id: game.id }, data: { trailerUrl: url || null } });
+  // Clean up the old uploaded video so storage doesn't fill with replaced trailers.
+  if (game.trailerUrl && game.trailerUrl !== url && isOwnUpload(game.trailerUrl, game.id) && process.env.BLOB_READ_WRITE_TOKEN)
+    await del(game.trailerUrl).catch(() => {});
   revalidatePath(`/dashboard/games/${game.id}`);
+  revalidatePath("/");
   return { ok: url ? "Trailer saved. It now plays on the homepage." : "Trailer removed." };
 }
 
