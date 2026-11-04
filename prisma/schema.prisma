@@ -79,6 +79,10 @@ model PlayTask {
   status        String    @default("PENDING") // PENDING | PLAYED | COMPLETED | EXPIRED
   playedSeconds Int       @default(0)
   lastPingAt    DateTime?
+  // How the playtime was confirmed: SCRIPT (in-game tracker, strongest) or PRESENCE (Roblox online status, no script needed)
+  verifiedBy    String?
+  // Last time we asked Roblox's presence API about this player (presence mode only)
+  presenceCheckedAt DateTime?
   rating        Int?
   feedback      String?
   createdAt     DateTime  @default(now())

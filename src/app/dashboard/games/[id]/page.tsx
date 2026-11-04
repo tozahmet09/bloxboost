@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import { CheckCircle2, Circle, RefreshCw, Star, Pause, Play as PlayIcon, X } from "lucide-react";
+import { BadgeCheck, CheckCircle2, Circle, RefreshCw, Star, Pause, Play as PlayIcon, X } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { FEATURED_OPTIONS, SCRIPT_ALIVE_MS, fmt } from "@/lib/money";
@@ -96,27 +96,12 @@ export default async function GamePage({
       {notice === "off" && <p className="text-sm text-mute">Spotlight purchases aren&apos;t open yet.</p>}
 
       <ol className="divide-y divide-line border-y border-line">
-        <Step n={1} title="Install the tracker" done={live}>
-          <p className="max-w-prose text-sm text-mute">
-            Lets us confirm a player stayed 10 minutes. Add a <b className="text-cream">Script</b> to <b className="text-cream">ServerScriptService</b>, paste this, turn on <b className="text-cream">Allow HTTP Requests</b>, publish.
-          </p>
-          <div className="overflow-hidden rounded-ctl border border-line">
-            <pre className="max-h-40 overflow-auto bg-panel p-3 text-xs leading-relaxed text-mute">{script}</pre>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <CopyButton text={script} label="Copy script" />
-            <span className={`text-sm ${live ? "text-verified" : "text-mute"}`}>
-              {live ? `Live, last ping ${game.scriptLastSeen!.toISOString().slice(11, 16)} UTC` : "Waiting for the first ping…"}
-            </span>
-          </div>
-        </Step>
-
-        <Step n={2} title="Add a trailer" done={!!game.trailerUrl}>
+        <Step n={1} title="Add a trailer" done={!!game.trailerUrl}>
           <p className="text-sm text-mute">Games with a trailer show first. 10 to 30 seconds of gameplay.</p>
           <TrailerUpload gameId={game.id} current={game.trailerUrl} uploadsOn={!!process.env.BLOB_READ_WRITE_TOKEN} />
         </Step>
 
-        <Step n={3} title="Get players" done={running.length > 0 || game.tasks.length > 0}>
+        <Step n={2} title="Get players" done={running.length > 0 || game.tasks.length > 0}>
           <p className="text-sm text-mute">1 credit = 1 verified player. You have {user.credits}. Unused credits come back if you stop.</p>
           <Form action={createCampaign} submit="Start" className="flex flex-wrap items-start gap-3" buttonClass="btn">
             <input type="hidden" name="gameId" value={game.id} />
@@ -150,8 +135,27 @@ export default async function GamePage({
           )}
         </Step>
 
+        <Step n={3} title="Get the Verified badge" done={live} optional>
+          <p className="max-w-prose text-sm text-mute">
+            Players already count without this: we check on Roblox that they&apos;re in a game for 10 minutes. The tracker confirms they were in <b className="text-cream">your</b> game, gives you a{" "}
+            <span className="inline-flex items-center gap-1 text-verified"><BadgeCheck className="h-3.5 w-3.5" /> Verified</span> badge and puts you first in the player queue.
+          </p>
+          <p className="max-w-prose text-sm text-mute">
+            Add a <b className="text-cream">Script</b> to <b className="text-cream">ServerScriptService</b>, paste this, turn on <b className="text-cream">Allow HTTP Requests</b>, publish.
+          </p>
+          <div className="overflow-hidden rounded-ctl border border-line">
+            <pre className="max-h-40 overflow-auto bg-panel p-3 text-xs leading-relaxed text-mute">{script}</pre>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <CopyButton text={script} label="Copy script" />
+            <span className={`text-sm ${live ? "text-verified" : "text-mute"}`}>
+              {live ? `Live, last ping ${game.scriptLastSeen!.toISOString().slice(11, 16)} UTC` : "Not installed"}
+            </span>
+          </div>
+        </Step>
+
         <Step n={4} title="Spotlight on the homepage" done={featured} optional>
-          {(needTrailer || !game.trailerUrl) && <p className="text-sm text-marquee">Needs a trailer first (step 2).</p>}
+          {(needTrailer || !game.trailerUrl) && <p className="text-sm text-marquee">Needs a trailer first (step 1).</p>}
           <form action="/api/checkout" method="post" className="flex flex-wrap gap-3">
             <input type="hidden" name="kind" value="FEATURED" />
             <input type="hidden" name="gameId" value={game.id} />
@@ -167,7 +171,7 @@ export default async function GamePage({
       <section className="space-y-4">
         <h2 className="text-xl font-bold">Reviews</h2>
         {game.tasks.length === 0 ? (
-          <p className="text-sm text-mute">Reviews from verified players show up here.</p>
+          <p className="text-sm text-mute">Reviews from players show up here.</p>
         ) : (
           <ul className="divide-y divide-line">
             {game.tasks.map((t) => (
@@ -180,6 +184,11 @@ export default async function GamePage({
                   </span>
                   <span>{t.player.robloxUsername}</span>
                   <span>· {Math.round(t.playedSeconds / 60)} min played</span>
+                  {t.verifiedBy === "SCRIPT" ? (
+                    <span className="inline-flex items-center gap-1 text-verified">· <BadgeCheck className="h-3.5 w-3.5" /> seen in your game</span>
+                  ) : (
+                    <span>· checked via Roblox status</span>
+                  )}
                 </div>
                 <p className="max-w-prose whitespace-pre-wrap">{t.feedback}</p>
               </li>

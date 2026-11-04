@@ -2,12 +2,22 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { parseTrailer } from "@/lib/trailer";
+import { isVerifiedGame } from "@/lib/credits";
 import { Spotlight, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
 
 export const dynamic = "force-dynamic";
 
-type Row = { id: string; name: string; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null };
-const toCard = (g: Row): TrailerGame => ({ ...g, trailer: parseTrailer(g.trailerUrl) });
+type Row = { id: string; name: string; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null; scriptLastSeen: Date | null };
+// Pick fields one by one: this goes to the browser, so the game's tracker secret must never be in it.
+const toCard = (g: Row): TrailerGame => ({
+  id: g.id,
+  name: g.name,
+  genre: g.genre,
+  playing: g.playing,
+  iconUrl: g.iconUrl,
+  trailer: parseTrailer(g.trailerUrl),
+  verified: isVerifiedGame(g),
+});
 
 export default async function Home() {
   const now = new Date();

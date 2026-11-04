@@ -2,12 +2,13 @@ import Link from "next/link";
 import { CheckCircle2, ExternalLink, Ticket } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { expireStaleTasks } from "@/lib/credits";
+import { expireStaleTasks, isVerifiedGame } from "@/lib/credits";
 import { REQUIRED_SECONDS } from "@/lib/money";
 import { robloxGameUrl } from "@/lib/roblox";
 import { GameIcon } from "@/components/GameIcon";
 import { Form } from "@/components/Form";
 import { Burst } from "@/components/Burst";
+import { PresencePoller } from "@/components/PresencePoller";
 import { StarPicker } from "@/components/StarPicker";
 import { submitFeedback } from "@/app/actions";
 
@@ -27,6 +28,8 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
   const justNow = Date.now() - 15_000;
   // Only show the "open in Roblox" banner while that game still needs playtime.
   const startedOpen = started && tasks.some((t) => t.game.placeId === started && t.status === "PENDING");
+  // Games without the tracker script are timed by checking the player's Roblox status from this page.
+  const watching = tasks.some((t) => t.status === "PENDING" && !isVerifiedGame(t.game));
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
@@ -37,6 +40,13 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
         </div>
         <Link href="/play" className="btn-quiet">Find more</Link>
       </div>
+
+      {watching && <PresencePoller />}
+      {watching && (
+        <p className="rounded-media border border-line p-4 text-sm text-mute">
+          Keep this page open while you play (a phone works too). We check your Roblox status every minute, so minutes only count while you&apos;re in the game.
+        </p>
+      )}
 
       {startedOpen && (
         <div className="flex flex-wrap items-center gap-4 rounded-media border border-marquee/40 bg-marquee/[.06] p-4">

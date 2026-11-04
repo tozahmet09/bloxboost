@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Plus, Radio, Link2 } from "lucide-react";
+import { BadgeCheck, ChevronRight, Plus, Link2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { SCRIPT_ALIVE_MS } from "@/lib/money";
@@ -55,9 +55,11 @@ export default async function Dashboard() {
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="truncate font-semibold group-hover:text-marquee">{g.name}</span>
-                      <span className={`chip ${live ? "bg-verified/10 text-verified" : "bg-marquee/10 text-marquee"}`}>
-                        <Radio className="h-3 w-3" /> {live ? "Tracker live" : "Install tracker"}
-                      </span>
+                      {live && (
+                        <span className="chip bg-verified/10 text-verified">
+                          <BadgeCheck className="h-3 w-3" /> Verified
+                        </span>
+                      )}
                       {coming > 0 && <span className="text-xs text-mute">{coming} on the way</span>}
                     </div>
                     <GoalBar count={g._count.tasks} compact />

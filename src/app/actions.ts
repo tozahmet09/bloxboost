@@ -105,8 +105,10 @@ export async function addGame(_: FormState, f: FormData): Promise<FormState> {
   const existing = await db.game.findUnique({ where: { placeId } });
   if (existing) {
     if (existing.ownerId === user.id) redirect(`/dashboard/games/${existing.id}`);
-    // Someone claimed it but never installed the script: let the real owner take it after a day.
-    const stale = !existing.scriptLastSeen && existing.createdAt < new Date(Date.now() - 864e5);
+    // Someone claimed it, never installed the script and never ran a campaign: let the real owner take it after a day.
+    // (The script is optional now, so a game that's actually in use is never taken away.)
+    const used = await db.campaign.count({ where: { gameId: existing.id } });
+    const stale = !existing.scriptLastSeen && !used && existing.createdAt < new Date(Date.now() - 864e5);
     if (!stale) return { error: "This game was already added by another account. If it's yours, contact support." };
     await db.game.delete({ where: { id: existing.id } });
   }

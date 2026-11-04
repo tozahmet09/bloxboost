@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Play, Users } from "lucide-react";
+import { BadgeCheck, Play, Users } from "lucide-react";
 import type { Trailer } from "@/lib/trailer";
 import { GameIcon } from "./GameIcon";
 
@@ -21,6 +21,8 @@ export type TrailerGame = {
   playing: number;
   iconUrl: string | null;
   trailer: Trailer | null;
+  /** Has the in-game tracker script installed. */
+  verified?: boolean;
 };
 
 function useAutoplay(id: string, t: Trailer | null) {
@@ -100,6 +102,14 @@ function Meta({ game }: { game: TrailerGame }) {
       <span className="inline-flex items-center gap-1 tabular-nums">
         <Users className="h-3.5 w-3.5" /> {game.playing.toLocaleString()} playing
       </span>
+      {game.verified && (
+        <>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1 text-verified">
+            <BadgeCheck className="h-3.5 w-3.5" /> Verified
+          </span>
+        </>
+      )}
     </div>
   );
 }
