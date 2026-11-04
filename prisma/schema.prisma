@@ -113,8 +113,12 @@ model Payment {
   gameId      String?
   days        Int      @default(0)
   provider    String // stripe | test
+  // Stripe Checkout Session id
   externalId  String?  @unique
-  status      String   @default("PENDING") // PENDING | PAID
+  // Stripe PaymentIntent id, used to match refunds and disputes
+  paymentIntentId String? @unique
+  status      String   @default("PENDING") // PENDING | PAID | FAILED | REFUNDED | DISPUTED
+  paidAt      DateTime?
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   game        Game?    @relation(fields: [gameId], references: [id], onDelete: SetNull)

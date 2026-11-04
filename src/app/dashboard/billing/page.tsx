@@ -2,13 +2,24 @@ import { Ticket } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { CREDIT_PACKS, fmt } from "@/lib/money";
-import { stripe } from "@/lib/payments";
+import { checkoutNotice, paymentsMode, stripeTestKey } from "@/lib/payments";
 
 export const dynamic = "force-dynamic";
 
-export default async function Billing({ searchParams }: { searchParams: Promise<{ paid?: string }> }) {
-  const user = await requireUser();
-  const { paid } = await searchParams;
+const STATUS_LABEL: Record<string, string> = {
+  PENDING: "Pending",
+  PAID: "Paid",
+  FAILED: "Not completed",
+  REFUNDED: "Refunded",
+  DISPUTED: "Disputed",
+};
+
+export default async function Billing({ searchParams }: { searchParams: Promise<{ paid?: string; session_id?: string; payments?: string }> }) {
+  const sessionUser = await requireUser();
+  // Runs before reading the user/payments so a just-paid purchase is already counted below.
+  const notice = await checkoutNotice(await searchParams, sessionUser.id);
+  const mode = paymentsMode();
+  const user = (await db.user.findUnique({ where: { id: sessionUser.id } })) ?? sessionUser;
   const payments = await db.payment.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 20, include: { game: true } });
   const best = CREDIT_PACKS[CREDIT_PACKS.length - 1].id;
 
@@ -18,8 +29,11 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
         <p className="eyebrow">Credits</p>
         <h1 className="mt-1 text-3xl font-extrabold">1 credit = 1 verified player</h1>
         <p className="mt-2 text-mute">You have <b className="text-cream tabular-nums">{user.credits}</b>. Playing other games earns them for free.</p>
-        {paid && <p className="mt-3 text-sm text-verified">Payment received. Credits added.</p>}
-        {!stripe && <p className="mt-3 text-xs text-mute">Test mode: purchases are free and instant.</p>}
+        {notice === "paid" && <p className="mt-3 text-sm text-verified">Payment received. Credits added.</p>}
+        {notice === "processing" && <p className="mt-3 text-sm text-mute">Payment is processing. Credits appear here as soon as Stripe confirms it.</p>}
+        {(notice === "off" || mode === "off") && <p className="mt-3 text-sm text-mute">Buying credits isn&apos;t open yet. You can still earn them by playing other games.</p>}
+        {mode === "test" && <p className="mt-3 text-xs text-mute">Test mode: purchases are free and instant.</p>}
+        {mode === "stripe" && stripeTestKey && <p className="mt-3 text-xs text-mute">Stripe test mode: pay with card 4242 4242 4242 4242, any future date, any CVC.</p>}
       </div>
 
       <form action="/api/checkout" method="post" className="grid gap-3 sm:grid-cols-3">
@@ -52,7 +66,7 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
                 <span className="w-24 text-mute tabular-nums">{p.createdAt.toISOString().slice(0, 10)}</span>
                 <span className="min-w-0 flex-1 truncate">{p.kind === "CREDITS" ? `${p.credits} credits` : `Spotlight ${p.days}d · ${p.game?.name ?? ""}`}</span>
                 <span className="tabular-nums">{fmt(p.amountCents)}</span>
-                <span className={p.status === "PAID" ? "text-verified" : "text-mute"}>{p.status === "PAID" ? "Paid" : "Pending"}</span>
+                <span className={p.status === "PAID" ? "text-verified" : "text-mute"}>{STATUS_LABEL[p.status] ?? p.status}</span>
               </li>
             ))}
           </ul>

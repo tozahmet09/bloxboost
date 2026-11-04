@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth";
 import { CREDIT_PACKS, FEATURED_OPTIONS } from "@/lib/money";
-import { markPaid, stripe } from "@/lib/payments";
+import { markPaid, paymentsMode, stripe } from "@/lib/payments";
 
 // Form fields: kind=CREDITS&pack=<id>  or  kind=FEATURED&gameId=<id>&days=<n>
 export async function POST(req: NextRequest) {
   const user = await getUser();
   if (!user) return NextResponse.redirect(new URL("/login", req.url), 303);
+  const mode = paymentsMode();
   const f = await req.formData();
   const kind = String(f.get("kind"));
 
@@ -33,6 +34,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "bad kind" }, { status: 400 });
   }
 
+  // Live site without a Stripe key: refuse instead of handing out free credits.
+  if (mode === "off") return NextResponse.redirect(new URL(`${item.back}?payments=off`, req.url), 303);
+
   const p = await db.payment.create({
     data: {
       userId: user.id,
@@ -41,27 +45,40 @@ export async function POST(req: NextRequest) {
       credits: item.credits ?? 0,
       gameId: item.gameId,
       days: item.days ?? 0,
-      provider: stripe ? "stripe" : "test",
+      provider: mode === "stripe" ? "stripe" : "test",
     },
   });
 
-  if (!stripe) {
-    // Test mode: no payment provider configured, deliver immediately.
+  if (mode === "test" || !stripe) {
+    // Local test mode: no payment provider configured, deliver immediately.
     await markPaid(p.id);
     return NextResponse.redirect(new URL(`${item.back}?paid=1`, req.url), 303);
   }
 
   const appUrl = process.env.APP_URL ?? new URL(req.url).origin;
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: user.email,
-    line_items: [
-      { quantity: 1, price_data: { currency: "usd", unit_amount: item.amountCents, product_data: { name: item.name } } },
-    ],
-    metadata: { paymentId: p.id },
-    success_url: `${appUrl}${item.back}?paid=1`,
-    cancel_url: `${appUrl}${item.back}`,
-  });
+  const back = `${appUrl}${item.back}`;
+  const sep = item.back.includes("?") ? "&" : "?";
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: "payment",
+      customer_email: user.email,
+      client_reference_id: user.id,
+      submit_type: "pay",
+      line_items: [
+        { quantity: 1, price_data: { currency: "usd", unit_amount: item.amountCents, product_data: { name: item.name } } },
+      ],
+      metadata: { paymentId: p.id, userId: user.id, kind },
+      // Copy the ids onto the PaymentIntent too, so refunds and disputes in the Dashboard show what was bought.
+      payment_intent_data: { metadata: { paymentId: p.id, userId: user.id, kind } },
+      // The success page re-checks this session with Stripe, so credits show up even before the webhook lands.
+      success_url: `${back}${sep}session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: back,
+      // Unpaid checkouts close after an hour instead of the default 24h.
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+    },
+    // If this request is retried, Stripe returns the same session instead of making a second one.
+    { idempotencyKey: `checkout-${p.id}` },
+  );
   await db.payment.update({ where: { id: p.id }, data: { externalId: session.id } });
   return NextResponse.redirect(session.url!, 303);
 }
