@@ -4,10 +4,10 @@ import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 const user = await db.user.upsert({
-  where: { email: "demo@bloxboost.dev" },
+  where: { email: "demo@spawnswap.dev" },
   update: {},
   create: {
-    email: "demo@bloxboost.dev",
+    email: "demo@spawnswap.dev",
     displayName: "Demo Studio",
     passwordHash: await bcrypt.hash("demo12345", 10),
     credits: 20,
@@ -33,5 +33,5 @@ for (const [placeId, name, genre, playing, players, featured] of demo) {
   if (players && !(await db.campaign.findFirst({ where: { gameId: g.id } })))
     await db.campaign.create({ data: { gameId: g.id, targetPlayers: players } });
 }
-console.log("Seeded. Log in as demo@bloxboost.dev / demo12345");
+console.log("Seeded. Log in as demo@spawnswap.dev / demo12345");
 await db.$disconnect();

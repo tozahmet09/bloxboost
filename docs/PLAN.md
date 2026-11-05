@@ -1,4 +1,4 @@
-# BloxBoost: one-page plan
+# Spawnswap: one-page plan
 
 | Field | Answer |
 |---|---|

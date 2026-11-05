@@ -4,7 +4,7 @@ import { topDevs, topGames, topPlayers, publicName } from "@/lib/community";
 import { GameIcon } from "@/components/GameIcon";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Leaderboards · BloxBoost" };
+export const metadata = { title: "Leaderboards · Spawnswap" };
 
 const TABS = [
   { id: "games", label: "Top games" },

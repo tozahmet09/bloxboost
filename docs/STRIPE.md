@@ -1,6 +1,6 @@
-# Stripe plan for BloxBoost
+# Stripe plan for Spawnswap
 
-What BloxBoost sells, all one-time payments in USD:
+What Spawnswap sells, all one-time payments in USD:
 
 | Product | Price | Delivers |
 | --- | --- | --- |
