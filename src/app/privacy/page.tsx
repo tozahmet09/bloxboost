@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata: Metadata = { title: "Privacy Policy · BloxBoost" };
+export const metadata: Metadata = { title: "Privacy Policy · Spawnswap" };
 
 export default function Privacy() {
   return (
@@ -13,7 +13,7 @@ export default function Privacy() {
         <li><b>Account:</b> your email, a display name and your password (stored only as a secure hash).</li>
         <li><b>Roblox account:</b> your Roblox username and user id, once you link them. We read your public profile only to check the link code.</li>
         <li><b>Games:</b> public info from Roblox about games you add (name, icon, player counts) and the trailer link you give.</li>
-        <li><b>Playtime:</b> if a game has the playtime check script, it reports once a minute only the players who chose that game on BloxBoost and are still in it. Other players in the server are never sent to us. For games without it, we check your public Roblox online status (whether you are in a game) about once a minute while you have a game going on BloxBoost. We only use this to count playtime for games you started on BloxBoost.</li>
+        <li><b>Playtime:</b> if a game has the playtime check script, it reports once a minute only the players who chose that game on Spawnswap and are still in it. Other players in the server are never sent to us. For games without it, we check your public Roblox online status (whether you are in a game) about once a minute while you have a game going on Spawnswap. We only use this to count playtime for games you started on Spawnswap.</li>
         <li><b>Comments, likes and leaderboards:</b> comments you post and the games and comments you like. Your Roblox username (or display name if you haven&apos;t linked Roblox) is shown publicly next to your comments and on the leaderboards.</li>
         <li><b>Invites:</b> if you joined with someone&apos;s invite link, we store who invited you so we can give both of you the bonus.</li>
         <li><b>Reviews:</b> the rating and text you write. The game&apos;s developer sees them with your Roblox username.</li>
@@ -32,7 +32,7 @@ export default function Privacy() {
       </ul>
 
       <h2>Children</h2>
-      <p>BloxBoost is for people aged 13 and over. If you believe a child under 13 has made an account, tell us and we&apos;ll delete it.</p>
+      <p>Spawnswap is for people aged 13 and over. If you believe a child under 13 has made an account, tell us and we&apos;ll delete it.</p>
 
       <h2>Your choices</h2>
       <p>You can ask us to show you, correct or delete your data at any time. Deleting your account removes your account, games and reviews.</p>

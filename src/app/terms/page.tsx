@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 
-export const metadata: Metadata = { title: "Terms of Use · BloxBoost" };
+export const metadata: Metadata = { title: "Terms of Use · Spawnswap" };
 
 export default function Terms() {
   return (
     <LegalPage title="Terms of Use" updated="November 3, 2026">
-      <p>BloxBoost helps Roblox developers get their games played and lets players discover new games. By creating an account you agree to these terms.</p>
+      <p>Spawnswap helps Roblox developers get their games played and lets players discover new games. By creating an account you agree to these terms.</p>
 
-      <h2>Who can use BloxBoost</h2>
+      <h2>Who can use Spawnswap</h2>
       <ul>
         <li>You must be at least 13 years old.</li>
         <li>If you are under 18, a parent or guardian must agree to these terms and make any purchase for you.</li>
@@ -16,7 +16,7 @@ export default function Terms() {
       </ul>
 
       <h2>Not affiliated with Roblox</h2>
-      <p>BloxBoost is an independent service. It is not made, endorsed or sponsored by Roblox Corporation. You must also follow the Roblox Terms of Use, including on the games you list here.</p>
+      <p>Spawnswap is an independent service. It is not made, endorsed or sponsored by Roblox Corporation. You must also follow the Roblox Terms of Use, including on the games you list here.</p>
 
       <h2>Credits</h2>
       <ul>
@@ -33,7 +33,7 @@ export default function Terms() {
       <ul>
         <li>Alt accounts, bots, scripts or anything that fakes playtime or reviews.</li>
         <li>Changing the playtime check script to report players who did not play.</li>
-        <li>Paying or rewarding people outside BloxBoost to play through it.</li>
+        <li>Paying or rewarding people outside Spawnswap to play through it.</li>
         <li>Copy-paste, spam or abusive reviews or comments, and trading or buying likes.</li>
       </ul>
 
@@ -42,7 +42,7 @@ export default function Terms() {
         <li>Only add games you own or are allowed to promote.</li>
         <li>Trailers must show the real game and be content you have the right to use.</li>
         <li>Games and trailers must be suitable for all ages and follow Roblox community standards. We may remove anything that isn&apos;t.</li>
-        <li>You let us show your game&apos;s name, icon and trailer on BloxBoost to promote it.</li>
+        <li>You let us show your game&apos;s name, icon and trailer on Spawnswap to promote it.</li>
         <li>Comments and likes are public. Developers can delete comments on their own games, and we may remove anything that breaks these rules.</li>
       </ul>
 

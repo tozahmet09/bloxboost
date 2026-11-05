@@ -19,7 +19,7 @@ const nameSel = { displayName: true, robloxUsername: true, robloxVerified: true 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const g = await db.game.findUnique({ where: { id }, select: { name: true, description: true } });
-  return g ? { title: `${g.name} · BloxBoost`, description: g.description.slice(0, 160) } : {};
+  return g ? { title: `${g.name} · Spawnswap`, description: g.description.slice(0, 160) } : {};
 }
 
 function ago(d: Date) {
