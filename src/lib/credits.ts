@@ -84,7 +84,14 @@ export async function heartbeat(secret: string, robloxUserIds: string[]) {
   if (!game) return null;
   const now = new Date();
   await db.game.update({ where: { id: game.id }, data: { scriptLastSeen: now } });
-  if (!robloxUserIds.length) return { updated: 0 };
+  // The script only reports players on this list, so it never sends ids of normal players.
+  const open = await db.playTask.findMany({
+    where: { gameId: game.id, status: "PENDING" },
+    select: { robloxUserId: true },
+    take: 500,
+  });
+  const watch = open.map((t) => t.robloxUserId);
+  if (!robloxUserIds.length) return { updated: 0, watch };
 
   const tasks = await db.playTask.findMany({
     where: { gameId: game.id, status: "PENDING", robloxUserId: { in: robloxUserIds.slice(0, 200) } },
@@ -101,7 +108,7 @@ export async function heartbeat(secret: string, robloxUserIds: string[]) {
     });
     updated++;
   }
-  return { updated };
+  return { updated, watch };
 }
 
 /** Minimum gap between two presence checks of the same task. */

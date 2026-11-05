@@ -30,7 +30,7 @@ export default function Terms() {
       <p>To keep players real, these are not allowed and can lead to removing credits or closing the account:</p>
       <ul>
         <li>Alt accounts, bots, scripts or anything that fakes playtime or reviews.</li>
-        <li>Changing the tracker script to report players who did not play.</li>
+        <li>Changing the playtime check script to report players who did not play.</li>
         <li>Paying or rewarding people outside BloxBoost to play through it.</li>
         <li>Copy-paste, spam or abusive reviews.</li>
       </ul>
