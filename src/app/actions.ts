@@ -28,7 +28,7 @@ export async function signup(_: FormState, f: FormData): Promise<FormState> {
   if (await db.user.findUnique({ where: { email } })) return { error: "That email is already registered." };
   const passwordHash = await hashPassword(password);
   const ref = str(f, "ref").toLowerCase();
-  const inviter = ref ? await db.user.findUnique({ where: { referralCode: ref }, select: { id: true } }) : null;
+  const inviter = ref ? await db.user.findFirst({ where: { referralCode: ref }, select: { id: true } }) : null;
   const user = await db.$transaction(async (tx) => {
     const early = (await tx.user.count()) < EARLY_BIRD_ACCOUNTS;
     const credits = (early ? EARLY_BIRD_CREDITS : 0) + (inviter ? REFERRAL_CREDITS : 0);

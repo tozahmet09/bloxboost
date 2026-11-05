@@ -20,7 +20,8 @@ model User {
   robloxVerified   Boolean    @default(false)
   createdAt        DateTime   @default(now())
   // Invite link: /signup?ref=<referralCode>. The inviter is paid once the new user finishes a first verified play.
-  referralCode     String?    @unique
+  // Not @unique so `prisma db push` on deploy can add it without a data-loss prompt; codes are random and checked before use.
+  referralCode     String?
   referredById     String?
   referralPaid     Boolean    @default(false)
   sessions         Session[]
@@ -30,6 +31,8 @@ model User {
   likes            Like[]
   comments         Comment[]
   commentLikes     CommentLike[]
+
+  @@index([referralCode])
 }
 
 model Session {

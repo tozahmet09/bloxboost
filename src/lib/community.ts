@@ -24,12 +24,9 @@ export async function ensureReferralCode(userId: string) {
   if (u?.referralCode) return u.referralCode;
   for (let i = 0; i < 5; i++) {
     const code = randomBytes(4).toString("base64url").replace(/[-_]/g, "x").slice(0, 6).toLowerCase();
-    try {
-      await db.user.update({ where: { id: userId }, data: { referralCode: code } });
-      return code;
-    } catch {
-      // code taken, try another
-    }
+    if (await db.user.findFirst({ where: { referralCode: code }, select: { id: true } })) continue;
+    await db.user.update({ where: { id: userId }, data: { referralCode: code } });
+    return code;
   }
   throw new Error("could not create invite code");
 }
