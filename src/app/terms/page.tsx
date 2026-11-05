@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
+import { operator } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Terms of Use · BloxBoost" };
 
 export default function Terms() {
+  const op = operator();
   return (
-    <LegalPage title="Terms of Use" updated="November 3, 2026">
+    <LegalPage title="Terms of Use" updated="November 5, 2026">
       <p>BloxBoost helps Roblox developers get their games played and lets players discover new games. By creating an account you agree to these terms.</p>
 
       <h2>Who can use BloxBoost</h2>
@@ -25,7 +28,7 @@ export default function Terms() {
         <li>Credits have no cash value, can&apos;t be transferred or exchanged for Robux or money, and don&apos;t expire.</li>
         <li>Credits reserved for a campaign come back to you if you stop it before they are used.</li>
         <li>Before posting your own game you play and review 3 other games (fewer while the site has fewer games).</li>
-        <li>Invite bonus: a friend who joins with your link gets 5 credits, and you get 5 when they finish their first verified play. Inviting yourself or alt accounts voids the bonus.</li>
+        <li>Invite bonus: a friend who joins with your link gets 5 credits, and you get 5 when they finish their first verified play on someone else&apos;s game. Their Roblox account must be at least 30 days old, and you can collect the bonus up to 50 times. Inviting yourself or alt accounts voids the bonus.</li>
       </ul>
 
       <h2>Fair play</h2>
@@ -48,13 +51,22 @@ export default function Terms() {
 
       <h2>Purchases</h2>
       <ul>
-        <li>Prices are shown before you pay. Payments are processed by Stripe.</li>
-        <li>Unused credit packs can be refunded within 14 days of purchase if none of the credits have been used.</li>
+        <li>Prices are shown in US dollars before you pay. Payments are processed by {op.payments}.</li>
+        <li>Unused credit packs can be refunded within 14 days of purchase if none of the credits have been used. See the <Link href="/refund">refund policy</Link> for the details.</li>
         <li>A homepage spotlight that has already started can&apos;t be refunded.</li>
+      </ul>
+
+      <h2>Closing accounts</h2>
+      <ul>
+        <li>You can ask us to delete your account at any time.</li>
+        <li>We may suspend or close an account that breaks these terms, and remove credits that were earned by cheating. Credits you bought and haven&apos;t used are refunded unless they were bought to cheat.</li>
       </ul>
 
       <h2>No guarantees</h2>
       <p>We verify playtime and reviews, but we can&apos;t promise how many players will stay, spend or come back. The service is provided as it is, and our responsibility is limited to the amount you paid us in the last 12 months.</p>
+
+      <h2>Law</h2>
+      <p>These terms are governed by the laws of {op.country ?? "the country where BloxBoost's operator lives"}. If you live in another country, you keep the consumer rights its law gives you.</p>
 
       <h2>Changes</h2>
       <p>We may update these terms. If a change matters, we&apos;ll tell you on the site before it takes effect.</p>
