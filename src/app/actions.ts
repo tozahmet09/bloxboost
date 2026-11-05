@@ -4,12 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
-import { createSession, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
+import { createSession, getUser, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfileDescription } from "@/lib/roblox";
 import { completeTask, startTask } from "@/lib/credits";
 import { del } from "@vercel/blob";
 import { isOwnUpload, parseTrailer } from "@/lib/trailer";
-import { EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS } from "@/lib/money";
+import { COMMENT_COOLDOWN_MS, COMMENT_MAX_CHARS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS, PLAYS_TO_POST, REFERRAL_CREDITS } from "@/lib/money";
+import { postingRequirement } from "@/lib/community";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -26,9 +27,12 @@ export async function signup(_: FormState, f: FormData): Promise<FormState> {
   if (f.get("agree") !== "on") return { error: "Please confirm you're 13 or older and accept the Terms." };
   if (await db.user.findUnique({ where: { email } })) return { error: "That email is already registered." };
   const passwordHash = await hashPassword(password);
+  const ref = str(f, "ref").toLowerCase();
+  const inviter = ref ? await db.user.findFirst({ where: { referralCode: ref }, select: { id: true } }) : null;
   const user = await db.$transaction(async (tx) => {
     const early = (await tx.user.count()) < EARLY_BIRD_ACCOUNTS;
-    return tx.user.create({ data: { email, displayName, passwordHash, credits: early ? EARLY_BIRD_CREDITS : 0 } });
+    const credits = (early ? EARLY_BIRD_CREDITS : 0) + (inviter ? REFERRAL_CREDITS : 0);
+    return tx.user.create({ data: { email, displayName, passwordHash, credits, referredById: inviter?.id ?? null } });
   });
   await createSession(user.id);
   redirect("/dashboard");
@@ -103,10 +107,15 @@ export async function addGame(_: FormState, f: FormData): Promise<FormState> {
   if (!placeId) return { error: "Paste a Roblox game link like https://www.roblox.com/games/123456789/My-Game" };
 
   const existing = await db.game.findUnique({ where: { placeId } });
+  if (existing?.ownerId === user.id) redirect(`/dashboard/games/${existing.id}`);
+  const req = await postingRequirement(user.id);
+  if (req.left > 0)
+    return { error: `Play ${req.left} more game${req.left === 1 ? "" : "s"} first. Everyone plays ${PLAYS_TO_POST} games before posting, so every game gets players.` };
   if (existing) {
-    if (existing.ownerId === user.id) redirect(`/dashboard/games/${existing.id}`);
-    // Someone claimed it but never installed the script: let the real owner take it after a day.
-    const stale = !existing.scriptLastSeen && existing.createdAt < new Date(Date.now() - 864e5);
+    // Someone claimed it, never installed the script and never ran a campaign: let the real owner take it after a day.
+    // (The script is optional now, so a game that's actually in use is never taken away.)
+    const used = await db.campaign.count({ where: { gameId: existing.id } });
+    const stale = !existing.scriptLastSeen && !used && existing.createdAt < new Date(Date.now() - 864e5);
     if (!stale) return { error: "This game was already added by another account. If it's yours, contact support." };
     await db.game.delete({ where: { id: existing.id } });
   }
@@ -225,4 +234,64 @@ export async function submitFeedback(_: FormState, f: FormData): Promise<FormSta
   if (!ok) return { error: "This game isn't ready for feedback yet." };
   revalidatePath("/play/tasks");
   return { ok: "+1 credit earned!" };
+}
+
+// ---------- community ----------
+
+export async function toggleLike(f: FormData) {
+  const user = await getUser();
+  const gameId = str(f, "gameId");
+  if (!user) redirect("/login");
+  await db.$transaction(async (tx) => {
+    const removed = await tx.like.deleteMany({ where: { userId: user.id, gameId } });
+    if (removed.count) {
+      await tx.game.update({ where: { id: gameId }, data: { likeCount: { decrement: 1 } } });
+    } else {
+      await tx.like.create({ data: { userId: user.id, gameId } });
+      await tx.game.update({ where: { id: gameId }, data: { likeCount: { increment: 1 } } });
+    }
+  });
+  revalidatePath(`/games/${gameId}`);
+  revalidatePath("/");
+}
+
+export async function addComment(_: FormState, f: FormData): Promise<FormState> {
+  const user = await getUser();
+  if (!user) return { error: "Log in to comment." };
+  const gameId = str(f, "gameId");
+  const body = str(f, "body").replace(/\s+\n/g, "\n").slice(0, COMMENT_MAX_CHARS + 1);
+  if (body.length < 2) return { error: "Write a little more." };
+  if (body.length > COMMENT_MAX_CHARS) return { error: `Keep it under ${COMMENT_MAX_CHARS} characters.` };
+  if (!(await db.game.findUnique({ where: { id: gameId }, select: { id: true } }))) return { error: "Game not found." };
+  const last = await db.comment.findFirst({ where: { userId: user.id }, orderBy: { createdAt: "desc" } });
+  if (last && Date.now() - last.createdAt.getTime() < COMMENT_COOLDOWN_MS) return { error: "Slow down a little, then try again." };
+  await db.comment.create({ data: { gameId, userId: user.id, body } });
+  revalidatePath(`/games/${gameId}`);
+  return { ok: "Posted" };
+}
+
+/** The comment's author or the game's developer can remove a comment. */
+export async function deleteComment(f: FormData) {
+  const user = await requireUser();
+  const c = await db.comment.findUnique({ where: { id: str(f, "id") }, include: { game: { select: { ownerId: true } } } });
+  if (!c || (c.userId !== user.id && c.game.ownerId !== user.id)) return;
+  await db.comment.delete({ where: { id: c.id } });
+  revalidatePath(`/games/${c.gameId}`);
+}
+
+export async function toggleCommentLike(f: FormData) {
+  const user = await getUser();
+  const c = await db.comment.findUnique({ where: { id: str(f, "id") }, select: { id: true, gameId: true, userId: true } });
+  if (!c) return;
+  if (!user) redirect("/login");
+  if (c.userId === user.id) return; // no liking your own comment
+  await db.$transaction(async (tx) => {
+    const removed = await tx.commentLike.deleteMany({ where: { userId: user.id, commentId: c.id } });
+    if (removed.count) await tx.comment.update({ where: { id: c.id }, data: { likeCount: { decrement: 1 } } });
+    else {
+      await tx.commentLike.create({ data: { userId: user.id, commentId: c.id } });
+      await tx.comment.update({ where: { id: c.id }, data: { likeCount: { increment: 1 } } });
+    }
+  });
+  revalidatePath(`/games/${c.gameId}`);
 }

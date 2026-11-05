@@ -19,10 +19,20 @@ model User {
   robloxVerifyCode String?
   robloxVerified   Boolean    @default(false)
   createdAt        DateTime   @default(now())
+  // Invite link: /signup?ref=<referralCode>. The inviter is paid once the new user finishes a first verified play.
+  // Not @unique so `prisma db push` on deploy can add it without a data-loss prompt; codes are random and checked before use.
+  referralCode     String?
+  referredById     String?
+  referralPaid     Boolean    @default(false)
   sessions         Session[]
   games            Game[]
   payments         Payment[]
   tasks            PlayTask[]
+  likes            Like[]
+  comments         Comment[]
+  commentLikes     CommentLike[]
+
+  @@index([referralCode])
 }
 
 model Session {
@@ -49,12 +59,15 @@ model Game {
   secret         String     @unique @default(cuid())
   scriptLastSeen DateTime?
   featuredUntil  DateTime?
+  likeCount      Int        @default(0)
   createdAt      DateTime   @default(now())
   owner          User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   campaigns      Campaign[]
   tasks          PlayTask[]
   visitsLog      Visit[]
   payments       Payment[]
+  likes          Like[]
+  comments       Comment[]
 }
 
 // A dev spends credits to get N verified players. Credits are reserved up front.
@@ -79,6 +92,10 @@ model PlayTask {
   status        String    @default("PENDING") // PENDING | PLAYED | COMPLETED | EXPIRED
   playedSeconds Int       @default(0)
   lastPingAt    DateTime?
+  // How the playtime was confirmed: SCRIPT (in-game tracker, strongest) or PRESENCE (Roblox online status, no script needed)
+  verifiedBy    String?
+  // Last time we asked Roblox's presence API about this player (presence mode only)
+  presenceCheckedAt DateTime?
   rating        Int?
   feedback      String?
   createdAt     DateTime  @default(now())
@@ -122,4 +139,41 @@ model Payment {
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   game        Game?    @relation(fields: [gameId], references: [id], onDelete: SetNull)
+}
+
+// Community: anyone with an account can like a game and comment on it.
+model Like {
+  userId    String
+  gameId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([userId, gameId])
+  @@index([gameId, createdAt])
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  gameId    String
+  userId    String
+  body      String
+  likeCount Int           @default(0)
+  createdAt DateTime      @default(now())
+  game      Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes     CommentLike[]
+
+  @@index([gameId, createdAt])
+  @@index([userId])
+}
+
+model CommentLike {
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
 }

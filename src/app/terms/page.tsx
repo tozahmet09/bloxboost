@@ -24,15 +24,17 @@ export default function Terms() {
         <li>You earn credits by playing other games for 10 minutes and leaving an honest review, or you buy them.</li>
         <li>Credits have no cash value, can&apos;t be transferred or exchanged for Robux or money, and don&apos;t expire.</li>
         <li>Credits reserved for a campaign come back to you if you stop it before they are used.</li>
+        <li>Before posting your own game you play and review 3 other games (fewer while the site has fewer games).</li>
+        <li>Invite bonus: a friend who joins with your link gets 5 credits, and you get 5 when they finish their first verified play. Inviting yourself or alt accounts voids the bonus.</li>
       </ul>
 
       <h2>Fair play</h2>
       <p>To keep players real, these are not allowed and can lead to removing credits or closing the account:</p>
       <ul>
         <li>Alt accounts, bots, scripts or anything that fakes playtime or reviews.</li>
-        <li>Changing the tracker script to report players who did not play.</li>
+        <li>Changing the playtime check script to report players who did not play.</li>
         <li>Paying or rewarding people outside BloxBoost to play through it.</li>
-        <li>Copy-paste, spam or abusive reviews.</li>
+        <li>Copy-paste, spam or abusive reviews or comments, and trading or buying likes.</li>
       </ul>
 
       <h2>Your games and trailers</h2>
@@ -41,6 +43,7 @@ export default function Terms() {
         <li>Trailers must show the real game and be content you have the right to use.</li>
         <li>Games and trailers must be suitable for all ages and follow Roblox community standards. We may remove anything that isn&apos;t.</li>
         <li>You let us show your game&apos;s name, icon and trailer on BloxBoost to promote it.</li>
+        <li>Comments and likes are public. Developers can delete comments on their own games, and we may remove anything that breaks these rules.</li>
       </ul>
 
       <h2>Purchases</h2>

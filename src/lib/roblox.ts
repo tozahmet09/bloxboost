@@ -69,3 +69,31 @@ export async function robloxProfileDescription(userId: string): Promise<string> 
   const u = await getJson(`https://users.roblox.com/v1/users/${userId}`);
   return u.description ?? "";
 }
+
+export type Presence = { inGame: boolean; universeId: string | null };
+
+/**
+ * Online status of up to 50 users from Roblox's public presence API (no login needed).
+ * Without a Roblox login cookie Roblox only says "in a game", not which one, so universeId is
+ * usually null. If Roblox does return it, we use it to make sure it's the right game.
+ */
+export async function fetchPresence(userIds: string[]): Promise<Map<string, Presence>> {
+  const out = new Map<string, Presence>();
+  if (!userIds.length) return out;
+  const r = await fetch("https://presence.roblox.com/v1/presence/users", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ userIds: userIds.slice(0, 50).map(Number) }),
+    cache: "no-store",
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!r.ok) throw new Error(`Roblox presence API ${r.status}`);
+  const data = (await r.json()).userPresences ?? [];
+  for (const p of data) {
+    out.set(String(p.userId), {
+      inGame: p.userPresenceType === 2,
+      universeId: p.universeId ? String(p.universeId) : null,
+    });
+  }
+  return out;
+}
