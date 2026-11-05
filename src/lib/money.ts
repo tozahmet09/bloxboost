@@ -35,3 +35,10 @@ export const GOAL_PLAYERS = 100;
 /** Early-bird bonus: the first developers to sign up start with free credits so the swap has players from day one. */
 export const EARLY_BIRD_ACCOUNTS = 30;
 export const EARLY_BIRD_CREDITS = 20;
+
+/** Community rule: play (and review) this many other games before you can post your own. */
+export const PLAYS_TO_POST = 3;
+/** Invite link bonus. The new user gets it at signup, the inviter once the new user finishes a first verified play. */
+export const REFERRAL_CREDITS = 5;
+export const COMMENT_MAX_CHARS = 500;
+export const COMMENT_COOLDOWN_MS = 20_000;

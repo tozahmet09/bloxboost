@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "crypto";
 import { db } from "./db";
 import { fetchPresence } from "./roblox";
-import { MAX_OPEN_TASKS, REQUIRED_SECONDS, SCRIPT_ALIVE_MS, TASK_TTL_HOURS, today } from "./money";
+import { MAX_OPEN_TASKS, REFERRAL_CREDITS, REQUIRED_SECONDS, SCRIPT_ALIVE_MS, TASK_TTL_HOURS, today } from "./money";
 
 const aliveSince = () => new Date(Date.now() - SCRIPT_ALIVE_MS);
 
@@ -174,7 +174,12 @@ export async function completeTask(playerId: string, taskId: string, rating: num
       where: { id: t.id },
       data: { status: "COMPLETED", rating, feedback, completedAt: new Date() },
     });
-    await tx.user.update({ where: { id: playerId }, data: { credits: { increment: 1 } } });
+    const player = await tx.user.update({ where: { id: playerId }, data: { credits: { increment: 1 } } });
+    // Invite bonus: the inviter gets paid once, when the person they invited finishes a first verified play.
+    if (player.referredById && !player.referralPaid) {
+      const claimed = await tx.user.updateMany({ where: { id: playerId, referralPaid: false }, data: { referralPaid: true } });
+      if (claimed.count) await tx.user.update({ where: { id: player.referredById }, data: { credits: { increment: REFERRAL_CREDITS } } });
+    }
     const delivered = t.campaign.delivered + 1;
     await tx.campaign.update({
       where: { id: t.campaignId },

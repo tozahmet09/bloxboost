@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { signup } from "../actions";
 import { Form } from "@/components/Form";
+import { REFERRAL_CREDITS } from "@/lib/money";
 
-export default function Signup() {
+export default async function Signup({ searchParams }: { searchParams: Promise<{ ref?: string }> }) {
+  const { ref = "" } = await searchParams;
+  const code = /^[a-z0-9]{4,12}$/i.test(ref) ? ref : "";
   return (
     <div className="mx-auto max-w-sm space-y-6 py-6">
       <div>
         <p className="eyebrow">Free account</p>
         <h1 className="mt-1 text-3xl font-extrabold">Get your game seen</h1>
       </div>
+      {code && <p className="rounded-ctl border border-marquee/40 bg-marquee/10 px-4 py-3 text-sm">A friend invited you. You start with +{REFERRAL_CREDITS} bonus credits.</p>}
       <Form action={signup} submit="Create account">
+        <input type="hidden" name="ref" value={code} />
         <div><label htmlFor="displayName" className="label">Name or studio</label><input id="displayName" name="displayName" className="input" /></div>
         <div><label htmlFor="email" className="label">Email</label><input id="email" name="email" type="email" required className="input" /></div>
         <div><label htmlFor="password" className="label">Password</label><input id="password" name="password" type="password" minLength={8} required className="input" /></div>

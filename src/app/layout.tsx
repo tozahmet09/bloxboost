@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bricolage_Grotesque, Figtree } from "next/font/google";
-import { Gamepad2, Clapperboard } from "lucide-react";
+import { Gamepad2, Trophy, Clapperboard } from "lucide-react";
 import "./globals.css";
 import { getUser } from "@/lib/auth";
 import { CreditCounter } from "@/components/CreditCounter";
@@ -30,6 +30,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Link>
             <Link href="/play" className="flex min-h-[44px] items-center gap-2 rounded-ctl px-3 text-sm text-mute hover:text-cream">
               <Gamepad2 className="h-4 w-4" /> Play &amp; earn
+            </Link>
+            <Link href="/leaderboard" className="flex min-h-[44px] items-center gap-2 rounded-ctl px-3 text-sm text-mute hover:text-cream">
+              <Trophy className="h-4 w-4" /> <span className="hidden sm:inline">Top</span><span className="sr-only sm:hidden">Leaderboards</span>
             </Link>
             <div className="ml-auto flex items-center gap-2 text-sm">
               {user ? (

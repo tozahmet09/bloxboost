@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { BadgeCheck, ChevronRight, Plus, Link2 } from "lucide-react";
+import { BadgeCheck, ChevronRight, Gift, Plus, Link2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { SCRIPT_ALIVE_MS } from "@/lib/money";
+import { REFERRAL_CREDITS, SCRIPT_ALIVE_MS } from "@/lib/money";
+import { ensureReferralCode } from "@/lib/community";
+import { CopyButton } from "@/components/CopyButton";
 import { GameIcon } from "@/components/GameIcon";
 import { GoalBar } from "@/components/GoalBar";
 
@@ -19,6 +21,13 @@ export default async function Dashboard() {
     },
   });
   const alive = Date.now() - SCRIPT_ALIVE_MS;
+  const code = await ensureReferralCode(user.id);
+  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+  const invite = `${appUrl.replace(/\/$/, "")}/signup?ref=${code}`;
+  const [invited, invitedPaid] = await Promise.all([
+    db.user.count({ where: { referredById: user.id } }),
+    db.user.count({ where: { referredById: user.id, referralPaid: true } }),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -71,6 +80,20 @@ export default async function Dashboard() {
           })}
         </ul>
       )}
+      <section className="rule space-y-3 pt-8">
+        <div className="flex items-center gap-2">
+          <Gift className="h-5 w-5 text-marquee" />
+          <h2 className="text-lg font-bold">Invite a dev friend</h2>
+        </div>
+        <p className="max-w-prose text-sm text-mute">
+          They start with +{REFERRAL_CREDITS} credits. You get +{REFERRAL_CREDITS} when they finish their first verified play.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <code className="input flex min-w-0 flex-1 items-center truncate text-sm text-cream sm:max-w-md">{invite}</code>
+          <CopyButton text={invite} label="Copy link" />
+        </div>
+        {invited > 0 && <p className="text-sm text-mute tabular-nums">{invited} joined, {invitedPaid} paid out.</p>}
+      </section>
     </div>
   );
 }
