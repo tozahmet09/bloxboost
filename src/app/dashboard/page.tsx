@@ -56,7 +56,7 @@ export default async function Dashboard() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="truncate font-semibold group-hover:text-marquee">{g.name}</span>
                       <span className={`chip ${live ? "bg-verified/10 text-verified" : "bg-marquee/10 text-marquee"}`}>
-                        <Radio className="h-3 w-3" /> {live ? "Tracker live" : "Install tracker"}
+                        <Radio className="h-3 w-3" /> {live ? "Check live" : "Add playtime check"}
                       </span>
                       {coming > 0 && <span className="text-xs text-mute">{coming} on the way</span>}
                     </div>

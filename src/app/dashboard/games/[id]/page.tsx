@@ -96,9 +96,12 @@ export default async function GamePage({
       {notice === "off" && <p className="text-sm text-mute">Spotlight purchases aren&apos;t open yet.</p>}
 
       <ol className="divide-y divide-line border-y border-line">
-        <Step n={1} title="Install the tracker" done={live}>
+        <Step n={1} title="Add the playtime check" done={live}>
           <p className="max-w-prose text-sm text-mute">
             Lets us confirm a player stayed 10 minutes. Add a <b className="text-cream">Script</b> to <b className="text-cream">ServerScriptService</b>, paste this, turn on <b className="text-cream">Allow HTTP Requests</b>, publish.
+          </p>
+          <p className="max-w-prose text-sm text-mute">
+            It only reports players who picked your game on BloxBoost. It shows no ads and gives no rewards inside your game, so it stays within Roblox&apos;s advertising rules.
           </p>
           <div className="overflow-hidden rounded-ctl border border-line">
             <pre className="max-h-40 overflow-auto bg-panel p-3 text-xs leading-relaxed text-mute">{script}</pre>
