@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { operator } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Privacy Policy · BloxBoost" };
+export const metadata: Metadata = { title: "Privacy Policy · Spawnswap" };
 
 export default function Privacy() {
   const op = operator();
@@ -13,7 +13,7 @@ export default function Privacy() {
 
       <h2>Who is responsible</h2>
       <p>
-        BloxBoost is run by {op.name ?? "an independent developer"}{op.country ? ` in ${op.country}` : ""}, who is responsible for your data
+        Spawnswap is run by {op.name ?? "an independent developer"}{op.country ? ` in ${op.country}` : ""}, who is responsible for your data
         (the &quot;data controller&quot;). You can reach us at {op.email ?? <Link href="/contact">the contact page</Link>}.
       </p>
 
@@ -22,8 +22,8 @@ export default function Privacy() {
         <li><b>Account:</b> your email, a display name and your password (stored only as a secure hash).</li>
         <li><b>Roblox account:</b> your Roblox username, user id and the date the Roblox account was created, once you link them. We read your public profile only to check the link code and to stop brand-new alt accounts from collecting invite bonuses.</li>
         <li><b>Games:</b> public info from Roblox about games you add (name, icon, player counts) and the trailer you give.</li>
-        <li><b>Trailer videos:</b> if you upload a video, it is stored with our file storage provider and shown publicly on BloxBoost.</li>
-        <li><b>Playtime:</b> if a game has the playtime check script, it reports once a minute only the players who chose that game on BloxBoost and are still in it. Other players in the server are never sent to us. For games without it, we check your public Roblox online status (whether you are in a game) about once a minute while you have a game going on BloxBoost. We only use this to count playtime for games you started on BloxBoost.</li>
+        <li><b>Trailer videos:</b> if you upload a video, it is stored with our file storage provider and shown publicly on Spawnswap.</li>
+        <li><b>Playtime:</b> if a game has the playtime check script, it reports once a minute only the players who chose that game on Spawnswap and are still in it. Other players in the server are never sent to us. For games without it, we check your public Roblox online status (whether you are in a game) about once a minute while you have a game going on Spawnswap. We only use this to count playtime for games you started on Spawnswap.</li>
         <li><b>Comments, likes and leaderboards:</b> comments you post and the games and comments you like. Your Roblox username (or display name if you haven&apos;t linked Roblox) is shown publicly next to your comments and on the leaderboards.</li>
         <li><b>Invites:</b> if you joined with someone&apos;s invite link, we store who invited you so we can give both of you the bonus.</li>
         <li><b>Reviews:</b> the rating and text you write. The game&apos;s developer sees them with your Roblox username.</li>
@@ -51,7 +51,7 @@ export default function Privacy() {
       <ul>
         <li>{op.payments}, to take payments.</li>
         <li>Our hosting, database and file storage providers (Vercel and Neon), to run the site.</li>
-        <li>Roblox, only in the sense that we ask Roblox&apos;s public APIs about the user ids and games on BloxBoost.</li>
+        <li>Roblox, only in the sense that we ask Roblox&apos;s public APIs about the user ids and games on Spawnswap.</li>
         <li>Nobody else, unless the law requires it.</li>
       </ul>
       <p>These providers may store data outside your country (for example in the United States or the EU). We only use providers that protect it with standard contractual safeguards.</p>
@@ -64,7 +64,7 @@ export default function Privacy() {
       </ul>
 
       <h2>Children</h2>
-      <p>BloxBoost is for people aged 13 and over. We don&apos;t knowingly collect data from children under 13. If you believe a child under 13 has made an account, tell us and we&apos;ll delete it.</p>
+      <p>Spawnswap is for people aged 13 and over. We don&apos;t knowingly collect data from children under 13. If you believe a child under 13 has made an account, tell us and we&apos;ll delete it.</p>
 
       <h2>Your rights</h2>
       <p>

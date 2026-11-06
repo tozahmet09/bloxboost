@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { operator } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Contact · BloxBoost" };
+export const metadata: Metadata = { title: "Contact · Spawnswap" };
 
 export default function Contact() {
   const op = operator();
@@ -26,7 +26,7 @@ export default function Contact() {
         <li>See or delete your data: write from the email on your account (see the <Link href="/privacy" className="underline">privacy policy</Link>).</li>
       </ul>
       <p className="text-sm text-mute">
-        BloxBoost is run by {op.name ?? "an independent developer"}{op.country ? `, ${op.country}` : ""}. Not affiliated with Roblox Corporation.
+        Spawnswap is run by {op.name ?? "an independent developer"}{op.country ? `, ${op.country}` : ""}. Not affiliated with Roblox Corporation.
       </p>
     </article>
   );

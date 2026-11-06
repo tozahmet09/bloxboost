@@ -10,7 +10,7 @@ const display = Bricolage_Grotesque({ subsets: ["latin"], weight: ["600", "700",
 const body = Figtree({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
-  title: "BloxBoost: new Roblox games, before they blow up",
+  title: "Spawnswap: new Roblox games, before they blow up",
   description: "Watch trailers of brand-new Roblox games. Developers: get your first 100 real players, verified in-game.",
 };
 
@@ -23,7 +23,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <nav className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-2 sm:gap-2">
             <Link href="/" className="mr-2 flex items-center gap-2 font-display text-lg font-extrabold tracking-tight">
               <span className="h-2.5 w-2.5 rounded-full bg-marquee shadow-[0_0_12px_2px_rgba(255,178,56,.55)]" aria-hidden />
-              BloxBoost
+              Spawnswap
             </Link>
             <Link href="/" className="hidden min-h-[44px] items-center gap-2 rounded-ctl px-3 text-sm text-mute hover:text-cream sm:flex">
               <Clapperboard className="h-4 w-4" /> Discover

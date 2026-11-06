@@ -12,7 +12,7 @@ export function LegalPage({ title, updated, children }: { title: string; updated
       </div>
       {children}
       <p className="rule pt-6 text-sm text-mute">
-        BloxBoost is run by {op.name ?? "an independent developer"}
+        Spawnswap is run by {op.name ?? "an independent developer"}
         {op.country ? `, ${op.country}` : ""}.{" "}
         {op.email ? (
           <>Questions: <span className="select-all text-cream">{op.email}</span></>

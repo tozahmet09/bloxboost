@@ -1,13 +1,13 @@
 /** The Luau playtime check developers paste into their game. Runs on the server only, so the secret never reaches clients. */
 export function trackerScript(appUrl: string, secret: string) {
   return `--!strict
--- BloxBoost playtime check
+-- Spawnswap playtime check
 -- 1) Put this as a Script (not LocalScript) in ServerScriptService.
 -- 2) Game Settings > Security > turn ON "Allow HTTP Requests", then publish.
 --
--- What it does: once a minute it tells BloxBoost which of the players who chose
--- your game on BloxBoost are still in this server, so their 10 minutes count.
--- It only reports players BloxBoost asked about. Other players are never sent.
+-- What it does: once a minute it tells Spawnswap which of the players who chose
+-- your game on Spawnswap are still in this server, so their 10 minutes count.
+-- It only reports players Spawnswap asked about. Other players are never sent.
 -- It shows no ads, adds no UI, and gives no Robux, items or rewards in your game.
 
 local HttpService = game:GetService("HttpService")
@@ -33,7 +33,7 @@ local function send()
 		)
 	end)
 	if not ok then
-		warn("[BloxBoost] playtime check failed: " .. tostring(res))
+		warn("[Spawnswap] playtime check failed: " .. tostring(res))
 		return
 	end
 	local decoded, data = pcall(function()

@@ -1,4 +1,4 @@
-# BloxBoost
+# Spawnswap
 
 Real, verified players for new Roblox games, without a big ad budget.
 
@@ -6,7 +6,7 @@ Real, verified players for new Roblox games, without a big ad budget.
 
 - **Ad swap:** a developer links their Roblox account, plays another dev's game for 10 minutes and leaves feedback: +1 credit.
 - **1 credit = 1 verified player.** A dev starts a campaign ("I want 50 players"), credits are reserved, and the game shows up in the *Play & earn* queue.
-- **Verification:** each game runs a small server Script (generated per game on its dashboard page) that pings `/api/track` every 60 s with the user ids in the server. Playtime only counts for players who reserved that game on BloxBoost.
+- **Verification:** each game runs a small server Script (generated per game on its dashboard page) that pings `/api/track` every 60 s with the user ids in the server. Playtime only counts for players who reserved that game on Spawnswap.
 - **Paid credit packs:** $5 = 50, $10 = 120, $20 = 300 players (Stripe Checkout).
 - **Featured slot:** $3 / 1 day, $7 / 3 days, $10 / 7 days at the top of the homepage.
 - No Robux payments.
@@ -19,7 +19,7 @@ Needs a Postgres database (a free one from [neon.tech](https://neon.tech) works)
 npm install
 cp .env.example .env   # then paste your DATABASE_URL
 npm run db:push
-npm run db:seed     # optional demo data: demo@bloxboost.dev / demo12345
+npm run db:seed     # optional demo data: demo@spawnswap.dev / demo12345
 npm run dev
 ```
 

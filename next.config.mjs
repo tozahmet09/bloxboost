@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const securityHeaders = [
-  // Nobody can put BloxBoost inside a frame on their site (stops click-jacking tricks on Buy / Log in).
+  // Nobody can put Spawnswap inside a frame on their site (stops click-jacking tricks on Buy / Log in).
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
   { key: "X-Content-Type-Options", value: "nosniff" },

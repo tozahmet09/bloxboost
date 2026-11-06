@@ -5,7 +5,7 @@
 | Name | Needed | What |
 |---|---|---|
 | `DATABASE_URL` | yes | Neon connection string (already set) |
-| `APP_URL` | yes | The live address, e.g. `https://bloxboost.vercel.app` (Stripe redirects + tracker script URL) |
+| `APP_URL` | yes | The live address, e.g. `https://your-site.vercel.app` (Stripe redirects + tracker script URL) |
 | `VISITOR_SALT` | yes | Any long random text. Without it visit hashes use a public default |
 | `CONTACT_EMAIL` | yes | Support email shown on Contact / Terms / Privacy / Refund. Payment providers check this |
 | `OPERATOR_NAME`, `OPERATOR_COUNTRY` | yes | Who runs the site, for the legal pages and governing law |

@@ -75,7 +75,7 @@ export async function startRobloxLink(_: FormState, f: FormData): Promise<FormSt
       robloxUserId: null, // set only after verification (field is unique)
       robloxUsername: `${u.name}#${u.id}`,
       robloxVerified: false,
-      robloxVerifyCode: `bloxboost-${randomBytes(3).toString("hex")}`,
+      robloxVerifyCode: `spawnswap-${randomBytes(3).toString("hex")}`,
     },
   });
   revalidatePath("/dashboard/roblox");
