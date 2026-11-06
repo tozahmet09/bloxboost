@@ -40,5 +40,9 @@ export const EARLY_BIRD_CREDITS = 20;
 export const PLAYS_TO_POST = 3;
 /** Invite link bonus. The new user gets it at signup, the inviter once the new user finishes a first verified play. */
 export const REFERRAL_CREDITS = 5;
+/** Anti-abuse: an inviter can collect the invite bonus this many times at most. */
+export const REFERRAL_MAX_PAID = 50;
+/** Anti-abuse: the invited player's Roblox account must be at least this old for the inviter to get the bonus. */
+export const REFERRAL_MIN_ROBLOX_AGE_DAYS = 30;
 export const COMMENT_MAX_CHARS = 500;
 export const COMMENT_COOLDOWN_MS = 20_000;
