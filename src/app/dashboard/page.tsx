@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { BadgeCheck, ChevronRight, Gift, Plus, Link2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -22,7 +23,8 @@ export default async function Dashboard() {
   });
   const alive = Date.now() - SCRIPT_ALIVE_MS;
   const code = await ensureReferralCode(user.id);
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+  const h = await headers();
+  const appUrl = process.env.APP_URL || `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
   const invite = `${appUrl.replace(/\/$/, "")}/signup?ref=${code}`;
   const [invited, invitedPaid] = await Promise.all([
     db.user.count({ where: { referredById: user.id } }),
