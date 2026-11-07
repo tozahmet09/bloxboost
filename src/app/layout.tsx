@@ -65,6 +65,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <span>Not affiliated with Roblox Corporation.</span>
           <Link href="/terms" className="hover:text-cream">Terms</Link>
           <Link href="/privacy" className="hover:text-cream">Privacy</Link>
+          <Link href="/privacy#cookies" className="hover:text-cream">Cookies</Link>
+          <Link href="/refund" className="hover:text-cream">Refunds</Link>
+          <Link href="/contact" className="hover:text-cream">Contact</Link>
+          <span>For ages 13+.</span>
         </footer>
       </body>
     </html>

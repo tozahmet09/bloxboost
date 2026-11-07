@@ -18,6 +18,8 @@ model User {
   robloxUsername   String?
   robloxVerifyCode String?
   robloxVerified   Boolean    @default(false)
+  // When the linked Roblox account was made. Brand-new Roblox accounts don't earn invite bonuses (stops alt farming).
+  robloxCreatedAt  DateTime?
   createdAt        DateTime   @default(now())
   // Invite link: /signup?ref=<referralCode>. The inviter is paid once the new user finishes a first verified play.
   // Not @unique so `prisma db push` on deploy can add it without a data-loss prompt; codes are random and checked before use.
@@ -176,4 +178,13 @@ model CommentLike {
   comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@id([userId, commentId])
+}
+
+// One row per attempt for simple rate limits (login, signup, Roblox lookups). Old rows are cleaned up as we go.
+model RateHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }

@@ -65,9 +65,10 @@ export async function lookupRobloxUser(username: string): Promise<{ id: string; 
 }
 
 /** Profile "About" text, used to verify account ownership with a one-time code. */
-export async function robloxProfileDescription(userId: string): Promise<string> {
-  const u = await getJson(`https://users.roblox.com/v1/users/${userId}`);
-  return u.description ?? "";
+export async function robloxProfile(userId: string): Promise<{ description: string; created: Date | null }> {
+  const u = await getJson(`https://users.roblox.com/v1/users/${encodeURIComponent(userId)}`);
+  const created = u.created ? new Date(u.created) : null;
+  return { description: u.description ?? "", created: created && !isNaN(created.getTime()) ? created : null };
 }
 
 export type Presence = { inGame: boolean; universeId: string | null };

@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
 import { createSession, getUser, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
-import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfileDescription } from "@/lib/roblox";
+import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfile } from "@/lib/roblox";
+import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { completeTask, startTask } from "@/lib/credits";
 import { del } from "@vercel/blob";
 import { isOwnUpload, parseTrailer } from "@/lib/trailer";
@@ -15,6 +16,7 @@ import { postingRequirement } from "@/lib/community";
 export type FormState = { error?: string; ok?: string } | undefined;
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
+const TOO_FAST = "Too many tries. Wait a few minutes and try again.";
 
 // ---------- accounts ----------
 
@@ -25,6 +27,8 @@ export async function signup(_: FormState, f: FormData): Promise<FormState> {
   if (!/^\S+@\S+\.\S+$/.test(email)) return { error: "Enter a valid email." };
   if (password.length < 8) return { error: "Password must be at least 8 characters." };
   if (f.get("agree") !== "on") return { error: "Please confirm you're 13 or older and accept the Terms." };
+  if (email.length > 200 || displayName.length > 40) return { error: "That's too long." };
+  if (!(await rateLimit(`signup:${await clientIp()}`, 5, 3600e3))) return { error: TOO_FAST };
   if (await db.user.findUnique({ where: { email } })) return { error: "That email is already registered." };
   const passwordHash = await hashPassword(password);
   const ref = str(f, "ref").toLowerCase();
@@ -40,6 +44,10 @@ export async function signup(_: FormState, f: FormData): Promise<FormState> {
 
 export async function login(_: FormState, f: FormData): Promise<FormState> {
   const email = str(f, "email").toLowerCase();
+  const ip = await clientIp();
+  // Slow down password guessing, per address and per account.
+  if (!(await rateLimit(`login-ip:${ip}`, 20, 15 * 60e3)) || !(await rateLimit(`login:${email}`, 8, 15 * 60e3)))
+    return { error: TOO_FAST };
   const user = await db.user.findUnique({ where: { email } });
   if (!user || !(await verifyPassword(str(f, "password"), user.passwordHash)))
     return { error: "Wrong email or password." };
@@ -51,6 +59,7 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
 
 export async function startRobloxLink(_: FormState, f: FormData): Promise<FormState> {
   const user = await requireUser();
+  if (!(await rateLimit(`roblox:${user.id}`, 10, 10 * 60e3))) return { error: TOO_FAST };
   let u;
   try {
     u = await lookupRobloxUser(str(f, "username"));
@@ -78,10 +87,14 @@ export async function verifyRobloxLink(_: FormState): Promise<FormState> {
   if (!user.robloxUsername || !user.robloxVerifyCode) return { error: "Enter your username first." };
   const [name, id] = user.robloxUsername.split("#");
   const skip = process.env.NODE_ENV !== "production" && process.env.ROBLOX_VERIFY_SKIP === "1";
+  if (!(await rateLimit(`roblox:${user.id}`, 10, 10 * 60e3))) return { error: TOO_FAST };
+  let robloxCreatedAt: Date | null = null;
   if (!skip) {
     let about = "";
     try {
-      about = await robloxProfileDescription(id);
+      const p = await robloxProfile(id);
+      about = p.description;
+      robloxCreatedAt = p.created;
     } catch {
       return { error: "Couldn't reach Roblox. Try again in a minute." };
     }
@@ -93,7 +106,7 @@ export async function verifyRobloxLink(_: FormState): Promise<FormState> {
     db.user.updateMany({ where: { robloxUserId: id, NOT: { id: user.id } }, data: { robloxUserId: null } }),
     db.user.update({
       where: { id: user.id },
-      data: { robloxUserId: id, robloxUsername: name, robloxVerified: true, robloxVerifyCode: null },
+      data: { robloxUserId: id, robloxUsername: name, robloxVerified: true, robloxVerifyCode: null, robloxCreatedAt },
     }),
   ]);
   redirect("/play");
@@ -105,6 +118,7 @@ export async function addGame(_: FormState, f: FormData): Promise<FormState> {
   const user = await requireUser();
   const placeId = parsePlaceId(str(f, "placeUrl"));
   if (!placeId) return { error: "Paste a Roblox game link like https://www.roblox.com/games/123456789/My-Game" };
+  if (!(await rateLimit(`addgame:${user.id}`, 10, 3600e3))) return { error: TOO_FAST };
 
   const existing = await db.game.findUnique({ where: { placeId } });
   if (existing?.ownerId === user.id) redirect(`/dashboard/games/${existing.id}`);
@@ -149,9 +163,9 @@ export async function createCampaign(_: FormState, f: FormData): Promise<FormSta
   const n = parseInt(str(f, "players"), 10);
   if (!(n >= 1 && n <= 10000)) return { error: "Choose between 1 and 10,000 players." };
   const ok = await db.$transaction(async (tx) => {
-    const u = await tx.user.findUnique({ where: { id: user.id } });
-    if (!u || u.credits < n) return false;
-    await tx.user.update({ where: { id: user.id }, data: { credits: { decrement: n } } });
+    // Take the credits only if they are still there, in one step, so two clicks at once can't spend them twice.
+    const paid = await tx.user.updateMany({ where: { id: user.id, credits: { gte: n } }, data: { credits: { decrement: n } } });
+    if (!paid.count) return false;
     await tx.campaign.create({ data: { gameId: game.id, targetPlayers: n } });
     return true;
   });
@@ -175,10 +189,12 @@ export async function cancelCampaign(f: FormData) {
     if (!c || !["ACTIVE", "PAUSED"].includes(c.status)) return;
     const open = await tx.playTask.count({ where: { campaignId: c.id, status: { in: ["PENDING", "PLAYED"] } } });
     const refund = Math.max(0, c.targetPlayers - c.delivered - open);
-    await tx.campaign.update({
-      where: { id: c.id },
+    // Only the first of two simultaneous cancels gets to refund.
+    const cancelled = await tx.campaign.updateMany({
+      where: { id: c.id, status: { in: ["ACTIVE", "PAUSED"] } },
       data: { status: "CANCELLED", targetPlayers: c.delivered + open },
     });
+    if (!cancelled.count) return;
     await tx.user.update({ where: { id: user.id }, data: { credits: { increment: refund } } });
   });
   revalidatePath("/dashboard");
@@ -242,6 +258,7 @@ export async function toggleLike(f: FormData) {
   const user = await getUser();
   const gameId = str(f, "gameId");
   if (!user) redirect("/login");
+  if (!(await db.game.findUnique({ where: { id: gameId }, select: { id: true } }))) return;
   await db.$transaction(async (tx) => {
     const removed = await tx.like.deleteMany({ where: { userId: user.id, gameId } });
     if (removed.count) {
