@@ -99,7 +99,7 @@ function Media({ game, active }: { game: TrailerGame; active: boolean }) {
 
 function Meta({ game }: { game: TrailerGame }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-mute">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-mute">
       <span>{game.genre}</span>
       <span aria-hidden>·</span>
       <span className="inline-flex items-center gap-1 tabular-nums">
@@ -142,7 +142,7 @@ export function TrailerCard({ game, featured }: { game: TrailerGame; featured?: 
         </span>
       </div>
       <div className="mt-2.5 space-y-0.5">
-        <div className="truncate font-semibold group-hover:text-marquee">{game.name}</div>
+        <div className="truncate text-sm font-semibold group-hover:text-marquee">{game.name}</div>
         <Meta game={game} />
       </div>
     </a>
