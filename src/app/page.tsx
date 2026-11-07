@@ -51,7 +51,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         <div>
           <p className="eyebrow">Now showing</p>
           <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-5xl">New Roblox games, before they blow up.</h1>
-          <p className="mt-2 max-w-xl text-mute">Watch trailers, play, like the ones you love. Devs play each other&apos;s games and help them grow.</p>
+          <p className="mt-2 max-w-xl text-mute">Watch trailers, play, like the ones you love. Devs play each other&apos;s games and help them grow. <Link href="/how-it-works" className="text-cream underline">How it works</Link></p>
         </div>
         <Link href="/signup" className="group flex items-center gap-1 text-sm text-mute hover:text-cream">
           Made a game? Get players <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
@@ -106,7 +106,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         <div>
           <p className="eyebrow">For developers</p>
           <h2 className="mt-1 text-2xl font-bold">Your first 100 real players.</h2>
-          <Link href="/signup" className="btn mt-5">Get players</Link>
+          <p className="mt-2 text-sm text-mute">Play other games to earn credits. Each credit brings one real player to yours.</p>
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <Link href="/signup" className="btn">Get players</Link>
+            <Link href="/how-it-works" className="text-sm text-mute underline hover:text-cream">How it works</Link>
+          </div>
         </div>
         <ol className="grid gap-6 sm:grid-cols-3">
           {[
