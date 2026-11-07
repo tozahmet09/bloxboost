@@ -15,11 +15,13 @@ export const dynamic = "force-dynamic";
  *   charge.dispute.created
  */
 export async function POST(req: NextRequest) {
-  if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) return NextResponse.json({ ok: false }, { status: 400 });
+  // Trim: a secret pasted into Vercel with a stray space or newline would fail every signature check.
+  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+  if (!stripe || !secret) return NextResponse.json({ ok: false }, { status: 400 });
   const body = await req.text();
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, req.headers.get("stripe-signature") ?? "", process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(body, req.headers.get("stripe-signature") ?? "", secret);
   } catch {
     return NextResponse.json({ error: "bad signature" }, { status: 400 });
   }

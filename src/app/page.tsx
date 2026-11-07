@@ -79,7 +79,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
             <h2 className="text-xl font-bold">Most liked this week</h2>
             <Link href="/leaderboard" className="flex items-center gap-1.5 text-sm text-mute hover:text-cream"><Trophy className="h-4 w-4" /> Leaderboards</Link>
           </div>
-          <div className="grid gap-x-4 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
             {hot.map((g) => <TrailerCard key={g.id} game={g} />)}
           </div>
         </section>
@@ -96,7 +96,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         {fresh.length === 0 ? (
           <p className="text-mute">Nothing here yet. <Link href="/signup" className="text-marquee underline">Add the first game</Link>.</p>
         ) : (
-          <div className="grid gap-x-4 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
             {fresh.map((g) => <TrailerCard key={g.id} game={g} />)}
           </div>
         )}
