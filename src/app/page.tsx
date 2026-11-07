@@ -21,8 +21,8 @@ const toCard = (g: Row): TrailerGame => ({
   likes: g.likeCount,
 });
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
-  const { sort } = await searchParams;
+export default async function Home({ searchParams }: { searchParams: Promise<{ sort?: string; deleted?: string }> }) {
+  const { sort, deleted } = await searchParams;
   const now = new Date();
   // "Most liked this week", falling back to all-time while the site is quiet.
   let hot = (await topGames(6, 7)).map(toCard);
@@ -47,6 +47,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   return (
     <div className="space-y-12">
+      {deleted && <p role="status" className="rounded-ctl border border-line px-4 py-3 text-sm text-mute">Your account was deleted.</p>}
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Now showing</p>

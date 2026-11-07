@@ -58,7 +58,7 @@ export default function Terms() {
 
       <h2>Closing accounts</h2>
       <ul>
-        <li>You can ask us to delete your account at any time.</li>
+        <li>You can delete your account at any time in Account settings, or ask us to do it.</li>
         <li>We may suspend or close an account that breaks these terms, and remove credits that were earned by cheating. Credits you bought and haven&apos;t used are refunded unless they were bought to cheat.</li>
       </ul>
 

@@ -69,7 +69,7 @@ export default function Privacy() {
       <h2>Your rights</h2>
       <p>
         You can ask us to show you a copy of your data, correct it, delete it, or stop using it, and to send it to you in a common format.
-        Write to us and we&apos;ll answer within 30 days. Deleting your account removes your account, games, comments and reviews
+        Write to us and we&apos;ll answer within 30 days. You can delete your account yourself under My games &gt; <Link href="/dashboard/account">Account settings</Link>. Deleting your account removes your account, games, comments and reviews
         (payment records we must keep by law stay). If you think we handled your data wrongly, you can also complain to the data protection
         authority in your country.
       </p>

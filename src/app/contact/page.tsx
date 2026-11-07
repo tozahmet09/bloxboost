@@ -23,7 +23,8 @@ export default function Contact() {
         <li>Refunds and payments: say which purchase it is (see the <Link href="/refund" className="underline">refund policy</Link>).</li>
         <li>Someone else added your game: send the game link and proof you own it.</li>
         <li>Report a comment, trailer or cheating account: send the page link.</li>
-        <li>See or delete your data: write from the email on your account (see the <Link href="/privacy" className="underline">privacy policy</Link>).</li>
+        <li>Delete your account: do it yourself in <Link href="/dashboard/account" className="underline">Account settings</Link>.</li>
+        <li>See a copy of your data: write from the email on your account (see the <Link href="/privacy" className="underline">privacy policy</Link>).</li>
       </ul>
       <p className="text-sm text-mute">
         Spawnswap is run by {op.name ?? "an independent developer"}{op.country ? `, ${op.country}` : ""}. Not affiliated with Roblox Corporation.
