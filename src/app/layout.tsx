@@ -70,7 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10">{children}</main>
-        <footer className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 px-4 pb-10 pt-6 text-xs text-mute/70">
+        <footer className="mx-auto flex max-w-6xl flex-wrap gap-x-5 gap-y-2 px-4 pb-10 pt-6 text-xs text-mute">
           <span>Not affiliated with Roblox Corporation.</span>
           <Link href="/how-it-works" className="hover:text-cream">How it works</Link>
           <Link href="/terms" className="hover:text-cream">Terms</Link>

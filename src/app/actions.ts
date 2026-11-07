@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
-import { createSession, getUser, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
+import { createSession, destroySession, getUser, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfile } from "@/lib/roblox";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { completeTask, startTask } from "@/lib/credits";
@@ -53,6 +53,56 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
     return { error: "Wrong email or password." };
   await createSession(user.id);
   redirect("/dashboard");
+}
+
+/**
+ * The user deletes their own account. Their games, likes, comments and open plays are removed.
+ * Payment rows stay (tax law), so the user row is kept but wiped: no email, name, password or Roblox link left.
+ * Finished plays stay as anonymous counts so other developers' player totals don't drop, but the review text goes.
+ */
+export async function deleteAccount(_: FormState, f: FormData): Promise<FormState> {
+  const user = await requireUser();
+  if (!(await rateLimit(`delete:${user.id}`, 5, 15 * 60e3))) return { error: TOO_FAST };
+  if (!(await verifyPassword(str(f, "password"), user.passwordHash))) return { error: "Wrong password." };
+  if (f.get("confirm") !== "on") return { error: "Tick the box to confirm." };
+
+  const games = await db.game.findMany({ where: { ownerId: user.id }, select: { id: true, trailerUrl: true } });
+  const lockedPassword = await hashPassword(randomBytes(32).toString("hex"));
+  await db.$transaction(async (tx) => {
+    // Likes are also stored as counters on the game or comment, so take this user's likes off those first.
+    const likes = await tx.like.findMany({ where: { userId: user.id }, select: { gameId: true } });
+    if (likes.length) await tx.game.updateMany({ where: { id: { in: likes.map((l) => l.gameId) } }, data: { likeCount: { decrement: 1 } } });
+    const commentLikes = await tx.commentLike.findMany({ where: { userId: user.id }, select: { commentId: true } });
+    if (commentLikes.length)
+      await tx.comment.updateMany({ where: { id: { in: commentLikes.map((l) => l.commentId) } }, data: { likeCount: { decrement: 1 } } });
+    await tx.like.deleteMany({ where: { userId: user.id } });
+    await tx.commentLike.deleteMany({ where: { userId: user.id } });
+    await tx.comment.deleteMany({ where: { userId: user.id } });
+    // Unfinished plays free their slot for someone else; finished ones lose the review text and Roblox id.
+    await tx.playTask.deleteMany({ where: { playerId: user.id, status: { not: "COMPLETED" } } });
+    await tx.playTask.updateMany({ where: { playerId: user.id }, data: { feedback: null, robloxUserId: "deleted" } });
+    await tx.game.deleteMany({ where: { ownerId: user.id } }); // also removes their campaigns, plays, visits, likes and comments
+    await tx.session.deleteMany({ where: { userId: user.id } });
+    await tx.user.update({
+      where: { id: user.id },
+      data: {
+        email: `deleted-${user.id}@deleted.invalid`,
+        displayName: "Deleted user",
+        passwordHash: lockedPassword,
+        credits: 0,
+        robloxUserId: null,
+        robloxUsername: null,
+        robloxVerifyCode: null,
+        robloxVerified: false,
+        robloxCreatedAt: null,
+        referralCode: null,
+      },
+    });
+  });
+  if (process.env.BLOB_READ_WRITE_TOKEN)
+    for (const g of games) if (isOwnUpload(g.trailerUrl, g.id)) await del(g.trailerUrl!).catch(() => {});
+  await destroySession();
+  redirect("/?deleted=1");
 }
 
 // ---------- Roblox account linking ----------

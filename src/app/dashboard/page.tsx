@@ -96,6 +96,10 @@ export default async function Dashboard() {
         </div>
         {invited > 0 && <p className="text-sm text-mute tabular-nums">{invited} joined, {invitedPaid} paid out.</p>}
       </section>
+
+      <p className="text-sm">
+        <Link href="/dashboard/account" className="text-mute underline hover:text-cream">Account settings</Link>
+      </p>
     </div>
   );
 }
