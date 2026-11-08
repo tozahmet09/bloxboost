@@ -76,22 +76,32 @@ export function stillOf(game: TrailerGame) {
   return game.thumb ?? (t?.kind === "youtube" ? `https://i.ytimg.com/vi/${t.id}/maxresdefault.jpg` : null);
 }
 
+/** Fades in once loaded. Loaded-ness lives in state (not a DOM class) so re-renders can't hide it again. */
+function Still({ src, priority }: { src: string; priority?: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+      loading={priority ? "eager" : "lazy"}
+      onLoad={() => setLoaded(true)}
+      ref={(el) => { if (el?.complete && el.naturalWidth && !loaded) setLoaded(true); }}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 export function Media({ game, active, priority }: { game: TrailerGame; active: boolean; priority?: boolean }) {
   const t = game.trailer;
   const still = stillOf(game);
   return (
     <>
       {still ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={still}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 [&.in]:opacity-100"
-          loading={priority ? "eager" : "lazy"}
-          onLoad={(e) => e.currentTarget.classList.add("in")}
-          ref={(el) => { if (el?.complete && el.naturalWidth) el.classList.add("in"); }}
-          onError={(e) => (e.currentTarget.hidden = true)}
-        />
+        <Still src={still} priority={priority} />
       ) : t?.kind === "video" ? (
         // Uploaded trailer and no screenshot: its first frame is the still.
         <video className="absolute inset-0 h-full w-full object-cover" src={`${t.src}#t=0.1`} muted playsInline preload="metadata" />
