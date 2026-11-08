@@ -9,6 +9,7 @@ import { isVerifiedGame } from "@/lib/credits";
 import { publicName } from "@/lib/community";
 import { deleteComment, toggleCommentLike, toggleLike } from "@/app/actions";
 import { GameIcon } from "@/components/GameIcon";
+import { displayName, gameThumbnails } from "@/lib/thumbs";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm } from "@/components/CommentForm";
 
@@ -19,7 +20,7 @@ const nameSel = { displayName: true, robloxUsername: true, robloxVerified: true 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const g = await db.game.findUnique({ where: { id }, select: { name: true, description: true } });
-  return g ? { title: `${g.name}`, description: g.description.slice(0, 160) } : {};
+  return g ? { title: displayName(g.name), description: g.description.slice(0, 160) } : {};
 }
 
 function ago(d: Date) {
@@ -37,13 +38,14 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
   const game = await db.game.findUnique({
     where: { id },
     select: {
-      id: true, name: true, description: true, genre: true, playing: true, visits: true, iconUrl: true, trailerUrl: true,
+      id: true, name: true, description: true, universeId: true, genre: true, playing: true, visits: true, iconUrl: true, trailerUrl: true,
       scriptLastSeen: true, likeCount: true, ownerId: true,
       owner: { select: nameSel },
       comments: { orderBy: [{ likeCount: "desc" }, { createdAt: "desc" }], take: 100, include: { user: { select: { id: true, ...nameSel } } } },
     },
   });
   if (!game) notFound();
+  game.name = displayName(game.name);
   const [stats, liked, myCommentLikes] = await Promise.all([
     db.playTask.aggregate({ where: { gameId: id, status: "COMPLETED" }, _count: { id: true }, _avg: { rating: true } }),
     user ? db.like.findUnique({ where: { userId_gameId: { userId: user.id, gameId: id } } }) : null,
@@ -51,11 +53,13 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
   ]);
   const likedComments = new Set(myCommentLikes.map((c) => c.commentId));
   const t = parseTrailer(game.trailerUrl);
+  const thumb = t ? null : (await gameThumbnails([game.universeId])).get(game.universeId ?? "") ?? null;
   const isOwner = user?.id === game.ownerId;
 
   return (
     <div className="space-y-10">
-      <div className="relative aspect-video overflow-hidden rounded-media bg-panel lg:aspect-[21/8]">
+      {/* Same view-transition name as the homepage card, so the card grows into this player. */}
+      <div className="relative aspect-video overflow-hidden rounded-media bg-panel shadow-lift lg:aspect-[21/8]" style={{ viewTransitionName: `game-${game.id}` }}>
         {t?.kind === "youtube" ? (
           <iframe
             className="absolute inset-0 h-full w-full"
@@ -66,6 +70,9 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
           />
         ) : t?.kind === "video" ? (
           <video className="absolute inset-0 h-full w-full object-cover" src={t.src} controls muted playsInline preload="metadata" />
+        ) : thumb ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={thumb} alt={`${game.name} screenshot`} className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <GameIcon url={game.iconUrl} className="aspect-square h-1/3 rounded-ctl" />

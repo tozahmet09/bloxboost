@@ -20,19 +20,29 @@ export default {
         danger: "#ff8fa3",
       },
       fontFamily: {
-        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
         body: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
-      borderRadius: { media: "12px", ctl: "10px" },
+      boxShadow: {
+        // Two layers (tight contact + wide soft) so raised things feel physically above the page.
+        lift: "0 1px 2px rgba(0,0,0,.35), 0 18px 40px -12px rgba(0,0,0,.65)",
+      },
+      borderRadius: { media: "12px", ctl: "10px" }, // concentric: inner radius = outer radius minus the padding between them
       keyframes: {
         rise: { "0%": { opacity: "0", transform: "translateY(8px) scale(.9)" }, "20%": { opacity: "1", transform: "translateY(0) scale(1.08)" }, "100%": { opacity: "0", transform: "translateY(-36px) scale(1)" } },
         pop: { "0%": { transform: "scale(1)" }, "40%": { transform: "scale(1.18)" }, "100%": { transform: "scale(1)" } },
+        fade: { "0%": { opacity: "0" }, "100%": { opacity: "1" } },
+        "rise-in": { "0%": { opacity: "0", transform: "translateY(10px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
+        fill: { "0%": { width: "0%" }, "100%": { width: "100%" } },
         spark: { "0%": { opacity: "1", transform: "translate(0,0) scale(1)" }, "100%": { opacity: "0", transform: "translate(var(--dx),var(--dy)) scale(.4)" } },
       },
       animation: {
         rise: "rise 1.6s ease-out forwards",
         pop: "pop .45s ease-out",
         spark: "spark .8s ease-out forwards",
+        fade: "fade .5s ease-out both",
+        "rise-in": "rise-in .45s cubic-bezier(.2,.7,.2,1) both",
       },
     },
   },

@@ -11,7 +11,7 @@
 
 @layer base {
   body { @apply overflow-x-clip bg-navy font-body text-[15px] text-cream antialiased; }
-  h1, h2, h3 { @apply font-display tracking-[-0.02em]; text-wrap: balance; }
+  h1, h2, h3 { @apply font-display font-semibold tracking-[-0.025em]; text-wrap: balance; }
   :focus-visible { @apply outline outline-2 outline-offset-2 outline-coral; }
   ::selection { @apply bg-coral text-navy; }
 }
@@ -32,11 +32,11 @@
       placeholder:text-faint hover:border-faint focus:border-coral;
   }
   .label { @apply mb-1.5 block text-sm text-mute; }
-  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[.14em] text-faint; }
+  .eyebrow { @apply font-mono text-[11px] font-medium uppercase tracking-[.08em] text-faint; }
   .chip { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold; }
   .rule { @apply border-t border-line; }
   /* Section title row: title + one quiet line, optional text link on the right. */
-  .h-section { @apply text-lg font-bold sm:text-xl; }
+  .h-section { @apply text-lg font-semibold tracking-[-0.02em] sm:text-[22px]; }
   .sub { @apply mt-1 text-sm text-mute; }
   .link { @apply inline-flex items-center gap-1 text-sm font-medium text-mute transition hover:text-cream; }
   .link-accent { @apply inline-flex items-center gap-1 text-sm font-semibold text-coral transition hover:text-coral-deep; }
@@ -45,6 +45,11 @@
   .notice { @apply border-l-2 border-coral py-1 pl-3 text-sm text-mute; }
 }
 
+/* A game tile grows into its game page instead of a hard cut (Chrome/Edge/Safari 18+; others just navigate). */
+@view-transition { navigation: auto; }
+::view-transition-group(*) { animation-duration: 280ms; animation-timing-function: cubic-bezier(.2,.7,.2,1); }
+
 @media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
   *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
 }

@@ -28,6 +28,12 @@ export type TrailerGame = {
   rank?: number;
   /** The owner still has player slots, so playing it earns a credit. */
   earns?: boolean;
+  /** Wide 16:9 Roblox screenshot. */
+  thumb?: string | null;
+  /** One or two lines from the game's description, for the homepage hero. */
+  pitch?: string;
+  /** Gives the thumbnail a view-transition name so it grows into the game page. Only one card per game may have it. */
+  vt?: boolean;
 };
 
 function useAutoplay(id: string, t: Trailer | null) {
@@ -64,14 +70,28 @@ function useAutoplay(id: string, t: Trailer | null) {
   return { ref, active };
 }
 
-function Media({ game, active }: { game: TrailerGame; active: boolean }) {
+/** Still image for a game: the Roblox 16:9 screenshot, else the trailer's poster, else null. */
+export function stillOf(game: TrailerGame) {
   const t = game.trailer;
-  const poster = t?.kind === "youtube" ? `https://i.ytimg.com/vi/${t.id}/hqdefault.jpg` : null;
+  return game.thumb ?? (t?.kind === "youtube" ? `https://i.ytimg.com/vi/${t.id}/maxresdefault.jpg` : null);
+}
+
+export function Media({ game, active, priority }: { game: TrailerGame; active: boolean; priority?: boolean }) {
+  const t = game.trailer;
+  const still = stillOf(game);
   return (
     <>
-      {poster ? (
+      {still ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" onError={(e) => (e.currentTarget.hidden = true)} />
+        <img
+          src={still}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 [&.in]:opacity-100"
+          loading={priority ? "eager" : "lazy"}
+          onLoad={(e) => e.currentTarget.classList.add("in")}
+          ref={(el) => { if (el?.complete && el.naturalWidth) el.classList.add("in"); }}
+          onError={(e) => (e.currentTarget.hidden = true)}
+        />
       ) : (
         <>
           {game.iconUrl && (
@@ -82,7 +102,7 @@ function Media({ game, active }: { game: TrailerGame; active: boolean }) {
             {game.iconUrl ? (
               <GameIcon url={game.iconUrl} className="aspect-square h-1/2 rounded-ctl" />
             ) : (
-              <span aria-hidden className="line-clamp-2 select-none px-4 text-center font-display leading-[.95] text-[clamp(18px,1.9vw,26px)] font-bold tracking-[-0.03em] text-white/[.07]">{game.name}</span>
+              <span aria-hidden className="line-clamp-2 select-none px-4 text-center font-display text-[clamp(18px,1.9vw,26px)] font-bold leading-[.95] tracking-[-0.03em] text-white/[.07]">{game.name}</span>
             )}
           </div>
         </>
@@ -105,8 +125,8 @@ function Media({ game, active }: { game: TrailerGame; active: boolean }) {
 
 function Meta({ game }: { game: TrailerGame }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-faint">
-      <span>{game.genre}</span>
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-mono text-xs text-faint">
+      <span className="font-body">{game.genre}</span>
       <span aria-hidden>·</span>
       <span className="inline-flex items-center gap-1 tabular-nums">
         <Users className="h-3 w-3" /> {game.playing.toLocaleString()}
@@ -128,19 +148,26 @@ function Meta({ game }: { game: TrailerGame }) {
   );
 }
 
-/** Game tile: 16:9 trailer, title and one line of facts underneath. The thumbnail is the only shape (it is clickable). */
-export function TrailerCard({ game, href }: { game: TrailerGame; featured?: boolean; href?: string }) {
+/**
+ * Game tile: 16:9 still (trailer plays when in view), name and one line of facts underneath.
+ * The thumbnail is the only shape (it is clickable). On hover it lifts with a soft two-layer shadow.
+ * Corners are concentric: 12px tile, 6px inset, so the +1 tag gets 6px.
+ */
+export function TrailerCard({ game, href }: { game: TrailerGame; href?: string }) {
   const { ref, active } = useAutoplay(game.id, game.trailer);
   return (
     <a ref={ref} href={href ?? `/games/${game.id}`} className="group block min-w-0">
-      <div className="relative aspect-video overflow-hidden rounded-media bg-panel">
-        <div className="absolute inset-0 transition duration-300 ease-out group-hover:scale-[1.03] group-hover:brightness-110">
+      <div
+        className="relative aspect-video overflow-hidden rounded-media bg-panel transition duration-200 ease-out group-hover:-translate-y-1 group-hover:shadow-lift"
+        style={game.vt ? { viewTransitionName: `game-${game.id}` } : undefined}
+      >
+        <div className="absolute inset-0 transition duration-300 ease-out group-hover:scale-[1.04] group-hover:brightness-110">
           <Media game={game} active={active} />
         </div>
-        {game.earns && <span className="chip absolute left-2 top-2 bg-coral text-navy">+1 credit</span>}
+        {game.earns && <span className="absolute left-1.5 top-1.5 rounded-[6px] bg-coral px-1.5 py-0.5 font-mono text-[11px] font-medium text-navy">+1 credit</span>}
       </div>
-      <div className="mt-2.5 flex gap-2">
-        {game.rank && <span className="font-display text-sm font-bold tabular-nums text-faint">{game.rank}</span>}
+      <div className="mt-2.5 flex gap-2.5">
+        {game.rank && <span className="font-mono text-lg leading-none tabular-nums text-faint">{game.rank}</span>}
         <div className="min-w-0 space-y-0.5">
           <div className="truncate text-sm font-semibold transition group-hover:text-coral">{game.name}</div>
           <Meta game={game} />
@@ -150,31 +177,119 @@ export function TrailerCard({ game, href }: { game: TrailerGame; featured?: bool
   );
 }
 
-/** One big featured trailer. The gradient at the bottom only exists to keep the title readable. */
-export function Spotlight({ game }: { game: TrailerGame }) {
-  const { ref, active } = useAutoplay(game.id, game.trailer);
-  return (
-    <a ref={ref} href={`/games/${game.id}`} className="group relative block overflow-hidden rounded-media bg-panel">
-      <div className="relative aspect-video lg:aspect-[21/8]">
-        <Media game={game} active={active} />
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy/95 via-navy/50 to-transparent px-4 pb-4 pt-20 sm:px-6 sm:pb-6">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="min-w-0">
-              <p className="eyebrow text-mute">Featured</p>
-              <div className="mt-1 truncate font-display text-2xl font-bold tracking-[-0.02em] sm:text-[32px]">{game.name}</div>
-              <div className="mt-1"><Meta game={game} /></div>
-            </div>
-            <span className="btn shrink-0">
-              <Play className="h-4 w-4 fill-current" /> Watch &amp; play
-            </span>
-          </div>
-        </div>
-      </div>
-    </a>
-  );
-}
-
 /** Same tile, pointing somewhere else (e.g. /play) and always showing the +1 credit tag. */
 export function EarnRow({ game, href }: { game: TrailerGame; href: string }) {
   return <TrailerCard game={{ ...game, earns: true }} href={href} />;
+}
+
+const HERO_MS = 7000;
+
+/**
+ * Full-bleed homepage hero: the featured game's trailer/screenshot IS the background (its world),
+ * a blurred copy of it tints the page behind (ambient light), one primary action, and a strip of
+ * up to 5 games on the right that rotates every 7s (pauses on hover, off with reduced motion).
+ */
+export function ImmersiveHero({ games }: { games: TrailerGame[] }) {
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const [trailerOn, setTrailerOn] = useState(false);
+  const g = games[i];
+
+  useEffect(() => setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches), []);
+  useEffect(() => {
+    if (paused || reduced || games.length < 2) return;
+    const t = setTimeout(() => setI((x) => (x + 1) % games.length), HERO_MS);
+    return () => clearTimeout(t);
+  }, [i, paused, reduced, games.length]);
+  // Start the trailer a moment after the still is shown, so switching games feels calm.
+  useEffect(() => {
+    setTrailerOn(false);
+    if (reduced) return;
+    const t = setTimeout(() => setTrailerOn(true), 900);
+    return () => clearTimeout(t);
+  }, [i, reduced]);
+
+  const still = stillOf(g);
+  const playHref = g.earns ? "/play" : `/games/${g.id}`;
+
+  return (
+    <section
+      aria-label="Featured games"
+      className="relative left-1/2 w-screen -translate-x-1/2"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Ambient light: a blurred copy of the game spills onto the page under the hero. */}
+      {still && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={`amb-${g.id}`} src={still} alt="" aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[140%] w-full animate-fade object-cover opacity-25 blur-[90px] saturate-150" />
+      )}
+      <div className="relative h-[min(78vh,560px)] min-h-[440px] overflow-hidden sm:h-[min(74vh,600px)]">
+        <div key={g.id} className="absolute inset-0 animate-fade">
+          <Media game={g} active={trailerOn} priority />
+        </div>
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/55 to-navy/0 sm:via-navy/45" />
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-navy via-navy/60 to-navy/0" />
+        <div aria-hidden className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-navy/70 to-navy/0" />
+
+        <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-10 sm:pb-14 lg:pb-16">
+          <div key={`t-${g.id}`} className="max-w-xl animate-rise-in">
+            <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[.06em] text-cream/80">
+              <span className="h-1.5 w-1.5 rounded-full bg-verified" aria-hidden />
+              {g.playing.toLocaleString()} playing now · {g.genre}
+            </p>
+            <h1 className="mt-3 text-[36px] font-semibold leading-[1] tracking-[-0.04em] sm:text-[48px]">
+              <a href={`/games/${g.id}`} className="transition hover:text-cream/85">{g.name}</a>
+            </h1>
+            {g.pitch && <p className="mt-3 line-clamp-2 max-w-md text-[15px] text-cream/85 sm:text-base">{g.pitch}</p>}
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <a href={playHref} className="btn h-11 px-5 text-[15px] shadow-lift">
+                <Play className="h-4 w-4 fill-current" /> {g.earns ? "Play · earn 1 credit" : "Play"}
+              </a>
+              <a href={`/games/${g.id}`} className="link text-cream/80">Watch trailer</a>
+            </div>
+          </div>
+        </div>
+
+        {games.length > 1 && (
+          <div className="absolute bottom-14 right-[max(1rem,calc((100vw-72rem)/2+1rem))] hidden gap-2.5 lg:flex lg:bottom-16">
+            {games.map((x, k) => {
+              const s = stillOf(x);
+              const on = k === i;
+              return (
+                <button
+                  key={x.id}
+                  type="button"
+                  onClick={() => setI(k)}
+                  aria-label={`Show ${x.name}`}
+                  aria-current={on}
+                  className={`group w-28 text-left transition duration-200 ease-out hover:-translate-y-0.5 ${on ? "opacity-100" : "opacity-55 hover:opacity-100"}`}
+                >
+                  <span className={`relative block aspect-video overflow-hidden rounded-[8px] bg-panel ring-offset-2 ring-offset-navy ${on ? "ring-2 ring-cream" : ""}`}>
+                    {s ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                    ) : (
+                      <GameIcon url={x.iconUrl} className="absolute inset-0 h-full w-full" />
+                    )}
+                  </span>
+                  <span className="mt-2 block h-0.5 overflow-hidden rounded-full bg-cream/20">
+                    {on && (
+                      <span
+                        key={`${x.id}-${paused}`}
+                        className="block h-full bg-cream"
+                        style={{ animation: paused || reduced ? "none" : `fill ${HERO_MS}ms linear forwards`, width: paused || reduced ? "100%" : undefined }}
+                      />
+                    )}
+                  </span>
+                  <span className="mt-1.5 block truncate text-xs text-cream/85">{x.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+  );
 }
