@@ -11,7 +11,8 @@ import { GoalBar } from "@/components/GoalBar";
 
 export const dynamic = "force-dynamic";
 
-export default async function Dashboard() {
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ reset?: string }> }) {
+  const { reset } = await searchParams;
   const user = await requireUser();
   const games = await db.game.findMany({
     where: { ownerId: user.id },
@@ -33,6 +34,7 @@ export default async function Dashboard() {
 
   return (
     <div className="space-y-8">
+      {reset && <p role="status" className="rounded-ctl border border-line px-4 py-3 text-sm text-verified">Your password was changed. Any other devices were logged out.</p>}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">My games</p>

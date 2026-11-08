@@ -51,6 +51,7 @@ export default function Privacy() {
       <ul>
         <li>{op.payments}, to take payments.</li>
         <li>Our hosting, database and file storage providers (Vercel and Neon), to run the site.</li>
+        <li>Our email provider (Resend), only to send you emails you asked for, like a password reset link.</li>
         <li>Roblox, only in the sense that we ask Roblox&apos;s public APIs about the user ids and games on Spawnswap.</li>
         <li>Nobody else, unless the law requires it.</li>
       </ul>

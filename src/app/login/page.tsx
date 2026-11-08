@@ -8,7 +8,13 @@ export default function Login() {
       <h1 className="text-3xl font-extrabold">Welcome back</h1>
       <Form action={login} submit="Log in">
         <div><label htmlFor="email" className="label">Email</label><input id="email" name="email" type="email" required className="input" /></div>
-        <div><label htmlFor="password" className="label">Password</label><input id="password" name="password" type="password" required className="input" /></div>
+        <div>
+          <div className="flex items-baseline justify-between">
+            <label htmlFor="password" className="label">Password</label>
+            <Link href="/forgot-password" className="text-sm text-marquee">Forgot your password?</Link>
+          </div>
+          <input id="password" name="password" type="password" required className="input" />
+        </div>
       </Form>
       <p className="text-center text-sm text-mute">New here? <Link href="/signup" className="text-marquee">Create an account</Link></p>
     </div>
