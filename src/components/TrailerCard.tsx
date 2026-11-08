@@ -98,6 +98,7 @@ function Still({ src, priority }: { src: string; priority?: boolean }) {
 export function Media({ game, active, priority }: { game: TrailerGame; active: boolean; priority?: boolean }) {
   const t = game.trailer;
   const still = stillOf(game);
+  const [narrow, setNarrow] = useState(false);
   return (
     <>
       {still ? (
@@ -129,8 +130,17 @@ export function Media({ game, active, priority }: { game: TrailerGame; active: b
           tabIndex={-1}
         />
       )}
-      {active && t?.kind === "video" && (
-        <video className="absolute inset-0 h-full w-full object-cover" src={t.src} autoPlay muted loop playsInline />
+      {active && t?.kind === "video" && !(still && narrow) && (
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src={t.src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          // A square or portrait clip (e.g. a phone recording) cropped into a wide frame is a blurry sliver: show the screenshot instead.
+          onLoadedMetadata={(e) => setNarrow(e.currentTarget.videoWidth / e.currentTarget.videoHeight < 1.4)}
+        />
       )}
     </>
   );
