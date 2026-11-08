@@ -12,6 +12,12 @@ import { parseTrailer, TRAILER_MAX_MB, TRAILER_MAX_SECONDS, TRAILER_MIN_SECONDS 
 
 const run = promisify(execFile);
 
+/**
+ * ffmpeg reads the downloaded file only as a normal video container, and never opens other files or URLs.
+ * Without this a crafted "video" (a playlist or concat list) could make ffmpeg read other files on the server.
+ */
+const SAFE_INPUT = ["-protocol_whitelist", "file", "-format_whitelist", "mov,mp4,m4a,3gp,3g2,mj2,matroska,webm"];
+
 /** What the check decided. `reason` is shown to the game's owner; `adminNote` only to admins. */
 export type TrailerVerdict = {
   decision: "approve" | "review" | "reject";
@@ -112,7 +118,7 @@ async function videoFrames(src: string): Promise<{ frames: Frame[] } | { error: 
     for (let i = 0; i < FRAMES; i++) {
       const at = ((i + 0.5) * seconds) / FRAMES;
       const out = join(dir, `f${i}.jpg`);
-      await run(ffmpegPath, ["-v", "error", "-ss", at.toFixed(2), "-i", file, "-frames:v", "1", "-vf", "scale=1280:-2", "-q:v", "4", "-y", out], { timeout: 30e3 });
+      await run(ffmpegPath, ["-v", "error", "-ss", at.toFixed(2), ...SAFE_INPUT, "-i", file, "-frames:v", "1", "-vf", "scale=1280:-2", "-q:v", "4", "-y", out], { timeout: 30e3 });
       const buf = await readFile(out).catch(() => null);
       if (buf) frames.push({ data: buf.toString("base64"), mediaType: "image/jpeg" });
     }
@@ -126,7 +132,7 @@ async function videoFrames(src: string): Promise<{ frames: Frame[] } | { error: 
 /** Reads size, rotation and length from ffmpeg's description of the file. */
 async function probe(file: string) {
   // `ffmpeg -i` with no output exits with an error but still prints the stream info on stderr.
-  const text: string = await run(ffmpegPath!, ["-hide_banner", "-i", file], { timeout: 30e3 }).then(
+  const text: string = await run(ffmpegPath!, ["-hide_banner", ...SAFE_INPUT, "-i", file], { timeout: 30e3 }).then(
     (r) => r.stderr,
     (e) => String(e?.stderr ?? ""),
   );
