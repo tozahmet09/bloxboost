@@ -27,6 +27,7 @@ model User {
   referredById     String?
   referralPaid     Boolean    @default(false)
   sessions         Session[]
+  passwordResets   PasswordReset[]
   games            Game[]
   payments         Payment[]
   tasks            PlayTask[]
@@ -42,6 +43,19 @@ model Session {
   userId    String
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// "Forgot password" links. Only a hash of the token is stored, so a database leak can't be used to reset passwords.
+model PasswordReset {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Game {

@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { createSession, destroySession, getUser, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfile } from "@/lib/roblox";
@@ -12,6 +13,8 @@ import { del } from "@vercel/blob";
 import { isOwnUpload, parseTrailer } from "@/lib/trailer";
 import { COMMENT_COOLDOWN_MS, COMMENT_MAX_CHARS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS, PLAYS_TO_POST, REFERRAL_CREDITS } from "@/lib/money";
 import { postingRequirement } from "@/lib/community";
+import { emailEnabled, sendEmail } from "@/lib/email";
+import { operator } from "@/lib/legal";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -53,6 +56,82 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
     return { error: "Wrong email or password." };
   await createSession(user.id);
   redirect("/dashboard");
+}
+
+// ---------- forgot password ----------
+
+const RESET_MINUTES = 60;
+const hashToken = (t: string) => createHash("sha256").update(t).digest("hex");
+
+async function siteUrl() {
+  const fromEnv = process.env.APP_URL?.trim().replace(/\/+$/, "");
+  if (fromEnv) return fromEnv;
+  const h = await headers();
+  return `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
+}
+
+/**
+ * Emails a one-time reset link. The answer is the same whether or not the email has an account,
+ * so nobody can use this form to find out who is signed up.
+ */
+export async function requestPasswordReset(_: FormState, f: FormData): Promise<FormState> {
+  const email = str(f, "email").toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 200) return { error: "Enter a valid email." };
+  if (!(await rateLimit(`reset-ip:${await clientIp()}`, 10, 3600e3)) || !(await rateLimit(`reset:${email}`, 3, 3600e3)))
+    return { error: TOO_FAST };
+  if (!emailEnabled() && process.env.NODE_ENV === "production") {
+    const contact = operator().email;
+    return { error: `Password reset emails aren't switched on yet. ${contact ? `Write to ${contact} and we'll help you get back in.` : "Please contact us and we'll help you get back in."}` };
+  }
+  const sent = { ok: `If an account uses ${email}, we've sent it a reset link. It works for ${RESET_MINUTES} minutes. Check your spam folder too.` };
+
+  const user = await db.user.findUnique({ where: { email }, select: { id: true, displayName: true } });
+  if (!user) return sent;
+
+  const token = randomBytes(32).toString("base64url");
+  // Only the newest link works.
+  await db.passwordReset.deleteMany({ where: { userId: user.id } });
+  await db.passwordReset.create({
+    data: { userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + RESET_MINUTES * 60e3) },
+  });
+  const link = `${await siteUrl()}/reset-password?token=${token}`;
+  const text = `Hi ${user.displayName},\n\nSomeone (hopefully you) asked to reset your Spawnswap password. Open this link to choose a new one:\n\n${link}\n\nThe link works once, for ${RESET_MINUTES} minutes. If you didn't ask for this, you can ignore this email and your password stays the same.`;
+  const html = `<p>Hi ${escapeHtml(user.displayName)},</p><p>Someone (hopefully you) asked to reset your Spawnswap password.</p><p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#ffb238;color:#111;border-radius:8px;text-decoration:none;font-weight:600">Choose a new password</a></p><p>Or paste this link into your browser:<br>${link}</p><p>The link works once, for ${RESET_MINUTES} minutes. If you didn't ask for this, ignore this email and your password stays the same.</p>`;
+  const ok = await sendEmail(email, "Reset your Spawnswap password", text, html);
+  if (!ok && emailEnabled()) return { error: "We couldn't send the email just now. Try again in a few minutes." };
+  return sent;
+}
+
+function escapeHtml(s: string) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+/** Sets the new password from a reset link. The link is used up, and every other login is signed out. */
+export async function resetPassword(_: FormState, f: FormData): Promise<FormState> {
+  const token = str(f, "token");
+  const password = str(f, "password");
+  if (password.length < 8) return { error: "Password must be at least 8 characters." };
+  if (password !== str(f, "confirm")) return { error: "The two passwords don't match." };
+  if (!(await rateLimit(`reset-use:${await clientIp()}`, 20, 15 * 60e3))) return { error: TOO_FAST };
+  const expired = { error: "This reset link has expired or was already used. Ask for a new one on the Forgot password page." };
+  if (!token) return expired;
+
+  const reset = await db.passwordReset.findUnique({ where: { tokenHash: hashToken(token) } });
+  if (!reset || reset.usedAt || reset.expiresAt < new Date()) return expired;
+
+  const passwordHash = await hashPassword(password);
+  const done = await db.$transaction(async (tx) => {
+    // Marking it used only if it still isn't makes the link single-use even if it is opened twice at once.
+    const claimed = await tx.passwordReset.updateMany({ where: { id: reset.id, usedAt: null }, data: { usedAt: new Date() } });
+    if (claimed.count !== 1) return false;
+    await tx.user.update({ where: { id: reset.userId }, data: { passwordHash } });
+    await tx.session.deleteMany({ where: { userId: reset.userId } });
+    await tx.passwordReset.deleteMany({ where: { userId: reset.userId, id: { not: reset.id } } });
+    return true;
+  });
+  if (!done) return expired;
+  await createSession(reset.userId);
+  redirect("/dashboard?reset=1");
 }
 
 /**
