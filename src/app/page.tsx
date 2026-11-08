@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, Trophy } from "lucide-react";
+import { ArrowRight, Ticket, Trophy } from "lucide-react";
 import { db } from "@/lib/db";
 import { parseTrailer } from "@/lib/trailer";
-import { isVerifiedGame } from "@/lib/credits";
+import { earningGameIds, isVerifiedGame } from "@/lib/credits";
 import { topGames } from "@/lib/community";
 import { Spotlight, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
 
@@ -24,20 +24,29 @@ const toCard = (g: Row): TrailerGame => ({
 export default async function Home({ searchParams }: { searchParams: Promise<{ sort?: string; deleted?: string }> }) {
   const { sort, deleted } = await searchParams;
   const now = new Date();
+  const earning = await earningGameIds();
+  const mark = (g: TrailerGame) => ((g.earns = earning.has(g.id)), g);
+  // Games that give a credit right now, verified (tracker script) first, then newest.
+  const earn = (
+    await db.game.findMany({ where: { id: { in: [...earning] } }, orderBy: { createdAt: "desc" }, take: 10 })
+  )
+    .map(toCard)
+    .map(mark)
+    .sort((a, b) => Number(!!b.verified) - Number(!!a.verified));
   // "Most liked this week", falling back to all-time while the site is quiet.
-  let hot = (await topGames(6, 7)).map(toCard);
-  if (hot.length < 3) hot = (await topGames(6)).map(toCard);
+  let hot = (await topGames(6, 7)).map(toCard).map(mark);
+  if (hot.length < 3) hot = (await topGames(6)).map(toCard).map(mark);
   hot.forEach((g, i) => (g.rank = i + 1));
-  const featured = (await db.game.findMany({ where: { featuredUntil: { gt: now } }, take: 12 })).map(toCard);
+  const featured = (await db.game.findMany({ where: { featuredUntil: { gt: now } }, take: 12 })).map(toCard).map(mark);
   featured.sort(() => Math.random() - 0.5); // a different featured game gets the spotlight on each visit
   const spotlight = featured.find((g) => g.trailer) ?? null;
   const featuredRest = featured.filter((g) => g !== spotlight);
 
-  // Games with a trailer come first, newest first within each group.
+  // Everything that doesn't give a credit right now. Trailers first, newest first within each group.
   const byLikes = sort === "liked";
   const fresh = (
     await db.game.findMany({
-      where: { OR: [{ featuredUntil: null }, { featuredUntil: { lte: now } }] },
+      where: { id: { notIn: [...earning] }, OR: [{ featuredUntil: null }, { featuredUntil: { lte: now } }] },
       orderBy: byLikes ? [{ likeCount: "desc" }, { createdAt: "desc" }] : { createdAt: "desc" },
       take: 30,
     })
@@ -60,6 +69,25 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       </section>
 
       {spotlight && <Spotlight game={spotlight} />}
+
+      <section aria-labelledby="earn-title">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="earn-title" className="flex items-center gap-2 text-xl font-bold"><Ticket className="h-5 w-5 text-marquee" /> Play &amp; earn credits</h2>
+            <p className="mt-1 text-sm text-mute">Play one of these for 10 min and leave a review. You get 1 credit for your own game.</p>
+          </div>
+          <Link href="/play" className="group flex items-center gap-1 text-sm text-mute hover:text-cream">
+            Start earning <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+        {earn.length === 0 ? (
+          <p className="rounded-media border border-dashed border-line px-6 py-10 text-center text-mute">No games are giving credits right now. New ones arrive all the time.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
+            {earn.map((g) => <TrailerCard key={g.id} game={g} href="/play" />)}
+          </div>
+        )}
+      </section>
 
       {featuredRest.length > 0 && (
         <section>
@@ -88,7 +116,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
       <section>
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <h2 className="text-xl font-bold">{byLikes ? "All games" : "Just released"}</h2>
+          <div>
+            <h2 className="text-xl font-bold">All games</h2>
+            <p className="mt-1 text-sm text-mute">Play for fun. These don&apos;t give credits right now.</p>
+          </div>
           <div className="flex gap-1 text-sm" role="tablist" aria-label="Sort games">
             <Link href="/" role="tab" aria-selected={!byLikes} className={`rounded-ctl px-3 py-1.5 ${!byLikes ? "bg-panel text-cream" : "text-mute hover:text-cream"}`}>Newest</Link>
             <Link href="/?sort=liked" role="tab" aria-selected={byLikes} className={`rounded-ctl px-3 py-1.5 ${byLikes ? "bg-panel text-cream" : "text-mute hover:text-cream"}`}>Most liked</Link>
