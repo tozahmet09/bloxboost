@@ -36,20 +36,20 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">My progress</p>
-          <h1 className="mt-1 text-3xl font-extrabold">Games you&apos;re playing</h1>
+          <h1 className="mt-1 page-title">Games you&apos;re playing</h1>
         </div>
         <Link href="/play" className="btn-quiet">Find more</Link>
       </div>
 
       {watching && <PresencePoller />}
       {watching && (
-        <p className="rounded-media border border-line p-4 text-sm text-mute">
+        <p className="notice">
           Keep this page open while you play (a phone works too). We check your Roblox status every minute, so minutes only count while you&apos;re in the game.
         </p>
       )}
 
       {startedOpen && (
-        <div className="flex flex-wrap items-center gap-4 rounded-media border border-marquee/40 bg-marquee/[.06] p-4">
+        <div className="flex flex-wrap items-center gap-4 border-l-2 border-marquee py-1 pl-4">
           <p className="min-w-0 flex-1 text-sm">
             Saved for you. Play {mins} min as <b>{user.robloxUsername}</b>, then come back to review.
           </p>

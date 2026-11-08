@@ -8,7 +8,7 @@ export default function ForgotPassword() {
   return (
     <div className="mx-auto max-w-sm space-y-6 py-6">
       <div>
-        <h1 className="text-3xl font-extrabold">Forgot your password?</h1>
+        <h1 className="page-title">Forgot your password?</h1>
         <p className="mt-2 text-sm text-mute">Enter the email you signed up with. We&apos;ll send you a link to choose a new password.</p>
       </div>
       <Form action={requestPasswordReset} submit="Send reset link">

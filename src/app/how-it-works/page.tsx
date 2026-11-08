@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CREDIT_PACKS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, FEATURED_OPTIONS, MAX_OPEN_TASKS, MIN_FEEDBACK_CHARS, PLAYS_TO_POST, REFERRAL_CREDITS, REQUIRED_SECONDS, TASK_TTL_HOURS, fmt } from "@/lib/money";
 
 export const metadata: Metadata = {
-  title: "How it works · Spawnswap",
+  title: "How it works",
   description: "How Spawnswap works: play other developers' Roblox games to earn credits, spend credits to get real players for your own game.",
 };
 
@@ -12,7 +12,7 @@ const minutes = Math.round(REQUIRED_SECONDS / 60);
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <li className="flex gap-4">
-      <span className="font-display text-3xl font-extrabold leading-none text-marquee/80 tabular-nums">{n}</span>
+      <span className="font-display w-6 shrink-0 text-xl font-bold leading-6 text-marquee tabular-nums">{n}</span>
       <div>
         <h3 className="font-semibold">{title}</h3>
         <div className="mt-1 text-sm leading-relaxed text-mute">{children}</div>
@@ -35,14 +35,14 @@ export default function HowItWorks() {
     <article className="mx-auto max-w-3xl space-y-14">
       <header>
         <p className="eyebrow">How it works</p>
-        <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-5xl">Play games, get players.</h1>
-        <p className="mt-3 max-w-2xl text-lg text-mute">
+        <h1 className="mt-2 text-[32px] font-bold leading-[1.08] sm:text-[42px]">Play games, get players.</h1>
+        <p className="mt-3 max-w-2xl text-mute">
           Spawnswap is a swap between Roblox developers. You play someone else&apos;s game, they (or someone else) play yours.
           Credits keep it fair.
         </p>
       </header>
 
-      <section className="rounded-media border border-marquee/40 bg-marquee/[.06] p-6">
+      <section className="border-l-2 border-marquee pl-5 sm:pl-6">
         <h2 className="text-2xl font-bold">The one rule: 1 credit = 1 real player</h2>
         <div className="mt-4 grid gap-6 sm:grid-cols-2">
           <div>

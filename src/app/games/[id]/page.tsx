@@ -19,7 +19,7 @@ const nameSel = { displayName: true, robloxUsername: true, robloxVerified: true 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const g = await db.game.findUnique({ where: { id }, select: { name: true, description: true } });
-  return g ? { title: `${g.name} · Spawnswap`, description: g.description.slice(0, 160) } : {};
+  return g ? { title: `${g.name}`, description: g.description.slice(0, 160) } : {};
 }
 
 function ago(d: Date) {
@@ -55,7 +55,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
 
   return (
     <div className="space-y-10">
-      <div className="relative aspect-video overflow-hidden rounded-media bg-panel ring-1 ring-line lg:aspect-[21/9]">
+      <div className="relative aspect-video overflow-hidden rounded-media bg-panel lg:aspect-[21/8]">
         {t?.kind === "youtube" ? (
           <iframe
             className="absolute inset-0 h-full w-full"
@@ -68,7 +68,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
           <video className="absolute inset-0 h-full w-full object-cover" src={t.src} controls muted playsInline preload="metadata" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <GameIcon url={game.iconUrl} className="aspect-square h-1/2 rounded-ctl shadow-2xl" />
+            <GameIcon url={game.iconUrl} className="aspect-square h-1/3 rounded-ctl" />
           </div>
         )}
       </div>
@@ -77,7 +77,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
         <div className="flex min-w-0 gap-4">
           <GameIcon url={game.iconUrl} className="h-16 w-16 shrink-0 rounded-ctl" />
           <div className="min-w-0">
-            <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{game.name}</h1>
+            <h1 className="page-title">{game.name}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-mute">
               <span>by {publicName(game.owner)}</span>
               <span aria-hidden>·</span>
@@ -87,7 +87,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
               {isVerifiedGame(game) && (
                 <>
                   <span aria-hidden>·</span>
-                  <span className="inline-flex items-center gap-1 text-verified"><BadgeCheck className="h-3.5 w-3.5" /> Verified</span>
+                  <span className="inline-flex items-center gap-1 text-cream"><BadgeCheck className="h-3.5 w-3.5" /> Verified</span>
                 </>
               )}
             </div>
@@ -143,20 +143,20 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
         <aside className="space-y-4 lg:border-l lg:border-line lg:pl-8">
           <div>
             <div className="eyebrow">Verified players</div>
-            <div className="mt-1 font-display text-3xl font-extrabold tabular-nums">{stats._count.id}</div>
+            <div className="mt-1 font-display text-3xl font-bold tabular-nums">{stats._count.id}</div>
             <p className="text-xs text-mute">Played 10+ minutes and left a review.</p>
           </div>
           {stats._avg.rating && (
             <div>
               <div className="eyebrow">Average rating</div>
-              <div className="mt-1 flex items-center gap-1 font-display text-3xl font-extrabold tabular-nums">
+              <div className="mt-1 flex items-center gap-1 font-display text-3xl font-bold tabular-nums">
                 {stats._avg.rating.toFixed(1)} <Star className="h-5 w-5 fill-marquee text-marquee" />
               </div>
             </div>
           )}
           <div>
             <div className="eyebrow">Roblox visits</div>
-            <div className="mt-1 font-display text-3xl font-extrabold tabular-nums">{game.visits.toLocaleString()}</div>
+            <div className="mt-1 font-display text-3xl font-bold tabular-nums">{game.visits.toLocaleString()}</div>
           </div>
           {isOwner && <Link href={`/dashboard/games/${game.id}`} className="btn-quiet">Manage game</Link>}
         </aside>

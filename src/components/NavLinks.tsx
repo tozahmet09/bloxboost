@@ -2,34 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clapperboard, Gamepad2, Info, Trophy } from "lucide-react";
 
 const LINKS = [
-  { href: "/", label: "Discover", short: "Discover", icon: Clapperboard, desktopOnly: true },
-  { href: "/play", label: "Play & Earn", short: "Play", icon: Gamepad2 },
-  { href: "/leaderboard", label: "Top", short: "Top", icon: Trophy },
-  { href: "/how-it-works", label: "How It Works", short: "How it works", icon: Info, desktopOnly: true },
+  { href: "/", label: "Discover", desktopOnly: true },
+  { href: "/play", label: "Play & Earn" },
+  { href: "/leaderboard", label: "Top" },
+  { href: "/how-it-works", label: "How It Works", desktopOnly: true },
 ];
 
-/** Main nav. The current page gets a raised pill and an amber icon. */
+/** Main nav: plain text links. The current page is bright with a thin amber line under it. */
 export function NavLinks() {
   const path = usePathname();
   return (
     <>
-      {LINKS.map(({ href, label, short, icon: Icon, desktopOnly }) => {
+      {LINKS.map(({ href, label, desktopOnly }) => {
         const on = href === "/" ? path === "/" : path.startsWith(href);
         return (
           <Link
             key={href}
             href={href}
             aria-current={on ? "page" : undefined}
-            className={`${desktopOnly ? "hidden sm:flex" : "flex"} min-h-[40px] items-center gap-2 whitespace-nowrap rounded-ctl px-2.5 text-sm transition sm:px-3 ${
-              on ? "bg-panel font-semibold text-cream ring-1 ring-line" : "text-mute hover:text-cream"
+            className={`${desktopOnly ? "hidden sm:flex" : "flex"} relative h-14 items-center whitespace-nowrap px-2 text-sm transition sm:px-3 ${
+              on ? "font-semibold text-cream" : "text-mute hover:text-cream"
             }`}
           >
-            <Icon className={`h-4 w-4 ${on ? "text-marquee" : ""} ${href === "/play" ? "hidden sm:block" : ""}`} />
-            <span className="hidden sm:inline">{label}</span>
-            <span className={href === "/leaderboard" ? "sr-only" : "sm:hidden"}>{short}</span>
+            {label}
+            {on && <span aria-hidden className="absolute inset-x-2 bottom-0 h-[2px] rounded-full bg-marquee sm:inset-x-3" />}
           </Link>
         );
       })}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Gamepad2, Link2, Play, Ticket, Trophy, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { parseTrailer } from "@/lib/trailer";
 import { earningGameIds, isVerifiedGame } from "@/lib/credits";
@@ -56,55 +56,26 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     .sort((a, b) => (byLikes ? 0 : Number(!!b.trailer) - Number(!!a.trailer)));
 
   return (
-    <div className="space-y-10">
-      {deleted && <p role="status" className="rounded-ctl border border-line px-4 py-3 text-sm text-mute">Your account was deleted.</p>}
+    <div className="space-y-14 sm:space-y-16">
+      {deleted && <p role="status" className="notice">Your account was deleted.</p>}
 
-      <section className="relative -mt-8 pb-2 pt-6 sm:-mt-10 sm:pt-10">
-        {/* Warm light sweeping in from the right, like stage lights. Decorative only. */}
-        <div aria-hidden className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden">
-          <div className="absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-marquee/20 blur-[120px]" />
-          <div className="absolute right-10 top-24 h-64 w-64 rounded-full bg-[#5b4bff]/20 blur-[100px]" />
-          <svg className="absolute -right-24 top-0 hidden h-full w-[70%] md:block" viewBox="0 0 800 400" fill="none" preserveAspectRatio="none">
-            <path d="M0 380 C 260 300, 520 120, 820 40" stroke="url(#arc1)" strokeWidth="2" />
-            <path d="M80 400 C 340 330, 600 200, 820 150" stroke="url(#arc2)" strokeWidth="1.5" />
-            <defs>
-              <linearGradient id="arc1" x1="0" x2="1"><stop stopColor="#ffb238" stopOpacity="0" /><stop offset=".6" stopColor="#ffb238" stopOpacity=".7" /><stop offset="1" stopColor="#ffb238" stopOpacity="0" /></linearGradient>
-              <linearGradient id="arc2" x1="0" x2="1"><stop stopColor="#e2574c" stopOpacity="0" /><stop offset=".7" stopColor="#e2574c" stopOpacity=".45" /><stop offset="1" stopColor="#e2574c" stopOpacity="0" /></linearGradient>
-            </defs>
-          </svg>
-          <div className="absolute right-[12%] top-16 hidden h-20 w-20 rotate-12 rounded-[14px] border border-white/10 bg-gradient-to-br from-white/10 to-transparent backdrop-blur-sm md:block" />
-          <div className="absolute right-[28%] top-48 hidden h-10 w-10 -rotate-6 rounded-[10px] border border-marquee/30 bg-marquee/10 md:block" />
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-ink" />
-        </div>
-        <div className="relative max-w-2xl">
-          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.16em] text-marquee">
-            <span className="h-1.5 w-1.5 rounded-full bg-marquee" aria-hidden /> Now showing
-          </span>
-          <h1 className="mt-4 text-[34px] font-extrabold leading-[1.04] tracking-tight sm:text-[44px]">
-            New Roblox games,
-            <br />
-            <span className="bg-gradient-to-r from-marquee via-[#ff9a3d] to-velvet bg-clip-text text-transparent">before they blow up.</span>
-          </h1>
-          <p className="mt-3 max-w-lg text-[15px] text-mute">Watch trailers, play, like the ones you love. Devs play each other&apos;s games and help them grow.</p>
-          <Link href="/how-it-works" className="mt-5 inline-flex min-h-[40px] items-center gap-2 rounded-full border border-line bg-ink/40 py-1 pl-1 pr-4 text-sm font-semibold backdrop-blur transition hover:border-mute">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full border border-line"><Play className="ml-0.5 h-3 w-3 fill-current" /></span>
-            How It Works
-          </Link>
+      <section className="-mt-2 sm:-mt-4">
+        <h1 className="max-w-2xl text-[32px] font-bold leading-[1.08] sm:text-[42px]">
+          New Roblox games, <span className="text-mute">before they blow up.</span>
+        </h1>
+        <p className="mt-3 max-w-md text-mute">Watch trailers and play new games. Developers play each other&apos;s games to get real players.</p>
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <Link href="/play" className="btn">Play &amp; earn credits</Link>
+          <Link href="/how-it-works" className="link">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
         </div>
       </section>
 
       <section aria-labelledby="earn-title">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 id="earn-title" className="flex items-center gap-2 text-xl font-bold"><Ticket className="h-5 w-5 text-marquee" /> Play &amp; Earn Credits</h2>
-            <p className="mt-1 text-sm text-mute">Play one of these for 10 min and leave a review. You get 1 credit for your own game.</p>
-          </div>
-          <Link href="/play" className="btn min-h-[40px] rounded-full text-sm">
-            Start Earning <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
+        <Head id="earn-title" title="Play & earn credits" sub="Play 10 minutes and leave a review. You get 1 credit, worth 1 real player for your game.">
+          <Link href="/play" className="link-accent">Start earning <ArrowRight className="h-3.5 w-3.5" /></Link>
+        </Head>
         {earn.length === 0 ? (
-          <p className="py-6 text-sm text-mute">No games are giving credits right now. New ones arrive all the time.</p>
+          <p className="text-sm text-mute">No games are giving credits right now. New ones arrive all the time.</p>
         ) : (
           <Rail label="Games that give credits">
             {earn.map((g) => <EarnRow key={g.id} game={g} href="/play" />)}
@@ -115,76 +86,83 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       {spotlight && <Spotlight game={spotlight} />}
 
       {featuredRest.length > 0 && (
-        <section>
-          <h2 className="mb-4 text-xl font-bold">Featured</h2>
-          <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3">
-            {featuredRest.map((g) => (
-              <div key={g.id} className="w-[78%] shrink-0 snap-start sm:w-auto">
-                <TrailerCard game={g} featured />
-              </div>
-            ))}
-          </div>
+        <section aria-labelledby="featured-title">
+          <Head id="featured-title" title="Featured" />
+          <Rail label="Featured games">
+            {featuredRest.map((g) => <TrailerCard key={g.id} game={g} />)}
+          </Rail>
         </section>
       )}
 
       {hot.length > 0 && (
-        <section>
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <h2 className="text-xl font-bold">Most Liked This Week</h2>
-            <Link href="/leaderboard" className="flex items-center gap-1.5 text-sm text-mute hover:text-cream"><Trophy className="h-4 w-4" /> Leaderboards</Link>
-          </div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
+        <section aria-labelledby="hot-title">
+          <Head id="hot-title" title="Most liked this week">
+            <Link href="/leaderboard" className="link">Leaderboards <ArrowRight className="h-3.5 w-3.5" /></Link>
+          </Head>
+          <Rail label="Most liked this week">
             {hot.map((g) => <TrailerCard key={g.id} game={g} />)}
-          </div>
+          </Rail>
         </section>
       )}
 
-      <section>
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-bold">All Games</h2>
-            <p className="mt-1 text-sm text-mute">Play for fun. These don&apos;t give credits right now.</p>
+      <section aria-labelledby="all-title">
+        <Head id="all-title" title="All games" sub="Play for fun. These don't give credits right now.">
+          <div className="flex gap-4 text-sm" role="tablist" aria-label="Sort games">
+            {([["/", "Newest", !byLikes], ["/?sort=liked", "Most liked", byLikes]] as const).map(([href, label, on]) => (
+              <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-marquee font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>
+                {label}
+              </Link>
+            ))}
           </div>
-          <div className="flex rounded-full border border-line p-1 text-sm" role="tablist" aria-label="Sort games">
-            <Link href="/" role="tab" aria-selected={!byLikes} className={`rounded-full px-4 py-1.5 transition ${!byLikes ? "bg-panel font-semibold text-cream ring-1 ring-line" : "text-mute hover:text-cream"}`}>Newest</Link>
-            <Link href="/?sort=liked" role="tab" aria-selected={byLikes} className={`rounded-full px-4 py-1.5 transition ${byLikes ? "bg-panel font-semibold text-cream ring-1 ring-line" : "text-mute hover:text-cream"}`}>Most Liked</Link>
-          </div>
-        </div>
+        </Head>
         {fresh.length === 0 ? (
-          <p className="flex items-center justify-center gap-3 py-6 text-mute">
-            <Gamepad2 className="h-5 w-5" /> Nothing here yet. <Link href="/signup" className="text-marquee underline underline-offset-4">Add the first game.</Link>
+          <p className="text-sm text-mute">
+            Nothing here yet. <Link href="/signup" className="text-marquee underline underline-offset-4">Add the first game.</Link>
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
+          <Rail label="All games">
             {fresh.map((g) => <TrailerCard key={g.id} game={g} />)}
-          </div>
+          </Rail>
         )}
       </section>
 
-      <section className="rule grid gap-8 pt-10 md:grid-cols-[1fr_2fr] md:items-start">
+      <section className="rule grid gap-10 pt-12 md:grid-cols-[1fr_2fr]">
         <div>
           <p className="eyebrow">For developers</p>
-          <h2 className="mt-1.5 text-xl font-bold sm:text-2xl">Your first 100 real players.</h2>
-          <p className="mt-2 text-sm text-mute">Play other games to earn credits. Each credit brings one real player to yours.</p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link href="/signup" className="btn">Get Players</Link>
-            <Link href="/how-it-works" className="btn-quiet">How It Works</Link>
+          <h2 className="mt-2 text-2xl font-bold">Your first 100 real players.</h2>
+          <p className="mt-2 max-w-sm text-sm text-mute">Play other games to earn credits. Each credit brings one real player to yours.</p>
+          <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <Link href="/signup" className="btn">Get players</Link>
+            <Link href="/how-it-works" className="link">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
           </div>
         </div>
-        <ol className="grid gap-6 sm:grid-cols-3">
+        <ol className="grid gap-8 sm:grid-cols-3">
           {([
-            [Play, "Play 3 games", "Play 10 min and review. Each one earns you 1 credit."],
-            [Link2, "Add your game", "Paste the Roblox link and a trailer."],
-            [Users, "Get verified players", "Each one played 10+ minutes and left a review."],
-          ] as const).map(([Icon, t, d], i) => (
+            ["Play 3 games", "Play 10 minutes and leave a review. Each one earns 1 credit."],
+            ["Add your game", "Paste the Roblox link and a trailer."],
+            ["Get real players", "Each one played 10+ minutes and left a review."],
+          ] as const).map(([t, d], i) => (
             <li key={t}>
-              <Icon className="h-5 w-5 text-marquee" />
-              <div className="mt-3 font-semibold">{i + 1}. {t}</div>
+              <div className="font-display text-sm font-bold tabular-nums text-marquee">0{i + 1}</div>
+              <div className="mt-2 font-semibold">{t}</div>
               <p className="mt-1 text-sm text-mute">{d}</p>
             </li>
           ))}
         </ol>
       </section>
+    </div>
+  );
+}
+
+/** Section title row: title, one quiet line under it, an optional text link on the right. No frame. */
+function Head({ id, title, sub, children }: { id: string; title: string; sub?: string; children?: React.ReactNode }) {
+  return (
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div>
+        <h2 id={id} className="h-section">{title}</h2>
+        {sub && <p className="sub">{sub}</p>}
+      </div>
+      {children}
     </div>
   );
 }

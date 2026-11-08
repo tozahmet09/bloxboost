@@ -5,7 +5,7 @@ import { Form } from "@/components/Form";
 export default function Login() {
   return (
     <div className="mx-auto max-w-sm space-y-6 py-6">
-      <h1 className="text-3xl font-extrabold">Welcome back</h1>
+      <h1 className="page-title">Welcome back</h1>
       <Form action={login} submit="Log in">
         <div><label htmlFor="email" className="label">Email</label><input id="email" name="email" type="email" required className="input" /></div>
         <div>

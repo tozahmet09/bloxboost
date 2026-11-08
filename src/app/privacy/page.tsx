@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { operator } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Privacy Policy · Spawnswap" };
+export const metadata: Metadata = { title: "Privacy Policy" };
 
 export default function Privacy() {
   const op = operator();

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { operator } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Contact · Spawnswap" };
+export const metadata: Metadata = { title: "Contact" };
 
 export default function Contact() {
   const op = operator();
@@ -10,7 +10,7 @@ export default function Contact() {
     <article className="mx-auto max-w-2xl space-y-5 leading-relaxed">
       <div>
         <p className="eyebrow">Help</p>
-        <h1 className="mt-1 text-3xl font-extrabold">Contact us</h1>
+        <h1 className="mt-1 page-title">Contact us</h1>
       </div>
       {op.email ? (
         <p className="text-cream/90">

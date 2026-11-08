@@ -10,14 +10,14 @@ export default async function ResetPassword({ searchParams }: { searchParams: Pr
   if (!/^[A-Za-z0-9_-]{20,100}$/.test(token))
     return (
       <div className="mx-auto max-w-sm space-y-4 py-6">
-        <h1 className="text-3xl font-extrabold">This link doesn&apos;t work</h1>
+        <h1 className="page-title">This link doesn&apos;t work</h1>
         <p className="text-sm text-mute">Open the link from your email again, or ask for a new one.</p>
         <Link href="/forgot-password" className="btn w-full">Get a new link</Link>
       </div>
     );
   return (
     <div className="mx-auto max-w-sm space-y-6 py-6">
-      <h1 className="text-3xl font-extrabold">Choose a new password</h1>
+      <h1 className="page-title">Choose a new password</h1>
       <Form action={resetPassword} submit="Save new password">
         <input type="hidden" name="token" value={token} />
         <div><label htmlFor="password" className="label">New password</label><input id="password" name="password" type="password" autoComplete="new-password" minLength={8} required className="input" /></div>
