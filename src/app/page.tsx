@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { parseTrailer } from "@/lib/trailer";
 import { earningGameIds, isVerifiedGame } from "@/lib/credits";
 import { topGames } from "@/lib/community";
+import { Rail } from "@/components/Rail";
 import { EarnRow, Spotlight, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const mark = (g: TrailerGame) => ((g.earns = earning.has(g.id)), g);
   // Games that give a credit right now, verified (tracker script) first, then newest.
   const earn = (
-    await db.game.findMany({ where: { id: { in: [...earning] } }, orderBy: { createdAt: "desc" }, take: 10 })
+    await db.game.findMany({ where: { id: { in: [...earning] } }, orderBy: { createdAt: "desc" }, take: 24 })
   )
     .map(toCard)
     .map(mark)
@@ -76,7 +77,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-ink" />
         </div>
         <div className="relative max-w-2xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-[.14em] text-marquee">
+          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.16em] text-marquee">
             <span className="h-1.5 w-1.5 rounded-full bg-marquee" aria-hidden /> Now showing
           </span>
           <h1 className="mt-4 text-[34px] font-extrabold leading-[1.04] tracking-tight sm:text-[44px]">
@@ -92,28 +93,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         </div>
       </section>
 
-      <section aria-labelledby="earn-title" className="relative rounded-[20px] bg-gradient-to-b from-marquee/50 via-line to-marquee/30 p-px shadow-[0_20px_80px_-30px_rgba(255,178,56,.35)]">
-        <div className="rounded-[19px] bg-[linear-gradient(180deg,#1d1822_0%,#16121b_100%)] p-4 sm:p-5">
-          <div className="flex flex-wrap items-center gap-3 border-b border-line pb-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-marquee/10 ring-1 ring-marquee/30">
-              <Ticket className="h-5 w-5 text-marquee" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h2 id="earn-title" className="text-lg font-bold sm:text-xl">Play &amp; Earn Credits</h2>
-              <p className="mt-0.5 text-sm text-mute">Play one of these for 10 min and leave a review. You get 1 credit for your own game.</p>
-            </div>
-            <Link href="/play" className="btn min-h-[40px] w-full rounded-full text-sm sm:w-auto">
-              Start Earning <ArrowRight className="h-4 w-4" />
-            </Link>
+      <section aria-labelledby="earn-title">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="earn-title" className="flex items-center gap-2 text-xl font-bold"><Ticket className="h-5 w-5 text-marquee" /> Play &amp; Earn Credits</h2>
+            <p className="mt-1 text-sm text-mute">Play one of these for 10 min and leave a review. You get 1 credit for your own game.</p>
           </div>
-          {earn.length === 0 ? (
-            <p className="pt-6 text-center text-sm text-mute">No games are giving credits right now. New ones arrive all the time.</p>
-          ) : (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-5 pt-4 lg:grid-cols-4">
-              {earn.map((g) => <EarnRow key={g.id} game={g} href="/play" />)}
-            </div>
-          )}
+          <Link href="/play" className="btn min-h-[40px] rounded-full text-sm">
+            Start Earning <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
+        {earn.length === 0 ? (
+          <p className="py-6 text-sm text-mute">No games are giving credits right now. New ones arrive all the time.</p>
+        ) : (
+          <Rail label="Games that give credits">
+            {earn.map((g) => <EarnRow key={g.id} game={g} href="/play" />)}
+          </Rail>
+        )}
       </section>
 
       {spotlight && <Spotlight game={spotlight} />}
@@ -165,7 +161,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         )}
       </section>
 
-      <section className="grid gap-8 rounded-[20px] border border-line bg-panel/40 p-5 sm:p-6 md:grid-cols-[1fr_auto_2fr] md:items-center">
+      <section className="rule grid gap-8 pt-10 md:grid-cols-[1fr_2fr] md:items-start">
         <div>
           <p className="eyebrow">For developers</p>
           <h2 className="mt-1.5 text-xl font-bold sm:text-2xl">Your first 100 real players.</h2>
@@ -175,7 +171,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
             <Link href="/how-it-works" className="btn-quiet">How It Works</Link>
           </div>
         </div>
-        <div className="hidden h-full w-px bg-line md:block" aria-hidden />
         <ol className="grid gap-6 sm:grid-cols-3">
           {([
             [Play, "Play 3 games", "Play 10 min and review. Each one earns you 1 credit."],
@@ -183,10 +178,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
             [Users, "Get verified players", "Each one played 10+ minutes and left a review."],
           ] as const).map(([Icon, t, d], i) => (
             <li key={t}>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-ink ring-1 ring-line">
-                <Icon className="h-5 w-5 text-marquee" />
-              </span>
-              <div className="mt-4 font-semibold">{i + 1}. {t}</div>
+              <Icon className="h-5 w-5 text-marquee" />
+              <div className="mt-3 font-semibold">{i + 1}. {t}</div>
               <p className="mt-1 text-sm text-mute">{d}</p>
             </li>
           ))}
