@@ -6,6 +6,7 @@ import { createHash, randomBytes } from "crypto";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { createSession, destroySession, getUser, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
+import { linkRoblox } from "@/lib/robloxOauth";
 import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfile } from "@/lib/roblox";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { completeTask, startTask } from "@/lib/credits";
@@ -230,14 +231,8 @@ export async function verifyRobloxLink(_: FormState): Promise<FormState> {
     if (!about.includes(user.robloxVerifyCode))
       return { error: `We didn't find ${user.robloxVerifyCode} in your Roblox profile "About". Save it there and try again (it can take a minute to update).` };
   }
-  await db.$transaction([
-    // release the id from any unverified holder
-    db.user.updateMany({ where: { robloxUserId: id, NOT: { id: user.id } }, data: { robloxUserId: null } }),
-    db.user.update({
-      where: { id: user.id },
-      data: { robloxUserId: id, robloxUsername: name, robloxVerified: true, robloxVerifyCode: null, robloxCreatedAt },
-    }),
-  ]);
+  if (!(await linkRoblox(user.id, { id, name, created: robloxCreatedAt })))
+    return { error: "That Roblox account is already linked to someone else." };
   redirect("/play");
 }
 
