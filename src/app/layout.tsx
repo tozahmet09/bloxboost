@@ -11,8 +11,10 @@ const display = Bricolage_Grotesque({ subsets: ["latin"], weight: ["600", "700",
 const body = Figtree({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
-  title: "Spawnswap: new Roblox games, before they blow up",
+  metadataBase: new URL(process.env.APP_URL || "https://spawnswap.com"),
+  title: { default: "Spawnswap: new Roblox games, before they blow up", template: "%s · Spawnswap" },
   description: "Watch trailers of brand-new Roblox games. Developers: get your first 100 real players, verified in-game.",
+  twitter: { card: "summary_large_image" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,26 +22,26 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
-        <header className="sticky top-0 z-30 border-b border-line/70 bg-ink/80 backdrop-blur-md">
-          <nav className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-2.5 sm:gap-1.5">
-            <Link href="/" className="mr-2 flex items-center gap-2 font-display text-base font-extrabold tracking-tight sm:mr-6 sm:text-lg">
-              <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-gradient-to-br from-marquee to-marquee-deep font-display text-base font-extrabold text-ink shadow-[0_0_18px_rgba(255,178,56,.35)]" aria-hidden>S</span>
+        <header className="sticky top-0 z-30 border-b border-white/[.06] bg-ink/85 backdrop-blur-md">
+          <nav className="mx-auto flex h-14 max-w-6xl items-center gap-1 px-4 sm:gap-2">
+            <Link href="/" className="mr-1 flex items-center gap-2 font-display text-[17px] font-bold tracking-[-0.02em] sm:mr-5" aria-label="Spawnswap home">
+              <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-marquee font-display text-[13px] font-bold text-ink">S</span>
               <span className="hidden min-[420px]:inline">Spawnswap</span>
             </Link>
             <NavLinks />
             <div className="ml-auto flex items-center gap-1 text-sm sm:gap-2">
               {user ? (
                 <>
-                  <Link href="/dashboard" className="hidden min-h-[40px] items-center rounded-ctl px-3 text-mute hover:text-cream md:flex">My Games</Link>
+                  <Link href="/dashboard" className="hidden min-h-[40px] items-center px-2 text-mute transition hover:text-cream md:flex">My Games</Link>
                   <CreditCounter value={user.credits} />
                   <details className="group relative">
                     <summary className="flex min-h-[40px] cursor-pointer list-none items-center gap-1 rounded-full pl-1 pr-1.5 [&::-webkit-details-marker]:hidden" aria-label="Account menu">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#4f6bff] to-[#2b3fbf] text-sm font-bold text-white">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-line text-sm font-semibold text-cream">
                         {(user.robloxUsername ?? user.displayName ?? user.email).charAt(0).toUpperCase()}
                       </span>
                       <ChevronDown className="h-4 w-4 text-mute transition group-open:rotate-180" />
                     </summary>
-                    <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-ctl border border-line bg-panel py-1 text-sm shadow-2xl">
+                    <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-ctl border border-line bg-panel py-1 text-sm shadow-[0_12px_32px_rgba(0,0,0,.45)]">
                       <Link href="/dashboard" className="block px-4 py-2.5 hover:bg-line">My Games</Link>
                       <Link href="/dashboard/billing" className="block px-4 py-2.5 hover:bg-line">Credits</Link>
                       <Link href="/dashboard/account" className="block px-4 py-2.5 hover:bg-line">Account</Link>
@@ -51,24 +53,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="min-h-[40px] whitespace-nowrap rounded-ctl px-2 leading-[40px] text-mute hover:text-cream sm:px-3">Log In</Link>
-                  <Link href="/signup" className="btn whitespace-nowrap px-3 sm:px-4">Get Players</Link>
+                  <Link href="/login" className="min-h-[40px] whitespace-nowrap px-2 leading-[40px] text-mute transition hover:text-cream sm:px-3">Log In</Link>
+                  <Link href="/signup" className="btn whitespace-nowrap px-3 sm:px-4">Get players</Link>
                 </>
               )}
             </div>
           </nav>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10">{children}</main>
-        <footer className="mx-auto max-w-6xl px-4 pb-10 pt-4">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-line/70 pt-6 text-xs text-mute">
-            <span>Not affiliated with Roblox Corporation.</span>
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">{children}</main>
+        <footer className="mx-auto max-w-6xl px-4 pb-10 pt-8">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/[.06] pt-6 text-xs text-faint">
+            <span>© {new Date().getFullYear()} Spawnswap. Not affiliated with Roblox Corporation.</span>
             <span className="hidden h-3 w-px bg-line sm:block" aria-hidden />
-            <Link href="/how-it-works" className="hover:text-cream">How It Works</Link>
-            <Link href="/terms" className="hover:text-cream">Terms</Link>
-            <Link href="/privacy" className="hover:text-cream">Privacy</Link>
-            <Link href="/privacy#cookies" className="hover:text-cream">Cookies</Link>
-            <Link href="/refund" className="hover:text-cream">Refunds</Link>
-            <Link href="/contact" className="hover:text-cream">Contact</Link>
+            <Link href="/how-it-works" className="transition hover:text-cream">How It Works</Link>
+            <Link href="/terms" className="transition hover:text-cream">Terms</Link>
+            <Link href="/privacy" className="transition hover:text-cream">Privacy</Link>
+            <Link href="/privacy#cookies" className="transition hover:text-cream">Cookies</Link>
+            <Link href="/refund" className="transition hover:text-cream">Refunds</Link>
+            <Link href="/contact" className="transition hover:text-cream">Contact</Link>
             <span className="sm:ml-auto">For ages 13+.</span>
           </div>
         </footer>

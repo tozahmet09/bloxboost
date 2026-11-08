@@ -34,11 +34,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-8">
-      {reset && <p role="status" className="rounded-ctl border border-line px-4 py-3 text-sm text-verified">Your password was changed. Any other devices were logged out.</p>}
+      {reset && <p role="status" className="notice">Your password was changed. Any other devices were logged out.</p>}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">My games</p>
-          <h1 className="mt-1 text-3xl font-extrabold">Hi, {user.displayName}</h1>
+          <h1 className="mt-1 page-title">Hi, {user.displayName}</h1>
         </div>
         <Link href="/dashboard/games/new" className="btn"><Plus className="h-4 w-4" /> Add game</Link>
       </div>
@@ -52,7 +52,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       )}
 
       {games.length === 0 ? (
-        <div className="rounded-media border border-dashed border-line px-6 py-14 text-center">
+        <div className="py-14 text-center">
           <p className="text-mute">Paste your game&apos;s Roblox link to start.</p>
           <Link href="/dashboard/games/new" className="btn mt-4"><Plus className="h-4 w-4" /> Add game</Link>
         </div>
@@ -69,7 +69,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="truncate font-semibold group-hover:text-marquee">{g.name}</span>
                       {live && (
-                        <span className="chip bg-verified/10 text-verified">
+                        <span className="inline-flex items-center gap-1 text-xs text-cream">
                           <BadgeCheck className="h-3 w-3" /> Verified
                         </span>
                       )}

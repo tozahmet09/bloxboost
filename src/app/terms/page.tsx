@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
 import { operator } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Terms of Use · Spawnswap" };
+export const metadata: Metadata = { title: "Terms of Use" };
 
 export default function Terms() {
   const op = operator();

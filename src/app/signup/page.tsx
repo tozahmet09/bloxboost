@@ -10,7 +10,7 @@ export default async function Signup({ searchParams }: { searchParams: Promise<{
     <div className="mx-auto max-w-sm space-y-6 py-6">
       <div>
         <p className="eyebrow">Free account</p>
-        <h1 className="mt-1 text-3xl font-extrabold">Get your game seen</h1>
+        <h1 className="mt-1 page-title">Get your game seen</h1>
       </div>
       {code && <p className="rounded-ctl border border-marquee/40 bg-marquee/10 px-4 py-3 text-sm">A friend invited you. You start with +{REFERRAL_CREDITS} bonus credits.</p>}
       <Form action={signup} submit="Create account">

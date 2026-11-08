@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/LegalPage";
 import { operator } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Refund Policy · Spawnswap" };
+export const metadata: Metadata = { title: "Refund Policy" };
 
 export default function Refund() {
   const op = operator();

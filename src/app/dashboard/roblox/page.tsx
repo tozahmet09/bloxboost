@@ -47,7 +47,7 @@ export default async function LinkRoblox({ searchParams }: { searchParams: Promi
     <div className="mx-auto max-w-md space-y-8">
       <div>
         <p className="eyebrow">Roblox account</p>
-        <h1 className="mt-1 text-3xl font-extrabold">Link your account</h1>
+        <h1 className="mt-1 page-title">Link your account</h1>
         {user.robloxVerified && <p className="mt-2 text-sm text-verified">Linked as {user.robloxUsername}.</p>}
         {error && ERRORS[error] && <p className="mt-2 text-sm text-danger">{ERRORS[error]}</p>}
       </div>

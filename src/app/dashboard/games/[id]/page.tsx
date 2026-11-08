@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 function Step({ n, title, done, optional, children }: { n: number; title: string; done: boolean; optional?: boolean; children: React.ReactNode }) {
   return (
     <li className="grid grid-cols-[28px_1fr] gap-x-3 py-6">
-      {done ? <CheckCircle2 className="mt-0.5 h-6 w-6 text-verified" /> : <Circle className="mt-0.5 h-6 w-6 text-line" />}
+      {done ? <CheckCircle2 className="mt-0.5 h-6 w-6 text-marquee" /> : <Circle className="mt-0.5 h-6 w-6 text-line" />}
       <div className="min-w-0 space-y-3">
         <h2 className="text-lg font-bold">
           {n}. {title} {optional && <span className="ml-1 font-body text-sm font-normal text-mute">optional</span>}
@@ -74,8 +74,8 @@ export default async function GamePage({
         <GameIcon url={game.iconUrl} className="h-20 w-20 rounded-media" />
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="truncate text-3xl font-extrabold">{game.name}</h1>
-            {featured && <span className="chip bg-velvet text-cream">Featured until {game.featuredUntil!.toISOString().slice(5, 10)}</span>}
+            <h1 className="truncate page-title">{game.name}</h1>
+            {featured && <span className="text-xs text-mute">Featured until {game.featuredUntil!.toISOString().slice(5, 10)}</span>}
           </div>
           <GoalBar count={game.tasks.length} />
           <p className="flex flex-wrap gap-x-4 text-xs text-mute">
@@ -114,7 +114,7 @@ export default async function GamePage({
                 <li key={c.id} className="flex flex-wrap items-center gap-3 py-2.5">
                   <span className="w-24 text-mute tabular-nums">{c.createdAt.toISOString().slice(0, 10)}</span>
                   <span className="flex-1 tabular-nums">{c.delivered} of {c.targetPlayers} players</span>
-                  <span className={`chip ${c.status === "ACTIVE" ? "bg-verified/10 text-verified" : "bg-line text-mute"}`}>{c.status.toLowerCase()}</span>
+                  <span className={`text-xs ${c.status === "ACTIVE" ? "text-cream" : "text-faint"}`}>{c.status === "ACTIVE" ? "● Active" : c.status.charAt(0) + c.status.slice(1).toLowerCase()}</span>
                   {["ACTIVE", "PAUSED"].includes(c.status) && (
                     <span className="flex gap-1">
                       <form action={toggleCampaign}>
@@ -138,7 +138,7 @@ export default async function GamePage({
         <Step n={3} title="Get the Verified badge" done={live} optional>
           <p className="max-w-prose text-sm text-mute">
             Players already count without this: we check on Roblox that they&apos;re in a game for 10 minutes. The tracker confirms they were in <b className="text-cream">your</b> game, gives you a{" "}
-            <span className="inline-flex items-center gap-1 text-verified"><BadgeCheck className="h-3.5 w-3.5" /> Verified</span> badge and puts you first in the player queue.
+            <span className="inline-flex items-center gap-1 text-cream"><BadgeCheck className="h-3.5 w-3.5" /> Verified</span> badge and puts you first in the player queue.
           </p>
           <p className="max-w-prose text-sm text-mute">
             Add a <b className="text-cream">Script</b> to <b className="text-cream">ServerScriptService</b>, paste this, turn on <b className="text-cream">Allow HTTP Requests</b>, publish.
@@ -188,7 +188,7 @@ export default async function GamePage({
                   <span>{t.player.robloxUsername}</span>
                   <span>· {Math.round(t.playedSeconds / 60)} min played</span>
                   {t.verifiedBy === "SCRIPT" ? (
-                    <span className="inline-flex items-center gap-1 text-verified">· <BadgeCheck className="h-3.5 w-3.5" /> seen in your game</span>
+                    <span className="inline-flex items-center gap-1 text-cream">· <BadgeCheck className="h-3.5 w-3.5" /> seen in your game</span>
                   ) : (
                     <span>· checked via Roblox status</span>
                   )}

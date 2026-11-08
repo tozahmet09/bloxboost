@@ -27,7 +27,7 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
     <div className="mx-auto max-w-3xl space-y-10">
       <div>
         <p className="eyebrow">Credits</p>
-        <h1 className="mt-1 text-3xl font-extrabold">1 credit = 1 verified player</h1>
+        <h1 className="mt-1 page-title">1 credit = 1 verified player</h1>
         <p className="mt-2 text-mute">You have <b className="text-cream tabular-nums">{user.credits}</b>. Playing other games earns them for free.</p>
         {notice === "paid" && <p className="mt-3 text-sm text-verified">Payment received. Credits added.</p>}
         {notice === "processing" && <p className="mt-3 text-sm text-mute">Payment is processing. Credits appear here as soon as Stripe confirms it.</p>}
@@ -43,11 +43,11 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
             key={p.id}
             name="pack"
             value={p.id}
-            className={`group relative rounded-media border p-5 text-left transition active:scale-[.98] ${p.id === best ? "border-marquee/60 bg-marquee/[.06]" : "border-line hover:border-mute"}`}
+            className={`group relative rounded-media border p-5 text-left transition active:scale-[.98] ${p.id === best ? "border-marquee/60" : "border-line hover:border-mute"}`}
           >
             {p.id === best && <span className="chip absolute right-3 top-3 bg-marquee text-ink">Best value</span>}
             <Ticket className="h-5 w-5 text-marquee" />
-            <div className="mt-3 font-display text-3xl font-extrabold tabular-nums">{p.credits}</div>
+            <div className="mt-3 font-display text-3xl font-bold tabular-nums">{p.credits}</div>
             <div className="text-sm text-mute">players</div>
             <div className="mt-4 flex items-baseline justify-between">
               <span className="text-lg font-semibold">{fmt(p.cents)}</span>

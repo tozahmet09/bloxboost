@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BadgeCheck, Heart, Play, Ticket, Users } from "lucide-react";
+import { BadgeCheck, Heart, Play, Users } from "lucide-react";
 import type { Trailer } from "@/lib/trailer";
 import { GameIcon } from "./GameIcon";
 
@@ -79,7 +79,11 @@ function Media({ game, active }: { game: TrailerGame; active: boolean }) {
             <img src={game.iconUrl} alt="" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-35 blur-2xl" />
           )}
           <div className="absolute inset-0 flex items-center justify-center">
-            <GameIcon url={game.iconUrl} className="aspect-square h-1/2 rounded-ctl shadow-2xl" />
+            {game.iconUrl ? (
+              <GameIcon url={game.iconUrl} className="aspect-square h-1/2 rounded-ctl" />
+            ) : (
+              <span aria-hidden className="line-clamp-2 select-none px-4 text-center font-display leading-[.95] text-[clamp(18px,1.9vw,26px)] font-bold tracking-[-0.03em] text-white/[.07]">{game.name}</span>
+            )}
           </div>
         </>
       )}
@@ -101,75 +105,64 @@ function Media({ game, active }: { game: TrailerGame; active: boolean }) {
 
 function Meta({ game }: { game: TrailerGame }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-mute">
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-faint">
       <span>{game.genre}</span>
       <span aria-hidden>·</span>
       <span className="inline-flex items-center gap-1 tabular-nums">
-        <Users className="h-3.5 w-3.5" /> {game.playing.toLocaleString()} playing
+        <Users className="h-3 w-3" /> {game.playing.toLocaleString()}
       </span>
       {!!game.likes && (
         <>
           <span aria-hidden>·</span>
           <span className="inline-flex items-center gap-1 tabular-nums">
-            <Heart className="h-3.5 w-3.5" /> {game.likes.toLocaleString()}
+            <Heart className="h-3 w-3" /> {game.likes.toLocaleString()}
           </span>
         </>
       )}
       {game.verified && (
-        <>
-          <span aria-hidden>·</span>
-          <span className="inline-flex items-center gap-1 text-verified">
-            <BadgeCheck className="h-3.5 w-3.5" /> Verified
-          </span>
-        </>
+        <span className="inline-flex items-center text-mute" title="Verified: in-game tracker installed">
+          <BadgeCheck className="h-3.5 w-3.5" aria-label="Verified" />
+        </span>
       )}
     </div>
   );
 }
 
-/** Grid tile: trailer on top, title underneath. */
-export function TrailerCard({ game, featured, href }: { game: TrailerGame; featured?: boolean; href?: string }) {
+/** Game tile: 16:9 trailer, title and one line of facts underneath. The thumbnail is the only shape (it is clickable). */
+export function TrailerCard({ game, href }: { game: TrailerGame; featured?: boolean; href?: string }) {
   const { ref, active } = useAutoplay(game.id, game.trailer);
   return (
-    <a ref={ref} href={href ?? `/games/${game.id}`} className="group block">
-      <div className="relative aspect-video overflow-hidden rounded-media bg-panel ring-1 ring-line transition group-hover:ring-2 group-hover:ring-marquee">
-        <Media game={game} active={active} />
-        {featured && <span className="chip absolute left-2 top-2 bg-velvet text-cream">Featured</span>}
-        {game.rank && <span className="chip absolute left-2 top-2 bg-marquee font-bold text-ink tabular-nums">#{game.rank}</span>}
-        {game.earns && (
-          <span className="chip absolute right-2 top-2 bg-marquee font-bold text-ink">
-            <Ticket className="h-3.5 w-3.5" /> +1 credit
-          </span>
-        )}
-        {!game.trailer && <span className="chip absolute bottom-2 right-2 bg-ink/70 text-mute">No trailer yet</span>}
-        <span className="absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-marquee text-ink shadow-lg">
-            <Play className="ml-0.5 h-5 w-5 fill-current" />
-          </span>
-        </span>
+    <a ref={ref} href={href ?? `/games/${game.id}`} className="group block min-w-0">
+      <div className="relative aspect-video overflow-hidden rounded-media bg-panel">
+        <div className="absolute inset-0 transition duration-300 ease-out group-hover:scale-[1.03] group-hover:brightness-110">
+          <Media game={game} active={active} />
+        </div>
+        {game.earns && <span className="chip absolute left-2 top-2 bg-marquee text-ink">+1 credit</span>}
       </div>
-      <div className="mt-2.5 space-y-0.5">
-        <div className="truncate text-sm font-semibold group-hover:text-marquee">{game.name}</div>
-        <Meta game={game} />
+      <div className="mt-2.5 flex gap-2">
+        {game.rank && <span className="font-display text-sm font-bold tabular-nums text-faint">{game.rank}</span>}
+        <div className="min-w-0 space-y-0.5">
+          <div className="truncate text-sm font-semibold transition group-hover:text-marquee">{game.name}</div>
+          <Meta game={game} />
+        </div>
       </div>
     </a>
   );
 }
 
-/** The big trailer at the top of the homepage. */
+/** One big featured trailer. The gradient at the bottom only exists to keep the title readable. */
 export function Spotlight({ game }: { game: TrailerGame }) {
   const { ref, active } = useAutoplay(game.id, game.trailer);
   return (
-    <a ref={ref} href={`/games/${game.id}`} className="group relative block overflow-hidden rounded-media bg-panel ring-1 ring-line">
-      <div className="relative aspect-video lg:aspect-[21/9]">
+    <a ref={ref} href={`/games/${game.id}`} className="group relative block overflow-hidden rounded-media bg-panel">
+      <div className="relative aspect-video lg:aspect-[21/8]">
         <Media game={game} active={active} />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(18,15,23,.75)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink via-ink/60 to-transparent px-4 pb-4 pt-16 sm:px-6 sm:pb-6">
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/95 via-ink/50 to-transparent px-4 pb-4 pt-20 sm:px-6 sm:pb-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="min-w-0">
-              <span className="chip mb-2 bg-velvet text-cream">Featured</span>
-              <div className="truncate font-display text-2xl font-extrabold sm:text-4xl">{game.name}</div>
-              <Meta game={game} />
+              <p className="eyebrow text-mute">Featured</p>
+              <div className="mt-1 truncate font-display text-2xl font-bold tracking-[-0.02em] sm:text-[32px]">{game.name}</div>
+              <div className="mt-1"><Meta game={game} /></div>
             </div>
             <span className="btn shrink-0">
               <Play className="h-4 w-4 fill-current" /> Watch &amp; play
@@ -181,24 +174,7 @@ export function Spotlight({ game }: { game: TrailerGame }) {
   );
 }
 
-/** Tile for the Play & Earn panel: trailer with a +1 credit badge, title and stats under it. */
+/** Same tile, pointing somewhere else (e.g. /play) and always showing the +1 credit tag. */
 export function EarnRow({ game, href }: { game: TrailerGame; href: string }) {
-  const { ref, active } = useAutoplay(game.id, game.trailer);
-  return (
-    <a ref={ref} href={href} className="group block min-w-0">
-      <div className="relative aspect-video overflow-hidden rounded-[10px] bg-panel ring-1 ring-line transition group-hover:ring-2 group-hover:ring-marquee">
-        <Media game={game} active={active} />
-        <span className="chip absolute right-1.5 top-1.5 bg-marquee px-2 py-0.5 font-bold text-ink">
-          <Ticket className="h-3.5 w-3.5" /> +1 credit
-        </span>
-        <span className="absolute bottom-1.5 left-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-ink/70 text-cream ring-1 ring-white/20 backdrop-blur">
-          <Play className="ml-0.5 h-3 w-3 fill-current" />
-        </span>
-      </div>
-      <div className="mt-2 space-y-0.5">
-        <div className="truncate text-sm font-semibold group-hover:text-marquee">{game.name}</div>
-        <Meta game={game} />
-      </div>
-    </a>
-  );
+  return <TrailerCard game={{ ...game, earns: true }} href={href} />;
 }

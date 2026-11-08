@@ -13,11 +13,11 @@ export default async function Account() {
     <div className="mx-auto max-w-xl space-y-10">
       <div>
         <p className="eyebrow">Account</p>
-        <h1 className="mt-1 text-3xl font-extrabold">{user.displayName}</h1>
+        <h1 className="mt-1 page-title">{user.displayName}</h1>
         <p className="mt-1 text-mute">{user.email}</p>
       </div>
 
-      <section className="space-y-4 rounded-media border border-danger/40 p-6">
+      <section className="rule space-y-4 pt-8">
         <h2 className="text-xl font-bold">Delete account</h2>
         <div className="space-y-2 text-sm text-mute">
           <p>

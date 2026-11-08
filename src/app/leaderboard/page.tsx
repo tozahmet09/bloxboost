@@ -4,7 +4,7 @@ import { topDevs, topGames, topPlayers, publicName } from "@/lib/community";
 import { GameIcon } from "@/components/GameIcon";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Leaderboards · Spawnswap" };
+export const metadata = { title: "Leaderboards" };
 
 const TABS = [
   { id: "games", label: "Top games" },
@@ -13,7 +13,7 @@ const TABS = [
 ] as const;
 
 function Rank({ n }: { n: number }) {
-  return <span className={`w-8 shrink-0 font-display text-xl font-extrabold tabular-nums ${n <= 3 ? "text-marquee" : "text-mute"}`}>{n}</span>;
+  return <span className={`w-8 shrink-0 font-display text-xl font-bold tabular-nums ${n <= 3 ? "text-marquee" : "text-mute"}`}>{n}</span>;
 }
 
 export default async function Leaderboard({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
@@ -30,7 +30,7 @@ export default async function Leaderboard({ searchParams }: { searchParams: Prom
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <p className="eyebrow">Community</p>
-        <h1 className="mt-1 text-3xl font-extrabold">Leaderboards</h1>
+        <h1 className="mt-1 page-title">Leaderboards</h1>
         <p className="mt-2 text-sm text-mute">
           {tab === "games" && "Games with the most likes."}
           {tab === "devs" && "Developers ranked by the likes all their games got."}

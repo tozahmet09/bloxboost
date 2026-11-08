@@ -7,20 +7,20 @@ export default {
     extend: {
       colors: {
         ink: "#120f17", // page background, warm aubergine-black
-        panel: "#1b1722", // raised surfaces
-        line: "#2d2738", // hairlines and borders
+        panel: "#1a1720", // filled controls (inputs, thumbnails while loading)
+        line: "#2a2531", // hairlines and control borders
         cream: "#f2ece4", // main text
-        mute: "#a69db0", // secondary text
+        mute: "#9d95a8", // secondary text
+        faint: "#6f6879", // tertiary text, captions
         marquee: { DEFAULT: "#ffb238", deep: "#e89a1c" }, // main actions
-        verified: "#4fd1a5", // verified / live status only
-        velvet: "#e2574c", // featured badge
+        verified: "#4fd1a5", // tiny live/verified status dots only, never large areas
         danger: "#ff8a7a",
       },
       fontFamily: {
         display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
         body: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
-      borderRadius: { media: "14px", ctl: "10px" },
+      borderRadius: { media: "12px", ctl: "10px" },
       keyframes: {
         rise: { "0%": { opacity: "0", transform: "translateY(8px) scale(.9)" }, "20%": { opacity: "1", transform: "translateY(0) scale(1.08)" }, "100%": { opacity: "0", transform: "translateY(-36px) scale(1)" } },
         pop: { "0%": { transform: "scale(1)" }, "40%": { transform: "scale(1.18)" }, "100%": { transform: "scale(1)" } },

@@ -2,32 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Premium, not vibecoded (see the vault page "09 Premium, Not Vibecoded"):
+  - Shapes (fills, borders, rings) only on things you can click: buttons, inputs, game thumbnails.
+  - Sections are separated by spacing and the occasional hairline, never framed in panels.
+  - One accent (marquee amber) for the main action. No glow, no gradient text.
+*/
+
 @layer base {
-  body { @apply overflow-x-clip bg-ink font-body text-cream antialiased; }
-  h1, h2, h3 { @apply font-display; text-wrap: balance; }
+  body { @apply overflow-x-clip bg-ink font-body text-[15px] text-cream antialiased; }
+  h1, h2, h3 { @apply font-display tracking-[-0.02em]; text-wrap: balance; }
   :focus-visible { @apply outline outline-2 outline-offset-2 outline-marquee; }
   ::selection { @apply bg-marquee text-ink; }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-ctl bg-marquee px-4 font-semibold text-ink
-      transition duration-150 hover:bg-marquee-deep active:scale-[.97]
+    @apply inline-flex min-h-[40px] items-center justify-center gap-2 rounded-ctl bg-marquee px-4 text-sm font-semibold text-ink
+      transition duration-150 ease-out hover:bg-marquee-deep active:scale-[.98]
       disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100;
   }
   .btn-quiet {
-    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-ctl border border-line px-4 font-medium text-cream
-      transition duration-150 hover:border-mute active:scale-[.97]
+    @apply inline-flex min-h-[40px] items-center justify-center gap-2 rounded-ctl border border-line px-4 text-sm font-medium text-cream
+      transition duration-150 ease-out hover:border-faint hover:bg-white/[.03] active:scale-[.98]
       disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100;
   }
   .input {
-    @apply min-h-[44px] w-full rounded-ctl border border-line bg-panel px-3 py-2 text-cream outline-none
-      placeholder:text-mute/60 focus:border-marquee;
+    @apply min-h-[44px] w-full rounded-ctl border border-line bg-panel px-3 py-2 text-cream outline-none transition
+      placeholder:text-faint hover:border-faint focus:border-marquee;
   }
   .label { @apply mb-1.5 block text-sm text-mute; }
-  .eyebrow { @apply font-display text-xs font-semibold uppercase tracking-[.16em] text-marquee; }
-  .chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium; }
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[.14em] text-faint; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold; }
   .rule { @apply border-t border-line; }
+  /* Section title row: title + one quiet line, optional text link on the right. */
+  .h-section { @apply text-lg font-bold sm:text-xl; }
+  .sub { @apply mt-1 text-sm text-mute; }
+  .link { @apply inline-flex items-center gap-1 text-sm font-medium text-mute transition hover:text-cream; }
+  .link-accent { @apply inline-flex items-center gap-1 text-sm font-semibold text-marquee transition hover:text-marquee-deep; }
+  /* Plain page: title + content, no framing. Used by forms, dashboard and legal pages. */
+  .page-title { @apply text-[28px] font-bold leading-tight sm:text-[32px]; }
+  .notice { @apply border-l-2 border-marquee py-1 pl-3 text-sm text-mute; }
 }
 
 @media (prefers-reduced-motion: reduce) {
