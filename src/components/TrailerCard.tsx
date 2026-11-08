@@ -32,6 +32,8 @@ export type TrailerGame = {
   thumb?: string | null;
   /** One or two lines from the game's description, for the homepage hero. */
   pitch?: string;
+  /** Not out yet: "Out Nov 14 · in 6 days". Shown instead of the player count. */
+  release?: string;
   /** Gives the thumbnail a view-transition name so it grows into the game page. Only one card per game may have it. */
   vt?: boolean;
 };
@@ -151,9 +153,13 @@ function Meta({ game }: { game: TrailerGame }) {
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-mono text-xs text-faint">
       <span className="font-body">{game.genre}</span>
       <span aria-hidden>·</span>
-      <span className="inline-flex items-center gap-1 tabular-nums">
-        <Users className="h-3 w-3" /> {game.playing.toLocaleString()}
-      </span>
+      {game.release ? (
+        <span className="tabular-nums text-cream">{game.release}</span>
+      ) : (
+        <span className="inline-flex items-center gap-1 tabular-nums">
+          <Users className="h-3 w-3" /> {game.playing.toLocaleString()}
+        </span>
+      )}
       {!!game.likes && (
         <>
           <span aria-hidden>·</span>

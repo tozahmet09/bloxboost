@@ -12,6 +12,7 @@ import { GameIcon } from "@/components/GameIcon";
 import { displayName, gameThumbnails } from "@/lib/thumbs";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm } from "@/components/CommentForm";
+import { isUpcoming, releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
     where: { id },
     select: {
       id: true, name: true, description: true, universeId: true, genre: true, playing: true, visits: true, iconUrl: true, trailerUrl: true,
-      scriptLastSeen: true, likeCount: true, ownerId: true,
+      scriptLastSeen: true, likeCount: true, ownerId: true, releaseAt: true,
       owner: { select: nameSel },
       comments: { orderBy: [{ likeCount: "desc" }, { createdAt: "desc" }], take: 100, include: { user: { select: { id: true, ...nameSel } } } },
     },
@@ -90,7 +91,11 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
               <span aria-hidden>·</span>
               <span>{game.genre}</span>
               <span aria-hidden>·</span>
-              <span className="inline-flex items-center gap-1 tabular-nums"><Users className="h-3.5 w-3.5" /> {game.playing.toLocaleString()} playing</span>
+              {isUpcoming(game.releaseAt) ? (
+                <span className="tabular-nums text-cream">{releaseLabel(game.releaseAt!)}</span>
+              ) : (
+                <span className="inline-flex items-center gap-1 tabular-nums"><Users className="h-3.5 w-3.5" /> {game.playing.toLocaleString()} playing</span>
+              )}
               {isVerifiedGame(game) && (
                 <>
                   <span aria-hidden>·</span>
