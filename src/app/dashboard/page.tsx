@@ -45,7 +45,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       {!user.robloxVerified && (
         <Link href="/dashboard/roblox" className="flex items-center gap-3 rounded-ctl border border-line px-4 py-3 text-sm hover:border-mute">
-          <Link2 className="h-4 w-4 text-marquee" />
+          <Link2 className="h-4 w-4 text-coral" />
           <span className="flex-1">Link your Roblox account to earn free credits by playing.</span>
           <ChevronRight className="h-4 w-4 text-mute" />
         </Link>
@@ -67,7 +67,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                   <GameIcon url={g.iconUrl} className="h-14 w-14 shrink-0 rounded-ctl" />
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="truncate font-semibold group-hover:text-marquee">{g.name}</span>
+                      <span className="truncate font-semibold group-hover:text-coral">{g.name}</span>
                       {live && (
                         <span className="inline-flex items-center gap-1 text-xs text-cream">
                           <BadgeCheck className="h-3 w-3" /> Verified
@@ -86,7 +86,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       )}
       <section className="rule space-y-3 pt-8">
         <div className="flex items-center gap-2">
-          <Gift className="h-5 w-5 text-marquee" />
+          <Gift className="h-5 w-5 text-coral" />
           <h2 className="text-lg font-bold">Invite a dev friend</h2>
         </div>
         <p className="max-w-prose text-sm text-mute">

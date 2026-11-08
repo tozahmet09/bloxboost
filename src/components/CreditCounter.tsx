@@ -33,10 +33,10 @@ export function CreditCounter({ value }: { value: number }) {
       className="relative inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-line px-3 text-sm font-semibold tabular-nums transition hover:border-faint"
       aria-label={`${value} credits`}
     >
-      <Ticket key={gain?.key} className={`h-4 w-4 text-marquee ${gain ? "animate-pop" : ""}`} />
+      <Ticket key={gain?.key} className={`h-4 w-4 text-coral ${gain ? "animate-pop" : ""}`} />
       {shown}
       {gain && (
-        <span key={gain.key} className="pointer-events-none absolute -bottom-1 right-1 animate-rise font-display text-sm text-marquee">
+        <span key={gain.key} className="pointer-events-none absolute -bottom-1 right-1 animate-rise font-display text-sm text-coral">
           +{gain.n}
         </span>
       )}

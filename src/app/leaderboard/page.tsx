@@ -13,7 +13,7 @@ const TABS = [
 ] as const;
 
 function Rank({ n }: { n: number }) {
-  return <span className={`w-8 shrink-0 font-display text-xl font-bold tabular-nums ${n <= 3 ? "text-marquee" : "text-mute"}`}>{n}</span>;
+  return <span className={`w-8 shrink-0 font-display text-xl font-bold tabular-nums ${n <= 3 ? "text-coral" : "text-mute"}`}>{n}</span>;
 }
 
 export default async function Leaderboard({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
@@ -40,7 +40,7 @@ export default async function Leaderboard({ searchParams }: { searchParams: Prom
       <div className="flex gap-1 border-b border-line text-sm" role="tablist">
         {TABS.map((t) => (
           <Link key={t.id} href={`/leaderboard?tab=${t.id}`} role="tab" aria-selected={tab === t.id}
-            className={`-mb-px border-b-2 px-3 py-2.5 ${tab === t.id ? "border-marquee text-cream" : "border-transparent text-mute hover:text-cream"}`}>
+            className={`-mb-px border-b-2 px-3 py-2.5 ${tab === t.id ? "border-coral text-cream" : "border-transparent text-mute hover:text-cream"}`}>
             {t.label}
           </Link>
         ))}
@@ -54,10 +54,10 @@ export default async function Leaderboard({ searchParams }: { searchParams: Prom
                 <Rank n={i + 1} />
                 <GameIcon url={g.iconUrl} className="h-12 w-12 shrink-0 rounded-ctl" />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-semibold group-hover:text-marquee">{g.name}</div>
+                  <div className="truncate font-semibold group-hover:text-coral">{g.name}</div>
                   <div className="text-xs text-mute">{g.genre}</div>
                 </div>
-                <span className="inline-flex items-center gap-1 text-sm tabular-nums"><Heart className="h-4 w-4 text-marquee" /> {g.likeCount.toLocaleString()}</span>
+                <span className="inline-flex items-center gap-1 text-sm tabular-nums"><Heart className="h-4 w-4 text-coral" /> {g.likeCount.toLocaleString()}</span>
               </Link>
             </li>
           ))}
@@ -73,7 +73,7 @@ export default async function Leaderboard({ searchParams }: { searchParams: Prom
                 <div className="truncate font-semibold">{publicName(d.user)}</div>
                 <div className="text-xs text-mute">{d.games} game{d.games === 1 ? "" : "s"}</div>
               </div>
-              <span className="inline-flex items-center gap-1 text-sm tabular-nums"><Heart className="h-4 w-4 text-marquee" /> {d.likes.toLocaleString()}</span>
+              <span className="inline-flex items-center gap-1 text-sm tabular-nums"><Heart className="h-4 w-4 text-coral" /> {d.likes.toLocaleString()}</span>
             </li>
           ))}
         </ol>
@@ -85,7 +85,7 @@ export default async function Leaderboard({ searchParams }: { searchParams: Prom
             <li key={p.user.id} className="flex items-center gap-3 py-3">
               <Rank n={i + 1} />
               <div className="min-w-0 flex-1 truncate font-semibold">{publicName(p.user)}</div>
-              <span className="inline-flex items-center gap-1 text-sm tabular-nums" title="Likes on comments"><Heart className="h-4 w-4 text-marquee" /> {p.likes}</span>
+              <span className="inline-flex items-center gap-1 text-sm tabular-nums" title="Likes on comments"><Heart className="h-4 w-4 text-coral" /> {p.likes}</span>
               <span className="inline-flex w-14 items-center justify-end gap-1 text-sm text-mute tabular-nums" title="Games played and reviewed"><Gamepad2 className="h-4 w-4" /> {p.plays}</span>
             </li>
           ))}

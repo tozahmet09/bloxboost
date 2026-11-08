@@ -34,12 +34,12 @@ export function Rail({ children, label }: { children: React.ReactNode; label: st
         {children}
       </div>
       {can.left && (
-        <button onClick={() => go(-1)} aria-label="Scroll left" className="absolute -left-4 top-[calc(28%-4px)] hidden h-9 w-9 items-center justify-center rounded-full bg-cream text-ink transition hover:bg-white sm:flex">
+        <button onClick={() => go(-1)} aria-label="Scroll left" className="absolute -left-4 top-[calc(28%-4px)] hidden h-9 w-9 items-center justify-center rounded-full bg-cream text-navy transition hover:bg-white sm:flex">
           <ChevronLeft className="h-5 w-5" />
         </button>
       )}
       {can.right && (
-        <button onClick={() => go(1)} aria-label="Scroll right" className="absolute -right-4 top-[calc(28%-4px)] hidden h-9 w-9 items-center justify-center rounded-full bg-cream text-ink transition hover:bg-white sm:flex">
+        <button onClick={() => go(1)} aria-label="Scroll right" className="absolute -right-4 top-[calc(28%-4px)] hidden h-9 w-9 items-center justify-center rounded-full bg-cream text-navy transition hover:bg-white sm:flex">
           <ChevronRight className="h-5 w-5" />
         </button>
       )}

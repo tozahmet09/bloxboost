@@ -24,7 +24,7 @@ export default async function NewGame() {
       {req.needed > 0 && (
         <ol className="flex gap-2" aria-label={`${req.done} of ${req.needed} games played`}>
           {Array.from({ length: req.needed }, (_, i) => (
-            <li key={i} className={`flex h-10 flex-1 items-center justify-center rounded-ctl border text-sm ${i < req.done ? "border-marquee/60 text-marquee" : "border-line text-mute"}`}>
+            <li key={i} className={`flex h-10 flex-1 items-center justify-center rounded-ctl border text-sm ${i < req.done ? "border-coral/60 text-coral" : "border-line text-mute"}`}>
               {i < req.done ? <Check className="h-4 w-4" /> : `Game ${i + 1}`}
             </li>
           ))}

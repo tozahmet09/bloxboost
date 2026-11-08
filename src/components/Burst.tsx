@@ -10,11 +10,11 @@ export function Burst({ label }: { label: string }) {
       {sparks.map((s, i) => (
         <span
           key={i}
-          className="absolute h-1.5 w-1.5 animate-spark rounded-full bg-marquee"
+          className="absolute h-1.5 w-1.5 animate-spark rounded-full bg-coral"
           style={{ ["--dx" as string]: s.dx, ["--dy" as string]: s.dy, animationDelay: s.d }}
         />
       ))}
-      <span className="animate-pop font-display text-2xl font-bold text-marquee">{label}</span>
+      <span className="animate-pop font-display text-2xl font-bold text-coral">{label}</span>
     </div>
   );
 }

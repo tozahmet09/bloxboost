@@ -1,20 +1,23 @@
 import type { Config } from "tailwindcss";
 
-// "Marquee": a dark cinema for new games. One accent (marquee amber) for main actions only.
+// Navy / cream / coral, split 60/30/10:
+//   navy  60%  page background and dark surfaces
+//   cream 30%  text, plus the light bands (developer section, footer)
+//   coral 10%  the one accent: main buttons, +1 credit badge, accent links. Never large areas.
 export default {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        ink: "#120f17", // page background, warm aubergine-black
-        panel: "#1a1720", // filled controls (inputs, thumbnails while loading)
-        line: "#2a2531", // hairlines and control borders
-        cream: "#f2ece4", // main text
-        mute: "#9d95a8", // secondary text
-        faint: "#6f6879", // tertiary text, captions
-        marquee: { DEFAULT: "#ffb238", deep: "#e89a1c" }, // main actions
+        navy: "#0f1a2e", // page background
+        panel: "#172540", // filled controls (inputs, thumbnails while loading)
+        line: "#253556", // hairlines and control borders
+        cream: { DEFAULT: "#f5eee3", deep: "#e9dfcf" }, // main text; light bands
+        mute: "#bdb6ab", // secondary text (dimmed cream)
+        faint: "#8791a3", // tertiary text, captions
+        coral: { DEFAULT: "#ff7a63", deep: "#f0614a", ink: "#c7432f" }, // main actions; `ink` = coral text on cream
         verified: "#4fd1a5", // tiny live/verified status dots only, never large areas
-        danger: "#ff8a7a",
+        danger: "#ff8fa3",
       },
       fontFamily: {
         display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],

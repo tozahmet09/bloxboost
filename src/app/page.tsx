@@ -56,7 +56,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     .sort((a, b) => (byLikes ? 0 : Number(!!b.trailer) - Number(!!a.trailer)));
 
   return (
-    <div className="space-y-14 sm:space-y-16">
+    <div className="-mb-8 space-y-14 sm:-mb-12 sm:space-y-16">
       {deleted && <p role="status" className="notice">Your account was deleted.</p>}
 
       <section className="-mt-2 sm:-mt-4">
@@ -109,7 +109,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         <Head id="all-title" title="All games" sub="Play for fun. These don't give credits right now.">
           <div className="flex gap-4 text-sm" role="tablist" aria-label="Sort games">
             {([["/", "Newest", !byLikes], ["/?sort=liked", "Most liked", byLikes]] as const).map(([href, label, on]) => (
-              <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-marquee font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>
+              <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-coral font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>
                 {label}
               </Link>
             ))}
@@ -117,7 +117,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         </Head>
         {fresh.length === 0 ? (
           <p className="text-sm text-mute">
-            Nothing here yet. <Link href="/signup" className="text-marquee underline underline-offset-4">Add the first game.</Link>
+            Nothing here yet. <Link href="/signup" className="text-coral underline underline-offset-4">Add the first game.</Link>
           </p>
         ) : (
           <Rail label="All games">
@@ -126,29 +126,32 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         )}
       </section>
 
-      <section className="rule grid gap-10 pt-12 md:grid-cols-[1fr_2fr]">
-        <div>
-          <p className="eyebrow">For developers</p>
-          <h2 className="mt-2 text-2xl font-bold">Your first 100 real players.</h2>
-          <p className="mt-2 max-w-sm text-sm text-mute">Play other games to earn credits. Each credit brings one real player to yours.</p>
-          <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
-            <Link href="/signup" className="btn">Get players</Link>
-            <Link href="/how-it-works" className="link">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
+      {/* Cream band (the 30% of navy/cream/coral): full width, no frame, runs straight into the cream footer. */}
+      <section className="relative left-1/2 w-screen -translate-x-1/2 bg-cream text-navy">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1fr_2fr]">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-navy/55">For developers</p>
+            <h2 className="mt-2 text-2xl font-bold">Your first 100 real players.</h2>
+            <p className="mt-2 max-w-sm text-sm text-navy/70">Play other games to earn credits. Each credit brings one real player to yours.</p>
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <Link href="/signup" className="btn">Get players</Link>
+              <Link href="/how-it-works" className="inline-flex items-center gap-1 text-sm font-medium text-navy/70 transition hover:text-navy">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
+            </div>
           </div>
+          <ol className="grid gap-8 sm:grid-cols-3">
+            {([
+              ["Play 3 games", "Play 10 minutes and leave a review. Each one earns 1 credit."],
+              ["Add your game", "Paste the Roblox link and a trailer."],
+              ["Get real players", "Each one played 10+ minutes and left a review."],
+            ] as const).map(([t, d], i) => (
+              <li key={t}>
+                <div className="font-display text-sm font-bold tabular-nums text-coral-ink">0{i + 1}</div>
+                <div className="mt-2 font-semibold">{t}</div>
+                <p className="mt-1 text-sm text-navy/70">{d}</p>
+              </li>
+            ))}
+          </ol>
         </div>
-        <ol className="grid gap-8 sm:grid-cols-3">
-          {([
-            ["Play 3 games", "Play 10 minutes and leave a review. Each one earns 1 credit."],
-            ["Add your game", "Paste the Roblox link and a trailer."],
-            ["Get real players", "Each one played 10+ minutes and left a review."],
-          ] as const).map(([t, d], i) => (
-            <li key={t}>
-              <div className="font-display text-sm font-bold tabular-nums text-marquee">0{i + 1}</div>
-              <div className="mt-2 font-semibold">{t}</div>
-              <p className="mt-1 text-sm text-mute">{d}</p>
-            </li>
-          ))}
-        </ol>
       </section>
     </div>
   );
