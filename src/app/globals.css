@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  body { @apply bg-ink font-body text-cream antialiased; }
+  body { @apply overflow-x-clip bg-ink font-body text-cream antialiased; }
   h1, h2, h3 { @apply font-display; text-wrap: balance; }
   :focus-visible { @apply outline outline-2 outline-offset-2 outline-marquee; }
   ::selection { @apply bg-marquee text-ink; }

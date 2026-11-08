@@ -30,7 +30,7 @@ export function CreditCounter({ value }: { value: number }) {
   return (
     <Link
       href="/dashboard/billing"
-      className="relative inline-flex min-h-[44px] items-center gap-2 rounded-ctl bg-panel px-3 font-semibold tabular-nums transition hover:bg-line"
+      className="relative inline-flex min-h-[40px] items-center gap-2 rounded-ctl bg-panel px-3 font-semibold tabular-nums ring-1 ring-line transition hover:bg-line"
       aria-label={`${value} credits`}
     >
       <Ticket key={gain?.key} className={`h-4 w-4 text-marquee ${gain ? "animate-pop" : ""}`} />
