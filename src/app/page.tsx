@@ -27,6 +27,7 @@ const toCard = (g: Row): TrailerGame => ({
 /** First sentence or two of the description, short enough for the hero. */
 function pitchOf(d: string) {
   const one = d.replace(/\s+/g, " ").trim();
+  if (/^\[.*\]$/.test(one)) return ""; // Roblox placeholder like "[DESCRIPTION UNAVAILABLE]"
   if (one.length <= 140) return one;
   const cut = one.slice(0, 140);
   const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "));

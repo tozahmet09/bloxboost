@@ -230,7 +230,7 @@ export function ImmersiveHero({ games }: { games: TrailerGame[] }) {
       )}
       <div className="relative h-[min(78vh,560px)] min-h-[440px] overflow-hidden sm:h-[min(74vh,600px)]">
         {/* The picture fades out at the bottom (mask, not a navy overlay) so the ambient light below continues it without a seam. */}
-        <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,black_50%,transparent)]">
+        <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,black_72%,transparent)]">
           <div key={g.id} className="absolute inset-0 animate-fade">
             <Media game={g} active={trailerOn} priority />
           </div>
@@ -241,8 +241,9 @@ export function ImmersiveHero({ games }: { games: TrailerGame[] }) {
         <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-10 sm:pb-14 lg:pb-16">
           <div key={`t-${g.id}`} className="max-w-xl animate-rise-in">
             <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[.06em] text-cream/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-verified" aria-hidden />
-              {g.playing.toLocaleString()} playing now · {g.genre}
+              <span className={`h-1.5 w-1.5 rounded-full ${g.playing > 0 ? "bg-verified" : "bg-coral"}`} aria-hidden />
+              {g.playing > 0 ? `${g.playing.toLocaleString()} playing now` : "New on Spawnswap"}
+              {g.genre && g.genre !== "All" && <> · {g.genre}</>}
             </p>
             <h1 className="mt-3 text-[36px] font-semibold leading-[1] tracking-[-0.04em] sm:text-[48px]">
               <a href={`/games/${g.id}`} className="transition hover:text-cream/85">{g.name}</a>

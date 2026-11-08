@@ -108,7 +108,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
 
       <section className="grid gap-10 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-8">
-          {game.description && <p className="max-w-prose whitespace-pre-line text-sm leading-relaxed text-mute">{game.description.slice(0, 600)}</p>}
+          {game.description && !/^\s*\[.*\]\s*$/.test(game.description) && <p className="max-w-prose whitespace-pre-line text-sm leading-relaxed text-mute">{game.description.slice(0, 600)}</p>}
 
           <div className="space-y-4">
             <h2 className="text-xl font-bold">Comments <span className="text-mute tabular-nums">{game.comments.length}</span></h2>
