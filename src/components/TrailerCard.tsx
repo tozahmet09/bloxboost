@@ -181,22 +181,22 @@ export function Spotlight({ game }: { game: TrailerGame }) {
   );
 }
 
-/** Wide row for the Play & Earn panel: trailer on the left, title and stats on the right. */
+/** Tile for the Play & Earn panel: trailer with a +1 credit badge, title and stats under it. */
 export function EarnRow({ game, href }: { game: TrailerGame; href: string }) {
   const { ref, active } = useAutoplay(game.id, game.trailer);
   return (
-    <a ref={ref} href={href} className="group flex items-center gap-4 rounded-media p-1.5 transition hover:bg-white/[.03] sm:gap-5">
-      <div className="relative aspect-video w-36 shrink-0 overflow-hidden rounded-[12px] bg-panel ring-1 ring-line transition group-hover:ring-marquee sm:w-64 lg:w-72">
+    <a ref={ref} href={href} className="group block min-w-0">
+      <div className="relative aspect-video overflow-hidden rounded-[10px] bg-panel ring-1 ring-line transition group-hover:ring-2 group-hover:ring-marquee">
         <Media game={game} active={active} />
-        <span className="chip absolute right-1.5 top-1.5 bg-marquee px-2 py-0.5 font-bold text-ink sm:right-2 sm:top-2 sm:px-2.5 sm:py-1">
+        <span className="chip absolute right-1.5 top-1.5 bg-marquee px-2 py-0.5 font-bold text-ink">
           <Ticket className="h-3.5 w-3.5" /> +1 credit
         </span>
-        <span className="absolute bottom-2 left-2 hidden h-9 w-9 items-center justify-center rounded-full bg-ink/70 text-cream ring-1 ring-white/20 backdrop-blur sm:flex">
-          <Play className="ml-0.5 h-4 w-4 fill-current" />
+        <span className="absolute bottom-1.5 left-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-ink/70 text-cream ring-1 ring-white/20 backdrop-blur">
+          <Play className="ml-0.5 h-3 w-3 fill-current" />
         </span>
       </div>
-      <div className="min-w-0 space-y-1.5">
-        <div className="truncate font-display text-base font-bold group-hover:text-marquee sm:text-lg">{game.name}</div>
+      <div className="mt-2 space-y-0.5">
+        <div className="truncate text-sm font-semibold group-hover:text-marquee">{game.name}</div>
         <Meta game={game} />
       </div>
     </a>
