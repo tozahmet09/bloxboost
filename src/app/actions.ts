@@ -241,7 +241,7 @@ export async function verifyRobloxLink(_: FormState): Promise<FormState> {
 export async function addGame(_: FormState, f: FormData): Promise<FormState> {
   const user = await requireUser();
   const placeId = parsePlaceId(str(f, "placeUrl"));
-  if (!placeId) return { error: "Paste a Roblox game link like https://www.roblox.com/games/123456789/My-Game" };
+  if (!placeId) return { error: "That doesn't look like a Roblox game link. Open your game on roblox.com and copy the address, like https://www.roblox.com/games/123456789/My-Game" };
   if (!(await rateLimit(`addgame:${user.id}`, 10, 3600e3))) return { error: TOO_FAST };
 
   const existing = await db.game.findUnique({ where: { placeId } });
