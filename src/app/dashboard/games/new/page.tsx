@@ -34,7 +34,18 @@ export default async function NewGame() {
         <Link href="/play" className="btn w-full">Play {req.left} more game{req.left === 1 ? "" : "s"}</Link>
       ) : (
         <Form action={addGame} submit="Add game">
-          <input name="placeUrl" aria-label="Roblox game link" required placeholder="roblox.com/games/123456789/My-Game" className="input" />
+          <div>
+            <label htmlFor="placeUrl" className="label">Roblox game link</label>
+            <input id="placeUrl" name="placeUrl" aria-describedby="placeUrl-help" required placeholder="https://www.roblox.com/games/123456789/My-Game" className="input" />
+            <div id="placeUrl-help" className="mt-3 space-y-1.5 text-sm text-mute">
+              <p className="text-cream">Where to find it</p>
+              <ol className="list-decimal space-y-1 pl-5">
+                <li>Open your game on <a href="https://www.roblox.com/home" target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-cream">roblox.com</a> in a browser.</li>
+                <li>Copy the address from the top of the browser. It looks like <span className="whitespace-nowrap font-mono text-xs text-cream">roblox.com/games/123456789/…</span></li>
+              </ol>
+              <p>Or in Creator Dashboard, click the <span className="text-cream">⋯</span> on your game and choose <span className="text-cream">Copy URL</span>. The number alone (the place ID) works too.</p>
+            </div>
+          </div>
         </Form>
       )}
     </div>

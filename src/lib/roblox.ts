@@ -4,7 +4,10 @@ export function parsePlaceId(input: string): string | null {
   const s = input.trim();
   if (/^\d{3,20}$/.test(s)) return s;
   const m = s.match(/roblox\.com\/(?:[a-z-]+\/)?games\/(\d+)/i);
-  return m ? m[1] : null;
+  if (m) return m[1];
+  // e.g. roblox.com/games/start?placeId=123 or create.roblox.com/.../places/123
+  const q = s.match(/roblox\.com\/.*?(?:placeId=|places\/)(\d{3,20})/i);
+  return q ? q[1] : null;
 }
 
 export type RobloxGameInfo = {
