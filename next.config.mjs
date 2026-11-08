@@ -11,6 +11,12 @@ const securityHeaders = [
 
 const nextConfig = {
   poweredByHeader: false,
+  // The trailer check runs the ffmpeg binary, so it must ship with the server code untouched.
+  serverExternalPackages: ["ffmpeg-static"],
+  outputFileTracingIncludes: {
+    "/dashboard/games/[id]": ["./node_modules/ffmpeg-static/ffmpeg"],
+    "/admin/trailers": ["./node_modules/ffmpeg-static/ffmpeg"],
+  },
   images: { remotePatterns: [{ protocol: "https", hostname: "**.rbxcdn.com" }] },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
