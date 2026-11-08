@@ -36,7 +36,7 @@ export default async function Account() {
             <input id="password" name="password" type="password" required autoComplete="current-password" className="input" />
           </div>
           <label className="flex items-start gap-3 text-sm">
-            <input name="confirm" type="checkbox" required className="mt-0.5 h-5 w-5 shrink-0 accent-[#ff8a7a]" />
+            <input name="confirm" type="checkbox" required className="mt-0.5 h-5 w-5 shrink-0 accent-[#ff8fa3]" />
             <span>I understand my account and games will be deleted for good.</span>
           </label>
         </Form>

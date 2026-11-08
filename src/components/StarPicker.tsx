@@ -21,7 +21,7 @@ export function StarPicker({ name }: { name: string }) {
           onMouseEnter={() => setHover(n)}
           className="flex h-11 w-11 items-center justify-center rounded-ctl transition active:scale-90"
         >
-          <Star className={`h-7 w-7 transition ${n <= shown ? "scale-110 fill-marquee text-marquee" : "text-line"}`} />
+          <Star className={`h-7 w-7 transition ${n <= shown ? "scale-110 fill-coral text-coral" : "text-line"}`} />
         </button>
       ))}
     </div>

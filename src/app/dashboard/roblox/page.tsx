@@ -35,7 +35,7 @@ export default async function LinkRoblox({ searchParams }: { searchParams: Promi
             Paste this code into your Roblox profile <b className="text-cream">About</b>, save, then verify. You can remove it after.
           </p>
           <div className="flex items-center gap-3">
-            <code className="flex-1 rounded-ctl bg-panel px-4 py-3 text-center font-display text-lg font-bold tracking-wide text-marquee">{user.robloxVerifyCode}</code>
+            <code className="flex-1 rounded-ctl bg-panel px-4 py-3 text-center font-display text-lg font-bold tracking-wide text-coral">{user.robloxVerifyCode}</code>
             <CopyButton text={user.robloxVerifyCode} />
           </div>
           <Form action={verifyRobloxLink} submit="Verify" />

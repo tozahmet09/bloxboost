@@ -27,7 +27,7 @@ export function NavLinks() {
             }`}
           >
             {label}
-            {on && <span aria-hidden className="absolute inset-x-2 bottom-0 h-[2px] rounded-full bg-marquee sm:inset-x-3" />}
+            {on && <span aria-hidden className="absolute inset-x-2 bottom-0 h-[2px] rounded-full bg-coral sm:inset-x-3" />}
           </Link>
         );
       })}

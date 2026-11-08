@@ -137,12 +137,12 @@ export function TrailerCard({ game, href }: { game: TrailerGame; featured?: bool
         <div className="absolute inset-0 transition duration-300 ease-out group-hover:scale-[1.03] group-hover:brightness-110">
           <Media game={game} active={active} />
         </div>
-        {game.earns && <span className="chip absolute left-2 top-2 bg-marquee text-ink">+1 credit</span>}
+        {game.earns && <span className="chip absolute left-2 top-2 bg-coral text-navy">+1 credit</span>}
       </div>
       <div className="mt-2.5 flex gap-2">
         {game.rank && <span className="font-display text-sm font-bold tabular-nums text-faint">{game.rank}</span>}
         <div className="min-w-0 space-y-0.5">
-          <div className="truncate text-sm font-semibold transition group-hover:text-marquee">{game.name}</div>
+          <div className="truncate text-sm font-semibold transition group-hover:text-coral">{game.name}</div>
           <Meta game={game} />
         </div>
       </div>
@@ -157,7 +157,7 @@ export function Spotlight({ game }: { game: TrailerGame }) {
     <a ref={ref} href={`/games/${game.id}`} className="group relative block overflow-hidden rounded-media bg-panel">
       <div className="relative aspect-video lg:aspect-[21/8]">
         <Media game={game} active={active} />
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/95 via-ink/50 to-transparent px-4 pb-4 pt-20 sm:px-6 sm:pb-6">
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy/95 via-navy/50 to-transparent px-4 pb-4 pt-20 sm:px-6 sm:pb-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="min-w-0">
               <p className="eyebrow text-mute">Featured</p>

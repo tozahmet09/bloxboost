@@ -108,7 +108,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
             {user ? (
               <CommentForm gameId={game.id} />
             ) : (
-              <p className="text-sm text-mute"><Link href="/signup" className="text-marquee underline">Make a free account</Link> to like and comment.</p>
+              <p className="text-sm text-mute"><Link href="/signup" className="text-coral underline">Make a free account</Link> to like and comment.</p>
             )}
             {game.comments.length === 0 ? (
               <p className="text-sm text-mute">No comments yet. Played it? Say what you liked.</p>
@@ -118,7 +118,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
                   <li key={c.id} className="space-y-1 py-3">
                     <div className="flex items-center gap-2 text-xs text-mute">
                       <span className="font-semibold text-cream">{publicName(c.user)}</span>
-                      {c.user.id === game.ownerId && <span className="chip bg-marquee/10 text-marquee">Dev</span>}
+                      {c.user.id === game.ownerId && <span className="chip bg-coral/10 text-coral">Dev</span>}
                       <span>{ago(c.createdAt)}</span>
                     </div>
                     <p className="whitespace-pre-line text-sm">{c.body}</p>
@@ -150,7 +150,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
             <div>
               <div className="eyebrow">Average rating</div>
               <div className="mt-1 flex items-center gap-1 font-display text-3xl font-bold tabular-nums">
-                {stats._avg.rating.toFixed(1)} <Star className="h-5 w-5 fill-marquee text-marquee" />
+                {stats._avg.rating.toFixed(1)} <Star className="h-5 w-5 fill-coral text-coral" />
               </div>
             </div>
           )}

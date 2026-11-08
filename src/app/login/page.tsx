@@ -11,12 +11,12 @@ export default function Login() {
         <div>
           <div className="flex items-baseline justify-between">
             <label htmlFor="password" className="label">Password</label>
-            <Link href="/forgot-password" className="text-sm text-marquee">Forgot your password?</Link>
+            <Link href="/forgot-password" className="text-sm text-coral">Forgot your password?</Link>
           </div>
           <input id="password" name="password" type="password" required className="input" />
         </div>
       </Form>
-      <p className="text-center text-sm text-mute">New here? <Link href="/signup" className="text-marquee">Create an account</Link></p>
+      <p className="text-center text-sm text-mute">New here? <Link href="/signup" className="text-coral">Create an account</Link></p>
     </div>
   );
 }

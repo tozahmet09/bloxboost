@@ -137,7 +137,7 @@ export function TrailerUpload({ gameId, current, uploadsOn }: { gameId: string; 
           send(e.dataTransfer.files[0]);
         }}
         className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-ctl border border-dashed px-4 py-8 text-center transition ${
-          dragging ? "border-marquee bg-panel" : "border-line hover:border-mute"
+          dragging ? "border-coral bg-panel" : "border-line hover:border-mute"
         } ${busy ? "pointer-events-none opacity-70" : ""}`}
       >
         <input
@@ -150,17 +150,17 @@ export function TrailerUpload({ gameId, current, uploadsOn }: { gameId: string; 
         />
         {progress !== null ? (
           <>
-            <Film className="h-6 w-6 text-marquee" />
+            <Film className="h-6 w-6 text-coral" />
             <span className="font-semibold">Uploading… {progress}%</span>
             <span className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-line">
-              <span className="block h-full bg-marquee transition-all" style={{ width: `${progress}%` }} />
+              <span className="block h-full bg-coral transition-all" style={{ width: `${progress}%` }} />
             </span>
           </>
         ) : saving ? (
           <span className="font-semibold">Saving…</span>
         ) : (
           <>
-            <Upload className="h-6 w-6 text-marquee" />
+            <Upload className="h-6 w-6 text-coral" />
             <span className="font-semibold">{trailer ? "Upload a new video" : "Upload your trailer"}</span>
             <span className="text-xs text-mute">
               Drop a file here or click. MP4, WebM or MOV, 10 to 30 seconds, up to {TRAILER_MAX_MB} MB.

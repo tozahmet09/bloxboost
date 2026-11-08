@@ -18,7 +18,7 @@ export default async function Play({ searchParams }: { searchParams: Promise<{ e
   if (!user.robloxVerified) {
     return (
       <div className="mx-auto max-w-md space-y-4 py-10 text-center">
-        <Link2 className="mx-auto h-8 w-8 text-marquee" />
+        <Link2 className="mx-auto h-8 w-8 text-coral" />
         <h1 className="page-title">Link your Roblox account</h1>
         <p className="text-mute">So games can see it&apos;s you playing.</p>
         <Link href="/dashboard/roblox" className="btn">Link account</Link>

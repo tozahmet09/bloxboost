@@ -22,10 +22,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
-        <header className="sticky top-0 z-30 border-b border-white/[.06] bg-ink/85 backdrop-blur-md">
+        <header className="sticky top-0 z-30 border-b border-white/[.06] bg-navy/85 backdrop-blur-md">
           <nav className="mx-auto flex h-14 max-w-6xl items-center gap-1 px-4 sm:gap-2">
             <Link href="/" className="mr-1 flex items-center gap-2 font-display text-[17px] font-bold tracking-[-0.02em] sm:mr-5" aria-label="Spawnswap home">
-              <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-marquee font-display text-[13px] font-bold text-ink">S</span>
+              <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-coral font-display text-[13px] font-bold text-navy">S</span>
               <span className="hidden min-[420px]:inline">Spawnswap</span>
             </Link>
             <NavLinks />
@@ -61,16 +61,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </nav>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">{children}</main>
-        <footer className="mx-auto max-w-6xl px-4 pb-10 pt-8">
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/[.06] pt-6 text-xs text-faint">
+        <footer className="bg-cream text-navy/60">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 border-t border-navy/10 px-4 pb-10 pt-8 text-xs">
             <span>© {new Date().getFullYear()} Spawnswap. Not affiliated with Roblox Corporation.</span>
-            <span className="hidden h-3 w-px bg-line sm:block" aria-hidden />
-            <Link href="/how-it-works" className="transition hover:text-cream">How It Works</Link>
-            <Link href="/terms" className="transition hover:text-cream">Terms</Link>
-            <Link href="/privacy" className="transition hover:text-cream">Privacy</Link>
-            <Link href="/privacy#cookies" className="transition hover:text-cream">Cookies</Link>
-            <Link href="/refund" className="transition hover:text-cream">Refunds</Link>
-            <Link href="/contact" className="transition hover:text-cream">Contact</Link>
+            <span className="hidden h-3 w-px bg-navy/15 sm:block" aria-hidden />
+            <Link href="/how-it-works" className="transition hover:text-navy">How It Works</Link>
+            <Link href="/terms" className="transition hover:text-navy">Terms</Link>
+            <Link href="/privacy" className="transition hover:text-navy">Privacy</Link>
+            <Link href="/privacy#cookies" className="transition hover:text-navy">Cookies</Link>
+            <Link href="/refund" className="transition hover:text-navy">Refunds</Link>
+            <Link href="/contact" className="transition hover:text-navy">Contact</Link>
             <span className="sm:ml-auto">For ages 13+.</span>
           </div>
         </footer>
