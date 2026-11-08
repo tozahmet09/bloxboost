@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bricolage_Grotesque, Figtree } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { ChevronDown } from "lucide-react";
 import { NavLinks } from "@/components/NavLinks";
 import "./globals.css";
 import { getUser } from "@/lib/auth";
 import { CreditCounter } from "@/components/CreditCounter";
 
-const display = Bricolage_Grotesque({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-display" });
-const body = Figtree({ subsets: ["latin"], variable: "--font-body" });
+// One sans for everything (headlines are just tighter and heavier), plus a mono for numbers, counts and small labels.
+const body = Geist({ subsets: ["latin"], variable: "--font-body" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "https://spawnswap.com"),
@@ -20,9 +21,9 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser();
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" className={`${body.variable} ${mono.variable}`}>
       <body>
-        <header className="sticky top-0 z-30 border-b border-white/[.06] bg-navy/85 backdrop-blur-md">
+        <header className="sticky top-0 z-30 border-b border-white/[.06] bg-navy/70 backdrop-blur-xl backdrop-saturate-150">
           <nav className="mx-auto flex h-14 max-w-6xl items-center gap-1 px-4 sm:gap-2">
             <Link href="/" className="mr-1 flex items-center gap-2 font-display text-[17px] font-bold tracking-[-0.02em] sm:mr-5" aria-label="Spawnswap home">
               <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-coral font-display text-[13px] font-bold text-navy">S</span>

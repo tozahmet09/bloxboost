@@ -5,22 +5,33 @@ import { parseTrailer } from "@/lib/trailer";
 import { earningGameIds, isVerifiedGame } from "@/lib/credits";
 import { topGames } from "@/lib/community";
 import { Rail } from "@/components/Rail";
-import { EarnRow, Spotlight, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
+import { EarnRow, ImmersiveHero, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
+import { displayName, gameThumbnails } from "@/lib/thumbs";
 
 export const dynamic = "force-dynamic";
 
-type Row = { id: string; name: string; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null; scriptLastSeen: Date | null; likeCount: number };
+type Row = { id: string; name: string; description: string; universeId: string | null; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null; scriptLastSeen: Date | null; likeCount: number };
 // Pick fields one by one: this goes to the browser, so the game's tracker secret must never be in it.
 const toCard = (g: Row): TrailerGame => ({
   id: g.id,
-  name: g.name,
+  name: displayName(g.name),
   genre: g.genre,
+  pitch: pitchOf(g.description),
   playing: g.playing,
   iconUrl: g.iconUrl,
   trailer: parseTrailer(g.trailerUrl),
   verified: isVerifiedGame(g),
   likes: g.likeCount,
 });
+
+/** First sentence or two of the description, short enough for the hero. */
+function pitchOf(d: string) {
+  const one = d.replace(/\s+/g, " ").trim();
+  if (one.length <= 140) return one;
+  const cut = one.slice(0, 140);
+  const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "));
+  return end > 60 ? cut.slice(0, end + 1) : cut.replace(/\s+\S*$/, "") + "…";
+}
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ sort?: string; deleted?: string }> }) {
   const { sort, deleted } = await searchParams;
@@ -38,10 +49,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   let hot = (await topGames(6, 7)).map(toCard).map(mark);
   if (hot.length < 3) hot = (await topGames(6)).map(toCard).map(mark);
   hot.forEach((g, i) => (g.rank = i + 1));
-  const featured = (await db.game.findMany({ where: { featuredUntil: { gt: now } }, take: 12 })).map(toCard).map(mark);
-  featured.sort(() => Math.random() - 0.5); // a different featured game gets the spotlight on each visit
-  const spotlight = featured.find((g) => g.trailer) ?? null;
-  const featuredRest = featured.filter((g) => g !== spotlight);
+  const featuredRows = await db.game.findMany({ where: { featuredUntil: { gt: now } }, take: 12 });
+  const featured = featuredRows.map(toCard).map(mark);
+  featured.sort(() => Math.random() - 0.5); // a different featured game leads the hero on each visit
 
   // Everything that doesn't give a credit right now. Trailers first, newest first within each group.
   const byLikes = sort === "liked";
@@ -55,35 +65,66 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     .map(toCard)
     .sort((a, b) => (byLikes ? 0 : Number(!!b.trailer) - Number(!!a.trailer)));
 
+  // Wide Roblox screenshots for every card on the page (one cached call).
+  const all = [...featured, ...earn, ...hot, ...fresh];
+  const universe = new Map<string, string | null>();
+  for (const r of [...featuredRows, ...(await db.game.findMany({ where: { id: { in: all.map((g) => g.id) } }, select: { id: true, universeId: true } }))]) universe.set(r.id, r.universeId);
+  const thumbs = await gameThumbnails([...universe.values()]);
+  for (const g of all) g.thumb = thumbs.get(universe.get(g.id) ?? "") ?? null;
+
+  // Hero: paid featured games first, then games that give credits, then the most liked and newest. Up to 5, each with a picture.
+  const heroIds = new Set<string>();
+  const hero = [...featured, ...earn, ...hot, ...fresh].filter((g) => (g.thumb || g.trailer) && !heroIds.has(g.id) && heroIds.add(g.id)).slice(0, 5);
+
+  // Only the first card of each game gets a view-transition name (two elements with one name cancel the animation).
+  const named = new Set<string>();
+  const vt = (list: TrailerGame[]) => list.map((g) => (named.has(g.id) ? g : (named.add(g.id), { ...g, vt: true })));
+  const featuredRest = vt(featured);
+  const earnRow = vt(earn);
+  const hotRow = vt(hot);
+  const freshRow = vt(fresh);
+
   return (
     <div className="-mb-8 space-y-14 sm:-mb-12 sm:space-y-16">
-      {deleted && <p role="status" className="notice">Your account was deleted.</p>}
 
-      <section className="-mt-2 sm:-mt-4">
-        <h1 className="max-w-2xl text-[32px] font-bold leading-[1.08] sm:text-[42px]">
-          New Roblox games, <span className="text-mute">before they blow up.</span>
-        </h1>
-        <p className="mt-3 max-w-md text-mute">Watch trailers and play new games. Developers play each other&apos;s games to get real players.</p>
-        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
-          <Link href="/play" className="btn">Play &amp; earn credits</Link>
-          <Link href="/how-it-works" className="link">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
+      {hero.length > 0 ? (
+        <div className="-mt-[5.5rem] sm:-mt-[6.5rem]">
+          <ImmersiveHero games={hero} />
         </div>
-      </section>
+      ) : (
+        <section className="-mt-2 sm:-mt-4">
+          <h1 className="max-w-2xl text-[32px] font-semibold leading-[1.06] tracking-[-0.035em] sm:text-[44px]">
+            New Roblox games, <span className="text-faint">before they blow up.</span>
+          </h1>
+          <p className="mt-3 max-w-md text-mute">Watch trailers and play new games. Developers play each other&apos;s games to get real players.</p>
+          <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <Link href="/play" className="btn">Play &amp; earn credits</Link>
+            <Link href="/how-it-works" className="link">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
+          </div>
+        </section>
+      )}
+
+      <div className="relative z-10 space-y-12 sm:space-y-14">
+      {deleted && <p role="status" className="notice">Your account was deleted.</p>}
+      {hero.length > 0 && (
+        <p className="-mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-line pb-5 text-sm text-mute sm:-mt-6">
+          <span><span className="font-semibold text-cream">New Roblox games, before they blow up.</span> Developers play each other&apos;s games to get real players.</span>
+          <Link href="/how-it-works" className="link">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
+        </p>
+      )}
 
       <section aria-labelledby="earn-title">
-        <Head id="earn-title" title="Play & earn credits" sub="Play 10 minutes and leave a review. You get 1 credit, worth 1 real player for your game.">
+        <Head id="earn-title" eyebrow="01 — Earn" accent title="Play & earn credits" sub="Play 10 minutes and leave a review. You get 1 credit, worth 1 real player for your game.">
           <Link href="/play" className="link-accent">Start earning <ArrowRight className="h-3.5 w-3.5" /></Link>
         </Head>
         {earn.length === 0 ? (
           <p className="text-sm text-mute">No games are giving credits right now. New ones arrive all the time.</p>
         ) : (
           <Rail label="Games that give credits">
-            {earn.map((g) => <EarnRow key={g.id} game={g} href="/play" />)}
+            {earnRow.map((g) => <EarnRow key={g.id} game={g} href="/play" />)}
           </Rail>
         )}
       </section>
-
-      {spotlight && <Spotlight game={spotlight} />}
 
       {featuredRest.length > 0 && (
         <section aria-labelledby="featured-title">
@@ -96,17 +137,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
       {hot.length > 0 && (
         <section aria-labelledby="hot-title">
-          <Head id="hot-title" title="Most liked this week">
+          <Head id="hot-title" eyebrow="02 — Top" title="Most liked this week">
             <Link href="/leaderboard" className="link">Leaderboards <ArrowRight className="h-3.5 w-3.5" /></Link>
           </Head>
           <Rail label="Most liked this week">
-            {hot.map((g) => <TrailerCard key={g.id} game={g} />)}
+            {hotRow.map((g) => <TrailerCard key={g.id} game={g} />)}
           </Rail>
         </section>
       )}
 
       <section aria-labelledby="all-title">
-        <Head id="all-title" title="All games" sub="Play for fun. These don't give credits right now.">
+        <Head id="all-title" eyebrow="03 — New" title="All games" sub="Play for fun. These don't give credits right now.">
           <div className="flex gap-4 text-sm" role="tablist" aria-label="Sort games">
             {([["/", "Newest", !byLikes], ["/?sort=liked", "Most liked", byLikes]] as const).map(([href, label, on]) => (
               <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-coral font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>
@@ -121,17 +162,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           </p>
         ) : (
           <Rail label="All games">
-            {fresh.map((g) => <TrailerCard key={g.id} game={g} />)}
+            {freshRow.map((g) => <TrailerCard key={g.id} game={g} />)}
           </Rail>
         )}
       </section>
+
+      </div>
 
       {/* Cream band (the 30% of navy/cream/coral): full width, no frame, runs straight into the cream footer. */}
       <section className="relative left-1/2 w-screen -translate-x-1/2 bg-cream text-navy">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1fr_2fr]">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-navy/55">For developers</p>
-            <h2 className="mt-2 text-2xl font-bold">Your first 100 real players.</h2>
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[.08em] text-coral-ink">For developers</p>
+            <h2 className="mt-2 text-[28px] font-semibold leading-[1.1] tracking-[-0.03em]">Your first 100 real players.</h2>
             <p className="mt-2 max-w-sm text-sm text-navy/70">Play other games to earn credits. Each credit brings one real player to yours.</p>
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
               <Link href="/signup" className="btn">Get players</Link>
@@ -145,8 +188,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
               ["Get real players", "Each one played 10+ minutes and left a review."],
             ] as const).map(([t, d], i) => (
               <li key={t}>
-                <div className="font-display text-sm font-bold tabular-nums text-coral-ink">0{i + 1}</div>
-                <div className="mt-2 font-semibold">{t}</div>
+                <div className="font-mono text-[32px] leading-none tabular-nums text-coral-ink">0{i + 1}</div>
+                <div className="mt-4 font-semibold">{t}</div>
                 <p className="mt-1 text-sm text-navy/70">{d}</p>
               </li>
             ))}
@@ -158,10 +201,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 }
 
 /** Section title row: title, one quiet line under it, an optional text link on the right. No frame. */
-function Head({ id, title, sub, children }: { id: string; title: string; sub?: string; children?: React.ReactNode }) {
+function Head({ id, title, sub, eyebrow, accent, children }: { id: string; title: string; sub?: string; eyebrow?: string; accent?: boolean; children?: React.ReactNode }) {
   return (
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+    <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div>
+        {eyebrow && <p className={`mb-1.5 font-mono text-xs ${accent ? "text-coral" : "text-faint"}`}>{eyebrow}</p>}
         <h2 id={id} className="h-section">{title}</h2>
         {sub && <p className="sub">{sub}</p>}
       </div>
