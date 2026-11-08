@@ -25,6 +25,15 @@ async function openTaskCount(campaignId: string) {
   return db.playTask.count({ where: { campaignId, status: { in: ["PENDING", "PLAYED"] } } });
 }
 
+/** Ids of games that still have free player slots, i.e. playing them earns a credit right now. */
+export async function earningGameIds() {
+  const campaigns = await db.campaign.findMany({
+    where: { status: "ACTIVE" },
+    select: { gameId: true, targetPlayers: true, delivered: true, _count: { select: { tasks: { where: { status: { in: ["PENDING", "PLAYED"] } } } } } },
+  });
+  return new Set(campaigns.filter((c) => c.targetPlayers - c.delivered - c._count.tasks > 0).map((c) => c.gameId));
+}
+
 /** Games this player can play right now to earn credits. */
 export async function playQueue(playerId: string) {
   await expireStaleTasks();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BadgeCheck, Heart, Play, Users } from "lucide-react";
+import { BadgeCheck, Heart, Play, Ticket, Users } from "lucide-react";
 import type { Trailer } from "@/lib/trailer";
 import { GameIcon } from "./GameIcon";
 
@@ -26,6 +26,8 @@ export type TrailerGame = {
   likes?: number;
   /** Shown as a rank badge on leaderboard rows of cards. */
   rank?: number;
+  /** The owner still has player slots, so playing it earns a credit. */
+  earns?: boolean;
 };
 
 function useAutoplay(id: string, t: Trailer | null) {
@@ -126,14 +128,19 @@ function Meta({ game }: { game: TrailerGame }) {
 }
 
 /** Grid tile: trailer on top, title underneath. */
-export function TrailerCard({ game, featured }: { game: TrailerGame; featured?: boolean }) {
+export function TrailerCard({ game, featured, href }: { game: TrailerGame; featured?: boolean; href?: string }) {
   const { ref, active } = useAutoplay(game.id, game.trailer);
   return (
-    <a ref={ref} href={`/games/${game.id}`} className="group block">
+    <a ref={ref} href={href ?? `/games/${game.id}`} className="group block">
       <div className="relative aspect-video overflow-hidden rounded-media bg-panel ring-1 ring-line transition group-hover:ring-2 group-hover:ring-marquee">
         <Media game={game} active={active} />
         {featured && <span className="chip absolute left-2 top-2 bg-velvet text-cream">Featured</span>}
         {game.rank && <span className="chip absolute left-2 top-2 bg-marquee font-bold text-ink tabular-nums">#{game.rank}</span>}
+        {game.earns && (
+          <span className="chip absolute right-2 top-2 bg-marquee font-bold text-ink">
+            <Ticket className="h-3.5 w-3.5" /> +1 credit
+          </span>
+        )}
         {!game.trailer && <span className="chip absolute bottom-2 right-2 bg-ink/70 text-mute">No trailer yet</span>}
         <span className="absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-marquee text-ink shadow-lg">
