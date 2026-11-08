@@ -11,7 +11,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ game
   if (!game) return NextResponse.redirect(new URL("/", req.url));
   const ua = req.headers.get("user-agent") ?? "";
   if (!/bot|crawl|spider|preview|curl|wget/i.test(ua)) {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "0.0.0.0";
+    // x-real-ip is set by Vercel and can't be faked by the visitor, so fake headers can't inflate the visit count.
+    const ip = req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "0.0.0.0";
     const vh = visitorHash(ip, ua);
     const day = today();
     const seen = await db.visit.findFirst({ where: { gameId, visitorHash: vh, day } });
