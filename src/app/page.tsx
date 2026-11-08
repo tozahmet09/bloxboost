@@ -7,6 +7,7 @@ import { topGames } from "@/lib/community";
 import { Rail } from "@/components/Rail";
 import { EarnRow, ImmersiveHero, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
 import { displayName, gameThumbnails } from "@/lib/thumbs";
+import { releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
@@ -54,11 +55,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const featured = featuredRows.map(toCard).map(mark);
   featured.sort(() => Math.random() - 0.5); // a different featured game leads the hero on each visit
 
+  // Not out yet: soonest release first. They stay out of "All games" until their day.
+  const soon = (await db.game.findMany({ where: { releaseAt: { gt: now } }, orderBy: { releaseAt: "asc" }, take: 24 })).map((g) => ({
+    ...toCard(g),
+    release: releaseLabel(g.releaseAt!, now),
+  }));
+
   // Everything that doesn't give a credit right now. Trailers first, newest first within each group.
   const byLikes = sort === "liked";
   const fresh = (
     await db.game.findMany({
-      where: { id: { notIn: [...earning] }, OR: [{ featuredUntil: null }, { featuredUntil: { lte: now } }] },
+      where: {
+        id: { notIn: [...earning] },
+        AND: [
+          { OR: [{ featuredUntil: null }, { featuredUntil: { lte: now } }] },
+          { OR: [{ releaseAt: null }, { releaseAt: { lte: now } }] },
+        ],
+      },
       orderBy: byLikes ? [{ likeCount: "desc" }, { createdAt: "desc" }] : { createdAt: "desc" },
       take: 30,
     })
@@ -67,7 +80,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     .sort((a, b) => (byLikes ? 0 : Number(!!b.trailer) - Number(!!a.trailer)));
 
   // Wide Roblox screenshots for every card on the page (one cached call).
-  const all = [...featured, ...earn, ...hot, ...fresh];
+  const all = [...featured, ...earn, ...hot, ...soon, ...fresh];
   const universe = new Map<string, string | null>();
   for (const r of [...featuredRows, ...(await db.game.findMany({ where: { id: { in: all.map((g) => g.id) } }, select: { id: true, universeId: true } }))]) universe.set(r.id, r.universeId);
   const thumbs = await gameThumbnails([...universe.values()]);
@@ -83,6 +96,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const featuredRest = vt(featured);
   const earnRow = vt(earn);
   const hotRow = vt(hot);
+  const soonRow = vt(soon);
   const freshRow = vt(fresh);
 
   return (
@@ -147,8 +161,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         </section>
       )}
 
+      {soon.length > 0 && (
+        <section aria-labelledby="soon-title">
+          <Head id="soon-title" eyebrow="03 — Soon" title="Coming soon" sub="Games with a release date. Watch the trailer now, play on launch day." />
+          <Rail label="Coming soon">
+            {soonRow.map((g) => <TrailerCard key={g.id} game={g} />)}
+          </Rail>
+        </section>
+      )}
+
       <section aria-labelledby="all-title">
-        <Head id="all-title" eyebrow="03 — New" title="All games" sub="Play for fun. These don't give credits right now.">
+        <Head id="all-title" eyebrow={soon.length > 0 ? "04 — New" : "03 — New"} title="All games" sub="Play for fun. These don't give credits right now.">
           <div className="flex gap-4 text-sm" role="tablist" aria-label="Sort games">
             {([["/", "Newest", !byLikes], ["/?sort=liked", "Most liked", byLikes]] as const).map(([href, label, on]) => (
               <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-coral font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>

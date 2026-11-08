@@ -18,6 +18,7 @@ import { COMMENT_COOLDOWN_MS, COMMENT_MAX_CHARS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD
 import { postingRequirement } from "@/lib/community";
 import { emailEnabled, sendEmail } from "@/lib/email";
 import { operator } from "@/lib/legal";
+import { daysUntil, parseReleaseDate } from "@/lib/release";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -339,6 +340,24 @@ export async function refreshGame(f: FormData) {
     });
   } catch {}
   revalidatePath(`/dashboard/games/${g.id}`);
+}
+
+/** Sets or clears the game's release date. While it's in the future the game shows under "Coming soon". */
+export async function setReleaseDate(_: FormState, f: FormData): Promise<FormState> {
+  const user = await requireUser();
+  const game = await db.game.findFirst({ where: { id: str(f, "gameId"), ownerId: user.id }, select: { id: true } });
+  if (!game) return { error: "Game not found." };
+  const d = f.get("clear") ? null : parseReleaseDate(str(f, "releaseAt"));
+  if (d === undefined) return { error: "Pick a date." };
+  if (d) {
+    const n = daysUntil(d);
+    if (n < 1) return { error: "Pick a day after today. If it's already out, clear the date." };
+    if (n > 366) return { error: "Pick a date within the next year." };
+  }
+  await db.game.update({ where: { id: game.id }, data: { releaseAt: d } });
+  revalidatePath(`/dashboard/games/${game.id}`);
+  revalidatePath("/");
+  return { ok: d ? "Saved. Your game shows under Coming soon until that day." : "Release date cleared." };
 }
 
 export async function setTrailer(_: FormState, f: FormData): Promise<FormState> {

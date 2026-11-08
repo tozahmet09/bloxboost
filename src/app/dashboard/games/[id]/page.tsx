@@ -12,7 +12,8 @@ import { GoalBar } from "@/components/GoalBar";
 import { CopyButton } from "@/components/CopyButton";
 import { Form } from "@/components/Form";
 import { TrailerUpload } from "@/components/TrailerUpload";
-import { cancelCampaign, createCampaign, refreshGame, toggleCampaign } from "@/app/actions";
+import { cancelCampaign, createCampaign, refreshGame, setReleaseDate, toggleCampaign } from "@/app/actions";
+import { isUpcoming, releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +67,9 @@ export default async function GamePage({
   const avg = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : null;
   const since = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
   const visits7d = await db.visit.count({ where: { gameId: game.id, day: { gte: since } } });
+  const upcoming = isUpcoming(game.releaseAt);
+  const day = (n: number) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
+  const [minDate, maxDate] = [day(1), day(366)];
   const running = game.campaigns.filter((c) => ["ACTIVE", "PAUSED"].includes(c.status));
 
   return (
@@ -107,7 +111,24 @@ export default async function GamePage({
           />
         </Step>
 
-        <Step n={2} title="Get players" done={running.length > 0 || game.tasks.length > 0}>
+        <Step n={2} title="Release date" done={upcoming} optional>
+          <p className="max-w-prose text-sm text-mute">Not out yet? Set the day it launches. Until then it shows under <span className="text-cream">Coming soon</span> on the homepage, then moves to All games by itself.</p>
+          {upcoming && <p className="text-sm text-cream">{releaseLabel(game.releaseAt!)}</p>}
+          <div className="flex flex-wrap items-start gap-3">
+            <Form action={setReleaseDate} submit="Save date" className="flex flex-wrap items-start gap-3" buttonClass="btn-quiet">
+              <input type="hidden" name="gameId" value={game.id} />
+              <input name="releaseAt" type="date" aria-label="Release date" required min={minDate} max={maxDate} defaultValue={upcoming ? game.releaseAt!.toISOString().slice(0, 10) : ""} className="input w-44 [color-scheme:dark]" />
+            </Form>
+            {game.releaseAt && (
+              <Form action={setReleaseDate} submit="Clear date" className="flex" buttonClass="btn-quiet text-mute">
+                <input type="hidden" name="gameId" value={game.id} />
+                <input type="hidden" name="clear" value="1" />
+              </Form>
+            )}
+          </div>
+        </Step>
+
+        <Step n={3} title="Get players" done={running.length > 0 || game.tasks.length > 0}>
           <p className="text-sm text-mute">1 credit = 1 verified player. You have {user.credits}. Unused credits come back if you stop.</p>
           <Form action={createCampaign} submit="Start" className="flex flex-wrap items-start gap-3" buttonClass="btn">
             <input type="hidden" name="gameId" value={game.id} />
@@ -141,7 +162,7 @@ export default async function GamePage({
           )}
         </Step>
 
-        <Step n={3} title="Get the Verified badge" done={live} optional>
+        <Step n={4} title="Get the Verified badge" done={live} optional>
           <p className="max-w-prose text-sm text-mute">
             Players already count without this: we check on Roblox that they&apos;re in a game for 10 minutes. The tracker confirms they were in <b className="text-cream">your</b> game, gives you a{" "}
             <span className="inline-flex items-center gap-1 text-cream"><BadgeCheck className="h-3.5 w-3.5" /> Verified</span> badge and puts you first in the player queue.
@@ -163,7 +184,7 @@ export default async function GamePage({
           </div>
         </Step>
 
-        <Step n={4} title="Spotlight on the homepage" done={featured} optional>
+        <Step n={5} title="Spotlight on the homepage" done={featured} optional>
           {(needTrailer || !game.trailerUrl) && <p className="text-sm text-coral">Needs a trailer first (step 1).</p>}
           <form action="/api/checkout" method="post" className="flex flex-wrap gap-3">
             <input type="hidden" name="kind" value="FEATURED" />

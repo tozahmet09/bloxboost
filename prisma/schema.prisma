@@ -81,6 +81,8 @@ model Game {
   secret         String     @unique @default(cuid())
   scriptLastSeen DateTime?
   featuredUntil  DateTime?
+  // Release date set by the dev. While it's in the future the game shows in "Coming soon" instead of "All games".
+  releaseAt      DateTime?
   likeCount      Int        @default(0)
   createdAt      DateTime   @default(now())
   owner          User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
