@@ -12,6 +12,8 @@ import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { completeTask, startTask } from "@/lib/credits";
 import { del } from "@vercel/blob";
 import { isOwnUpload, parseTrailer } from "@/lib/trailer";
+import { checkTrailer } from "@/lib/trailerCheck";
+import { requireAdmin } from "@/lib/admin";
 import { COMMENT_COOLDOWN_MS, COMMENT_MAX_CHARS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS, PLAYS_TO_POST, REFERRAL_CREDITS } from "@/lib/money";
 import { postingRequirement } from "@/lib/community";
 import { emailEnabled, sendEmail } from "@/lib/email";
@@ -146,7 +148,7 @@ export async function deleteAccount(_: FormState, f: FormData): Promise<FormStat
   if (!(await verifyPassword(str(f, "password"), user.passwordHash))) return { error: "Wrong password." };
   if (f.get("confirm") !== "on") return { error: "Tick the box to confirm." };
 
-  const games = await db.game.findMany({ where: { ownerId: user.id }, select: { id: true, trailerUrl: true } });
+  const games = await db.game.findMany({ where: { ownerId: user.id }, select: { id: true, trailerUrl: true, pendingTrailerUrl: true } });
   const lockedPassword = await hashPassword(randomBytes(32).toString("hex"));
   await db.$transaction(async (tx) => {
     // Likes are also stored as counters on the game or comment, so take this user's likes off those first.
@@ -180,7 +182,8 @@ export async function deleteAccount(_: FormState, f: FormData): Promise<FormStat
     });
   });
   if (process.env.BLOB_READ_WRITE_TOKEN)
-    for (const g of games) if (isOwnUpload(g.trailerUrl, g.id)) await del(g.trailerUrl!).catch(() => {});
+    for (const g of games)
+      for (const u of [g.trailerUrl, g.pendingTrailerUrl]) if (isOwnUpload(u, g.id)) await del(u!).catch(() => {});
   await destroySession();
   redirect("/?deleted=1");
 }
@@ -343,15 +346,104 @@ export async function setTrailer(_: FormState, f: FormData): Promise<FormState> 
   const game = await db.game.findFirst({ where: { id: str(f, "gameId"), ownerId: user.id } });
   if (!game) return { error: "Game not found." };
   const url = str(f, "trailerUrl");
-  if (url && !parseTrailer(url))
+  const own = (u: string | null | undefined): u is string => !!process.env.BLOB_READ_WRITE_TOKEN && isOwnUpload(u, game.id);
+  const drop = async (u: string | null | undefined) => {
+    if (own(u)) await del(u).catch(() => {});
+  };
+  const done = (msg: FormState) => {
+    revalidatePath(`/dashboard/games/${game.id}`);
+    revalidatePath("/");
+    return msg;
+  };
+
+  if (!url) {
+    await db.game.update({
+      where: { id: game.id },
+      data: { trailerUrl: null, pendingTrailerUrl: null, trailerStatus: null, trailerNote: null, trailerCheckedAt: null },
+    });
+    await drop(game.trailerUrl);
+    await drop(game.pendingTrailerUrl);
+    return done({ ok: "Trailer removed." });
+  }
+  if (!parseTrailer(url))
     return { error: "Use a YouTube link (youtube.com/watch, youtu.be or Shorts) or a direct https link to an .mp4, .webm or .mov file." };
-  await db.game.update({ where: { id: game.id }, data: { trailerUrl: url || null } });
-  // Clean up the old uploaded video so storage doesn't fill with replaced trailers.
-  if (game.trailerUrl && game.trailerUrl !== url && isOwnUpload(game.trailerUrl, game.id) && process.env.BLOB_READ_WRITE_TOKEN)
-    await del(game.trailerUrl).catch(() => {});
-  revalidatePath(`/dashboard/games/${game.id}`);
+  if (url === game.trailerUrl) return { ok: "That trailer is already live." };
+  // Every check costs money (AI), so cap how often one account can try.
+  if (!(await rateLimit(`trailer:${user.id}`, 12, 864e5))) {
+    await drop(url);
+    return { error: "You've tried a lot of trailers today. Try again tomorrow." };
+  }
+
+  const v = await checkTrailer(url);
+  // A newer try replaces whatever was waiting before.
+  if (game.pendingTrailerUrl && game.pendingTrailerUrl !== url) await drop(game.pendingTrailerUrl);
+
+  if (v.decision === "approve") {
+    await db.game.update({
+      where: { id: game.id },
+      data: { trailerUrl: url, pendingTrailerUrl: null, trailerStatus: null, trailerNote: null, trailerCheckedAt: new Date() },
+    });
+    if (game.trailerUrl !== url) await drop(game.trailerUrl);
+    return done({ ok: "Trailer approved. It now plays on the homepage." });
+  }
+  if (v.decision === "review") {
+    await db.game.update({
+      where: { id: game.id },
+      data: { pendingTrailerUrl: url, trailerStatus: "REVIEW", trailerNote: v.adminNote ?? null },
+    });
+    return done({ ok: v.reason });
+  }
+  await db.game.update({ where: { id: game.id }, data: { pendingTrailerUrl: null, trailerStatus: "REJECTED", trailerNote: v.reason } });
+  await drop(url);
+  return done({ error: v.reason });
+}
+
+// ---------- admin: trailer review ----------
+
+export async function adminDecideTrailer(f: FormData) {
+  await requireAdmin();
+  const game = await db.game.findUnique({ where: { id: str(f, "gameId") } });
+  if (!game?.pendingTrailerUrl) return;
+  const own = (u: string | null) => !!u && !!process.env.BLOB_READ_WRITE_TOKEN && isOwnUpload(u, game.id);
+  if (str(f, "decision") === "approve") {
+    await db.game.update({
+      where: { id: game.id },
+      data: { trailerUrl: game.pendingTrailerUrl, pendingTrailerUrl: null, trailerStatus: null, trailerNote: null, trailerCheckedAt: new Date() },
+    });
+    if (game.trailerUrl && game.trailerUrl !== game.pendingTrailerUrl && own(game.trailerUrl)) await del(game.trailerUrl).catch(() => {});
+  } else {
+    const reason = str(f, "reason").slice(0, 300) || "This trailer doesn't meet our rules. Use real gameplay that's safe for kids.";
+    await db.game.update({ where: { id: game.id }, data: { pendingTrailerUrl: null, trailerStatus: "REJECTED", trailerNote: reason } });
+    if (own(game.pendingTrailerUrl)) await del(game.pendingTrailerUrl).catch(() => {});
+  }
+  revalidatePath("/admin/trailers");
   revalidatePath("/");
-  return { ok: url ? "Trailer saved. It now plays on the homepage." : "Trailer removed." };
+}
+
+/** Runs the check on trailers uploaded before checks existed, a few at a time. Anything not approved is hidden until an admin decides. */
+export async function adminCheckOldTrailers() {
+  await requireAdmin();
+  const games = await db.game.findMany({
+    where: { trailerUrl: { not: null }, trailerCheckedAt: null },
+    select: { id: true, trailerUrl: true },
+    take: 4,
+  });
+  for (const g of games) {
+    const v = await checkTrailer(g.trailerUrl!);
+    if (v.decision === "approve") await db.game.update({ where: { id: g.id }, data: { trailerCheckedAt: new Date() } });
+    else
+      await db.game.update({
+        where: { id: g.id },
+        data: {
+          trailerUrl: null,
+          pendingTrailerUrl: g.trailerUrl,
+          trailerStatus: "REVIEW",
+          trailerNote: `${v.decision === "reject" ? "Would reject" : "Unsure"}: ${v.adminNote ?? v.reason}`,
+        },
+      });
+  }
+  revalidatePath("/admin/trailers");
+  revalidatePath("/");
 }
 
 // ---------- playing (earning side) ----------

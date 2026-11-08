@@ -48,7 +48,21 @@ async function checkFile(file: File): Promise<string | null> {
   return null;
 }
 
-export function TrailerUpload({ gameId, current, uploadsOn }: { gameId: string; current: string | null; uploadsOn: boolean }) {
+export function TrailerUpload({
+  gameId,
+  current,
+  uploadsOn,
+  status,
+  note,
+}: {
+  gameId: string;
+  current: string | null;
+  uploadsOn: boolean;
+  /** "REVIEW" while a new trailer waits for a person, "REJECTED" after a no. */
+  status?: string | null;
+  /** Why the last trailer was rejected. */
+  note?: string | null;
+}) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
@@ -157,19 +171,29 @@ export function TrailerUpload({ gameId, current, uploadsOn }: { gameId: string; 
             </span>
           </>
         ) : saving ? (
-          <span className="font-semibold">Saving…</span>
+          <>
+            <Film className="h-6 w-6 text-coral" />
+            <span className="font-semibold">Checking your trailer…</span>
+            <span className="text-xs text-mute">We look at it for kid safety and quality. About 30 seconds.</span>
+          </>
         ) : (
           <>
             <Upload className="h-6 w-6 text-coral" />
             <span className="font-semibold">{trailer ? "Upload a new video" : "Upload your trailer"}</span>
             <span className="text-xs text-mute">
-              Drop a file here or click. MP4, WebM or MOV, 10 to 30 seconds, up to {TRAILER_MAX_MB} MB.
+              Drop a file here or click. 16:9 gameplay, 720p or higher, 10 to 30 seconds. MP4, WebM or MOV up to {TRAILER_MAX_MB} MB.
             </span>
           </>
         )}
       </label>
       )}
 
+      {!msg && status === "REVIEW" && (
+        <p className="text-sm text-mute">
+          Your new trailer is being reviewed. It usually takes less than a day.{trailer ? " Your current trailer stays live until then." : ""}
+        </p>
+      )}
+      {!msg && status === "REJECTED" && note && <p className="text-sm text-danger">Your last trailer wasn&apos;t approved: {note}</p>}
       {msg?.error && <p className="text-sm text-danger">{msg.error}</p>}
       {msg?.ok && <p className="text-sm text-verified">{msg.ok}</p>}
 
@@ -190,7 +214,7 @@ export function TrailerUpload({ gameId, current, uploadsOn }: { gameId: string; 
             className="input min-w-0 flex-1 basis-64"
           />
           <button className="btn" disabled={busy}>
-            {saving ? "Working…" : "Save link"}
+            {saving ? "Checking…" : "Save link"}
           </button>
         </form>
       ) : (

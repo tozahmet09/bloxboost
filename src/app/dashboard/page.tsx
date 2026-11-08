@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { BadgeCheck, ChevronRight, Gift, Plus, Link2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
+import { isAdminEmail } from "@/lib/admin";
 import { REFERRAL_CREDITS, SCRIPT_ALIVE_MS } from "@/lib/money";
 import { ensureReferralCode } from "@/lib/community";
 import { CopyButton } from "@/components/CopyButton";
@@ -27,6 +28,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const h = await headers();
   const appUrl = process.env.APP_URL || `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
   const invite = `${appUrl.replace(/\/$/, "")}/signup?ref=${code}`;
+  const toReview = isAdminEmail(user.email) ? await db.game.count({ where: { trailerStatus: "REVIEW" } }) : null;
   const [invited, invitedPaid] = await Promise.all([
     db.user.count({ where: { referredById: user.id } }),
     db.user.count({ where: { referredById: user.id, referralPaid: true } }),
@@ -47,6 +49,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         <Link href="/dashboard/roblox" className="flex items-center gap-3 rounded-ctl border border-line px-4 py-3 text-sm hover:border-mute">
           <Link2 className="h-4 w-4 text-coral" />
           <span className="flex-1">Link your Roblox account to earn free credits by playing.</span>
+          <ChevronRight className="h-4 w-4 text-mute" />
+        </Link>
+      )}
+
+      {toReview !== null && (
+        <Link href="/admin/trailers" className="flex items-center gap-3 rounded-ctl border border-line px-4 py-3 text-sm hover:border-mute">
+          <span className="flex-1">Trailer review: {toReview === 0 ? "nothing waiting" : `${toReview} waiting`}</span>
           <ChevronRight className="h-4 w-4 text-mute" />
         </Link>
       )}

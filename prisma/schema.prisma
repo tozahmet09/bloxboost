@@ -68,6 +68,12 @@ model Game {
   iconUrl        String?
   // YouTube link or direct .mp4/.webm URL shown as a muted preview on the homepage
   trailerUrl     String?
+  // Trailer check (see src/lib/trailerCheck.ts). trailerUrl is always the approved, public trailer.
+  // A new trailer the AI wasn't sure about waits in pendingTrailerUrl until an admin decides.
+  pendingTrailerUrl String?
+  trailerStatus     String? // null = nothing to say | "REVIEW" = waiting for an admin | "REJECTED"
+  trailerNote       String? // reason shown to the game's owner (and AI notes for the admin)
+  trailerCheckedAt  DateTime? // when the live trailer passed the check; null = uploaded before checks existed
   playing        Int        @default(0)
   visits         Int        @default(0)
   genre          String     @default("All")

@@ -97,8 +97,14 @@ export default async function GamePage({
 
       <ol className="divide-y divide-line border-y border-line">
         <Step n={1} title="Add a trailer" done={!!game.trailerUrl}>
-          <p className="text-sm text-mute">Games with a trailer show first. 10 to 30 seconds of gameplay.</p>
-          <TrailerUpload gameId={game.id} current={game.trailerUrl} uploadsOn={!!process.env.BLOB_READ_WRITE_TOKEN} />
+          <p className="text-sm text-mute">Games with a trailer show first. 10 to 30 seconds of gameplay. Every trailer is checked to keep the site safe for kids.</p>
+          <TrailerUpload
+            gameId={game.id}
+            current={game.trailerUrl}
+            uploadsOn={!!process.env.BLOB_READ_WRITE_TOKEN}
+            status={game.trailerStatus}
+            note={game.trailerNote}
+          />
         </Step>
 
         <Step n={2} title="Get players" done={running.length > 0 || game.tasks.length > 0}>
