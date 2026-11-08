@@ -92,6 +92,9 @@ export function Media({ game, active, priority }: { game: TrailerGame; active: b
           ref={(el) => { if (el?.complete && el.naturalWidth) el.classList.add("in"); }}
           onError={(e) => (e.currentTarget.hidden = true)}
         />
+      ) : t?.kind === "video" ? (
+        // Uploaded trailer and no screenshot: its first frame is the still.
+        <video className="absolute inset-0 h-full w-full object-cover" src={`${t.src}#t=0.1`} muted playsInline preload="metadata" />
       ) : (
         <>
           {game.iconUrl && (
@@ -223,15 +226,17 @@ export function ImmersiveHero({ games }: { games: TrailerGame[] }) {
       {/* Ambient light: a blurred copy of the game spills onto the page under the hero. */}
       {still && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img key={`amb-${g.id}`} src={still} alt="" aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[140%] w-full animate-fade object-cover opacity-25 blur-[90px] saturate-150" />
+        <img key={`amb-${g.id}`} src={still} alt="" aria-hidden className="pointer-events-none absolute inset-x-0 top-[35%] -z-10 h-[110%] w-full animate-fade object-cover opacity-30 blur-[90px] saturate-150 [mask-image:linear-gradient(to_bottom,transparent,black_35%,transparent)]" />
       )}
       <div className="relative h-[min(78vh,560px)] min-h-[440px] overflow-hidden sm:h-[min(74vh,600px)]">
-        <div key={g.id} className="absolute inset-0 animate-fade">
-          <Media game={g} active={trailerOn} priority />
+        {/* The picture fades out at the bottom (mask, not a navy overlay) so the ambient light below continues it without a seam. */}
+        <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,black_50%,transparent)]">
+          <div key={g.id} className="absolute inset-0 animate-fade">
+            <Media game={g} active={trailerOn} priority />
+          </div>
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/35 to-navy/0" />
+          <div aria-hidden className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-navy/70 to-navy/0" />
         </div>
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/55 to-navy/0 sm:via-navy/45" />
-        <div aria-hidden className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-navy via-navy/60 to-navy/0" />
-        <div aria-hidden className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-navy/70 to-navy/0" />
 
         <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-10 sm:pb-14 lg:pb-16">
           <div key={`t-${g.id}`} className="max-w-xl animate-rise-in">
