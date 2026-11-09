@@ -6,6 +6,8 @@ import { NavLinks } from "@/components/NavLinks";
 import "./globals.css";
 import { getUser } from "@/lib/auth";
 import { CreditCounter } from "@/components/CreditCounter";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // One sans for everything (headlines are just tighter and heavier), plus a mono for numbers, counts and small labels.
 const body = Geist({ subsets: ["latin"], variable: "--font-body" });
@@ -75,6 +77,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <span className="sm:ml-auto">For ages 13+.</span>
           </div>
         </footer>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
