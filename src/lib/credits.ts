@@ -28,7 +28,7 @@ async function openTaskCount(campaignId: string) {
 /** Ids of games that still have free player slots, i.e. playing them earns a credit right now. */
 export async function earningGameIds() {
   const campaigns = await db.campaign.findMany({
-    where: { status: "ACTIVE" },
+    where: { status: "ACTIVE", game: { hiddenAt: null } },
     select: { gameId: true, targetPlayers: true, delivered: true, _count: { select: { tasks: { where: { status: { in: ["PENDING", "PLAYED"] } } } } } },
   });
   return new Set(campaigns.filter((c) => c.targetPlayers - c.delivered - c._count.tasks > 0).map((c) => c.gameId));
@@ -42,6 +42,7 @@ export async function playQueue(playerId: string) {
       status: "ACTIVE",
       game: {
         ownerId: { not: playerId },
+        hiddenAt: null,
         tasks: { none: { playerId } },
       },
     },

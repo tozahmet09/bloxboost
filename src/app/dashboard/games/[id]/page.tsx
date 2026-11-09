@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import { BadgeCheck, CheckCircle2, Circle, RefreshCw, Star, Pause, Play as PlayIcon, X } from "lucide-react";
+import { BadgeCheck, CheckCircle2, Circle, Eye, EyeOff, RefreshCw, Star, Pause, Play as PlayIcon, X } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { FEATURED_OPTIONS, SCRIPT_ALIVE_MS, fmt } from "@/lib/money";
@@ -12,7 +12,7 @@ import { GoalBar } from "@/components/GoalBar";
 import { CopyButton } from "@/components/CopyButton";
 import { Form } from "@/components/Form";
 import { TrailerUpload } from "@/components/TrailerUpload";
-import { cancelCampaign, createCampaign, refreshGame, setReleaseDate, toggleCampaign } from "@/app/actions";
+import { cancelCampaign, createCampaign, refreshGame, setGameHidden, setReleaseDate, toggleCampaign } from "@/app/actions";
 import { isUpcoming, releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +36,7 @@ export default async function GamePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ paid?: string; needTrailer?: string; session_id?: string; payments?: string }>;
+  searchParams: Promise<{ paid?: string; needTrailer?: string; session_id?: string; payments?: string; visibility?: string }>;
 }) {
   const user = await requireUser();
   const { id } = await params;
@@ -95,6 +95,12 @@ export default async function GamePage({
           </button>
         </form>
       </header>
+      {game.hiddenAt && (
+        <p className="text-sm text-mute">
+          This game is hidden. Nobody else can see it or get it in the player queue.{" "}
+          <a href="#visibility" className="text-coral underline-offset-4 hover:underline">Show it again</a>
+        </p>
+      )}
       {notice === "paid" && <p className="text-sm text-verified">Payment received.</p>}
       {notice === "processing" && <p className="text-sm text-mute">Payment is processing. The spotlight starts as soon as Stripe confirms it.</p>}
       {notice === "off" && <p className="text-sm text-mute">Spotlight purchases aren&apos;t open yet.</p>}
@@ -144,12 +150,12 @@ export default async function GamePage({
                   <span className={`text-xs ${c.status === "ACTIVE" ? "text-cream" : "text-faint"}`}>{c.status === "ACTIVE" ? "● Active" : c.status.charAt(0) + c.status.slice(1).toLowerCase()}</span>
                   {["ACTIVE", "PAUSED"].includes(c.status) && (
                     <span className="flex gap-1">
-                      <form action={toggleCampaign}>
+                      {!(game.hiddenAt && c.status === "PAUSED") && <form action={toggleCampaign}>
                         <input type="hidden" name="id" value={c.id} />
                         <button className="btn-quiet min-h-[36px] px-2.5 text-xs">
                           {c.status === "ACTIVE" ? <><Pause className="h-3.5 w-3.5" /> Pause</> : <><PlayIcon className="h-3.5 w-3.5" /> Resume</>}
                         </button>
-                      </form>
+                      </form>}
                       <form action={cancelCampaign}>
                         <input type="hidden" name="id" value={c.id} />
                         <button className="btn-quiet min-h-[36px] px-2.5 text-xs"><X className="h-3.5 w-3.5" /> Stop</button>
@@ -225,6 +231,30 @@ export default async function GamePage({
             ))}
           </ul>
         )}
+      </section>
+
+      <section id="visibility" className="scroll-mt-24 space-y-3 border-t border-line pt-8">
+        <h2 className="text-xl font-bold">{game.hiddenAt ? "Hidden" : "Hide this game"}</h2>
+        {q.visibility === "hidden" && <p className="text-sm text-verified">Game hidden.</p>}
+        {q.visibility === "shown" && <p className="text-sm text-verified">Game is public again.</p>}
+        {game.hiddenAt ? (
+          <p className="max-w-prose text-sm text-mute">
+            Hidden since {game.hiddenAt.toISOString().slice(0, 10)}. Show it again to put it back on the site. Your campaigns stay paused until you resume them above.
+          </p>
+        ) : (
+          <p className="max-w-prose text-sm text-mute">
+            Takes the game off the homepage, the leaderboard and the player queue. Running campaigns pause and keep their credits.
+            Nothing is deleted: likes, comments and reviews stay, and you can show it again any time.
+            {featured && " The spotlight time you paid for keeps running while it's hidden."}
+          </p>
+        )}
+        <form action={setGameHidden}>
+          <input type="hidden" name="gameId" value={game.id} />
+          <input type="hidden" name="hide" value={game.hiddenAt ? "0" : "1"} />
+          <button className="btn-quiet">
+            {game.hiddenAt ? <><Eye className="h-4 w-4" /> Show game</> : <><EyeOff className="h-4 w-4" /> Hide game</>}
+          </button>
+        </form>
       </section>
     </div>
   );

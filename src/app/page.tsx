@@ -42,7 +42,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const mark = (g: TrailerGame) => ((g.earns = earning.has(g.id)), g);
   // Games that give a credit right now, verified (tracker script) first, then newest.
   const earn = (
-    await db.game.findMany({ where: { id: { in: [...earning] } }, orderBy: { createdAt: "desc" }, take: 24 })
+    await db.game.findMany({ where: { id: { in: [...earning] }, hiddenAt: null }, orderBy: { createdAt: "desc" }, take: 24 })
   )
     .map(toCard)
     .map(mark)
@@ -51,12 +51,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   let hot = (await topGames(6, 7)).map(toCard).map(mark);
   if (hot.length < 3) hot = (await topGames(6)).map(toCard).map(mark);
   hot.forEach((g, i) => (g.rank = i + 1));
-  const featuredRows = await db.game.findMany({ where: { featuredUntil: { gt: now } }, take: 12 });
+  const featuredRows = await db.game.findMany({ where: { featuredUntil: { gt: now }, hiddenAt: null }, take: 12 });
   const featured = featuredRows.map(toCard).map(mark);
   featured.sort(() => Math.random() - 0.5); // a different featured game leads the hero on each visit
 
   // Not out yet: soonest release first. They stay out of "All games" until their day.
-  const soon = (await db.game.findMany({ where: { releaseAt: { gt: now } }, orderBy: { releaseAt: "asc" }, take: 24 })).map((g) => ({
+  const soon = (await db.game.findMany({ where: { releaseAt: { gt: now }, hiddenAt: null }, orderBy: { releaseAt: "asc" }, take: 24 })).map((g) => ({
     ...toCard(g),
     release: releaseLabel(g.releaseAt!, now),
   }));
@@ -67,6 +67,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     await db.game.findMany({
       where: {
         id: { notIn: [...earning] },
+        hiddenAt: null,
         AND: [
           { OR: [{ featuredUntil: null }, { featuredUntil: { lte: now } }] },
           { OR: [{ releaseAt: null }, { releaseAt: { lte: now } }] },

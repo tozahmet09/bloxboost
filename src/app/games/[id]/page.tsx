@@ -20,8 +20,8 @@ const nameSel = { displayName: true, robloxUsername: true, robloxVerified: true 
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const g = await db.game.findUnique({ where: { id }, select: { name: true, description: true } });
-  return g ? { title: displayName(g.name), description: g.description.slice(0, 160) } : {};
+  const g = await db.game.findUnique({ where: { id }, select: { name: true, description: true, hiddenAt: true } });
+  return g && !g.hiddenAt ? { title: displayName(g.name), description: g.description.slice(0, 160) } : {};
 }
 
 function ago(d: Date) {
@@ -40,12 +40,12 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
     where: { id },
     select: {
       id: true, name: true, description: true, universeId: true, genre: true, playing: true, visits: true, iconUrl: true, trailerUrl: true,
-      scriptLastSeen: true, likeCount: true, ownerId: true, releaseAt: true,
+      scriptLastSeen: true, likeCount: true, ownerId: true, releaseAt: true, hiddenAt: true,
       owner: { select: nameSel },
       comments: { orderBy: [{ likeCount: "desc" }, { createdAt: "desc" }], take: 100, include: { user: { select: { id: true, ...nameSel } } } },
     },
   });
-  if (!game) notFound();
+  if (!game || (game.hiddenAt && user?.id !== game.ownerId)) notFound();
   game.name = displayName(game.name);
   const [stats, liked, myCommentLikes] = await Promise.all([
     db.playTask.aggregate({ where: { gameId: id, status: "COMPLETED" }, _count: { id: true }, _avg: { rating: true } }),
@@ -59,6 +59,12 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
 
   return (
     <div className="space-y-10">
+      {game.hiddenAt && (
+        <p className="text-sm text-mute">
+          Only you can see this page. The game is hidden.{" "}
+          <Link href={`/dashboard/games/${game.id}#visibility`} className="text-coral underline-offset-4 hover:underline">Show it again</Link>
+        </p>
+      )}
       {/* Same view-transition name as the homepage card, so the card grows into this player. */}
       <div className="relative aspect-video overflow-hidden rounded-media bg-panel shadow-lift lg:aspect-[21/8]" style={{ viewTransitionName: `game-${game.id}` }}>
         {t?.kind === "youtube" ? (

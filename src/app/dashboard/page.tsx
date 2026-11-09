@@ -82,7 +82,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                           <BadgeCheck className="h-3 w-3" /> Verified
                         </span>
                       )}
-                      {coming > 0 && <span className="text-xs text-mute">{coming} on the way</span>}
+                      {g.hiddenAt && <span className="text-xs text-faint">Hidden</span>}
+                      {coming > 0 && !g.hiddenAt && <span className="text-xs text-mute">{coming} on the way</span>}
                     </div>
                     <GoalBar count={g._count.tasks} compact />
                   </div>
