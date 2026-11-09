@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Privacy Policy" };
 export default function Privacy() {
   const op = operator();
   return (
-    <LegalPage title="Privacy Policy" updated="November 5, 2026">
+    <LegalPage title="Privacy Policy" updated="November 9, 2026">
       <p>We collect as little as we can and never sell it. This page explains what we keep, why, for how long, and what you can ask us to do with it.</p>
 
       <h2>Who is responsible</h2>
@@ -29,12 +29,14 @@ export default function Privacy() {
         <li><b>Reviews:</b> the rating and text you write. The game&apos;s developer sees them with your Roblox username.</li>
         <li><b>Payments:</b> {op.payments} handles card details. We never see your card number, only the amount and whether it was paid.</li>
         <li><b>Visits:</b> when you open a game from our homepage we store a one-way hash of your IP address and browser, reset daily, to count unique visits. We don&apos;t store the IP address itself.</li>
+        <li><b>Site statistics:</b> we use Vercel Web Analytics and Speed Insights to see which pages are visited and how fast they load. They use no cookies and don&apos;t identify you: each visit gets an anonymous hash that resets every day, and we only see totals (page, country, device type, referring site).</li>
         <li><b>Security:</b> to stop password guessing and spam we briefly log attempts to log in or sign up, keyed by IP address or email. These records are deleted after about a day.</li>
       </ul>
 
       <h2>Why we use it</h2>
       <ul>
         <li>To run your account and the credit swap you signed up for (needed to provide the service).</li>
+        <li>To see which pages people use and keep the site fast (our legitimate interest in improving it).</li>
         <li>To prevent cheating, fake plays and abuse (our legitimate interest in a fair service).</li>
         <li>To take payments and keep tax and accounting records (legal obligation).</li>
       </ul>
@@ -43,7 +45,7 @@ export default function Privacy() {
       <h2 id="cookies">Cookies</h2>
       <p>
         We use one cookie, <b>bb_session</b>, which keeps you logged in. It is strictly necessary, so we don&apos;t ask for consent.
-        We use no advertising, analytics or tracking cookies. Trailers play through YouTube&apos;s privacy-enhanced mode
+        We use no advertising, analytics or tracking cookies (our site statistics work without cookies). Trailers play through YouTube&apos;s privacy-enhanced mode
         (youtube-nocookie.com); YouTube may store data in your browser once you press play. The checkout page is run by {op.payments}, which uses its own cookies to prevent fraud.
       </p>
 
