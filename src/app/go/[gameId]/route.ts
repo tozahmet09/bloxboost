@@ -8,7 +8,7 @@ import { robloxGameUrl } from "@/lib/roblox";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = await params;
   const game = await db.game.findUnique({ where: { id: gameId } });
-  if (!game) return NextResponse.redirect(new URL("/", req.url));
+  if (!game || game.hiddenAt) return NextResponse.redirect(new URL("/", req.url));
   const ua = req.headers.get("user-agent") ?? "";
   if (!/bot|crawl|spider|preview|curl|wget/i.test(ua)) {
     // x-real-ip is set by Vercel and can't be faked by the visitor, so fake headers can't inflate the visit count.

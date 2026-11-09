@@ -12,7 +12,7 @@ export async function postingRequirement(userId: string) {
     db.playTask.count({ where: { playerId: userId, status: "COMPLETED" } }),
     db.game.count({ where: { ownerId: userId } }),
     // games this user could still play right now
-    db.game.count({ where: { ownerId: { not: userId }, campaigns: { some: { status: "ACTIVE" } }, tasks: { none: { playerId: userId } } } }),
+    db.game.count({ where: { ownerId: { not: userId }, hiddenAt: null, campaigns: { some: { status: "ACTIVE" } }, tasks: { none: { playerId: userId } } } }),
   ]);
   const needed = Math.min(PLAYS_TO_POST, done + available);
   return { done, needed, left: Math.max(0, needed - done), hasGames: ownGames > 0 };
@@ -36,11 +36,11 @@ const since = (days: number) => new Date(Date.now() - days * 864e5);
 /** Most liked games, overall or in the last N days. */
 export async function topGames(take = 20, days?: number) {
   if (!days) {
-    return db.game.findMany({ where: { likeCount: { gt: 0 } }, orderBy: [{ likeCount: "desc" }, { createdAt: "asc" }], take });
+    return db.game.findMany({ where: { likeCount: { gt: 0 }, hiddenAt: null }, orderBy: [{ likeCount: "desc" }, { createdAt: "asc" }], take });
   }
   const rows = await db.like.groupBy({
     by: ["gameId"],
-    where: { createdAt: { gte: since(days) } },
+    where: { createdAt: { gte: since(days) }, game: { hiddenAt: null } },
     _count: { gameId: true },
     orderBy: { _count: { gameId: "desc" } },
     take,
@@ -54,6 +54,7 @@ export async function topGames(take = 20, days?: number) {
 export async function topDevs(take = 20) {
   const rows = await db.game.groupBy({
     by: ["ownerId"],
+    where: { hiddenAt: null },
     _sum: { likeCount: true },
     _count: { id: true },
     orderBy: { _sum: { likeCount: "desc" } },

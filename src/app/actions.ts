@@ -288,6 +288,7 @@ export async function createCampaign(_: FormState, f: FormData): Promise<FormSta
   const user = await requireUser();
   const game = await db.game.findFirst({ where: { id: str(f, "gameId"), ownerId: user.id } });
   if (!game) return { error: "Pick one of your games." };
+  if (game.hiddenAt) return { error: "This game is hidden. Show it again to start a campaign." };
   const n = parseInt(str(f, "players"), 10);
   if (!(n >= 1 && n <= 10000)) return { error: "Choose between 1 and 10,000 players." };
   const ok = await db.$transaction(async (tx) => {
@@ -303,8 +304,9 @@ export async function createCampaign(_: FormState, f: FormData): Promise<FormSta
 
 export async function toggleCampaign(f: FormData) {
   const user = await requireUser();
-  const c = await db.campaign.findFirst({ where: { id: str(f, "id"), game: { ownerId: user.id } } });
+  const c = await db.campaign.findFirst({ where: { id: str(f, "id"), game: { ownerId: user.id } }, include: { game: { select: { hiddenAt: true } } } });
   if (!c || !["ACTIVE", "PAUSED"].includes(c.status)) return;
+  if (c.status === "PAUSED" && c.game.hiddenAt) return; // a hidden game gets no players
   await db.campaign.update({ where: { id: c.id }, data: { status: c.status === "ACTIVE" ? "PAUSED" : "ACTIVE" } });
   revalidatePath(`/dashboard/games/${c.gameId}`);
 }
@@ -326,6 +328,25 @@ export async function cancelCampaign(f: FormData) {
     await tx.user.update({ where: { id: user.id }, data: { credits: { increment: refund } } });
   });
   revalidatePath("/dashboard");
+}
+
+/**
+ * The dev hides their game (or shows it again). Hidden games leave every public page and the player queue.
+ * Nothing is deleted: campaigns are paused with their credits kept, and likes, comments and reviews stay.
+ */
+export async function setGameHidden(f: FormData) {
+  const user = await requireUser();
+  const hide = str(f, "hide") === "1";
+  const game = await db.game.findFirst({ where: { id: str(f, "gameId"), ownerId: user.id }, select: { id: true } });
+  if (!game) return;
+  await db.$transaction(async (tx) => {
+    await tx.game.update({ where: { id: game.id }, data: { hiddenAt: hide ? new Date() : null } });
+    if (hide) await tx.campaign.updateMany({ where: { gameId: game.id, status: "ACTIVE" }, data: { status: "PAUSED" } });
+  });
+  revalidatePath("/");
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/games/${game.id}`);
+  redirect(`/dashboard/games/${game.id}?visibility=${hide ? "hidden" : "shown"}#visibility`);
 }
 
 export async function refreshGame(f: FormData) {
@@ -493,7 +514,7 @@ export async function toggleLike(f: FormData) {
   const user = await getUser();
   const gameId = str(f, "gameId");
   if (!user) redirect("/login");
-  if (!(await db.game.findUnique({ where: { id: gameId }, select: { id: true } }))) return;
+  if (!(await db.game.findFirst({ where: { id: gameId, hiddenAt: null }, select: { id: true } }))) return;
   await db.$transaction(async (tx) => {
     const removed = await tx.like.deleteMany({ where: { userId: user.id, gameId } });
     if (removed.count) {
@@ -514,7 +535,7 @@ export async function addComment(_: FormState, f: FormData): Promise<FormState> 
   const body = str(f, "body").replace(/\s+\n/g, "\n").slice(0, COMMENT_MAX_CHARS + 1);
   if (body.length < 2) return { error: "Write a little more." };
   if (body.length > COMMENT_MAX_CHARS) return { error: `Keep it under ${COMMENT_MAX_CHARS} characters.` };
-  if (!(await db.game.findUnique({ where: { id: gameId }, select: { id: true } }))) return { error: "Game not found." };
+  if (!(await db.game.findFirst({ where: { id: gameId, hiddenAt: null }, select: { id: true } }))) return { error: "Game not found." };
   const last = await db.comment.findFirst({ where: { userId: user.id }, orderBy: { createdAt: "desc" } });
   if (last && Date.now() - last.createdAt.getTime() < COMMENT_COOLDOWN_MS) return { error: "Slow down a little, then try again." };
   await db.comment.create({ data: { gameId, userId: user.id, body } });
