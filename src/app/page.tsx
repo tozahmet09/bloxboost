@@ -208,9 +208,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           </div>
           <ol className="grid gap-8 sm:grid-cols-3">
             {([
-              ["Play 3 games", "Play 10 minutes and leave a review. Each one earns 1 credit."],
-              ["Add your game", "Paste the Roblox link and a trailer."],
-              ["Get real players", "Each one played 10+ minutes and left a review."],
+              ["Add your game", "Paste the Roblox link. It shows on the site right away."],
+              ["Earn credits", "Play other games 10 minutes and leave a review. Each one earns 1 credit."],
+              ["Get real players", "Each credit brings one player who played 10+ minutes and left a review."],
             ] as const).map(([t, d], i) => (
               <li key={t}>
                 <div className="font-mono text-[32px] leading-none tabular-nums text-coral-ink">0{i + 1}</div>

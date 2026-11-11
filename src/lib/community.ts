@@ -1,22 +1,6 @@
 import "server-only";
 import { randomBytes } from "crypto";
 import { db } from "./db";
-import { PLAYS_TO_POST } from "./money";
-
-/**
- * How many games this user still has to play before posting their own.
- * While the site is new there may be fewer than 3 games to play, so the rule only asks for what exists.
- */
-export async function postingRequirement(userId: string) {
-  const [done, ownGames, available] = await Promise.all([
-    db.playTask.count({ where: { playerId: userId, status: "COMPLETED" } }),
-    db.game.count({ where: { ownerId: userId } }),
-    // games this user could still play right now
-    db.game.count({ where: { ownerId: { not: userId }, hiddenAt: null, campaigns: { some: { status: "ACTIVE" } }, tasks: { none: { playerId: userId } } } }),
-  ]);
-  const needed = Math.min(PLAYS_TO_POST, done + available);
-  return { done, needed, left: Math.max(0, needed - done), hasGames: ownGames > 0 };
-}
 
 /** The user's invite code, created the first time it's needed. */
 export async function ensureReferralCode(userId: string) {

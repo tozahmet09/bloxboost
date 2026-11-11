@@ -27,7 +27,6 @@ export default function Terms() {
         <li>You earn credits by playing other games for 10 minutes and leaving an honest review, or you buy them.</li>
         <li>Credits have no cash value, can&apos;t be transferred or exchanged for Robux or money, and don&apos;t expire.</li>
         <li>Credits reserved for a campaign come back to you if you stop it before they are used.</li>
-        <li>Before posting your own game you play and review 3 other games (fewer while the site has fewer games).</li>
         <li>Invite bonus: a friend who joins with your link gets 5 credits, and you get 5 when they finish their first verified play on someone else&apos;s game. Their Roblox account must be at least 30 days old, and you can collect the bonus up to 50 times. Inviting yourself or alt accounts voids the bonus.</li>
       </ul>
 

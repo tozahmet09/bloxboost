@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CREDIT_PACKS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, FEATURED_OPTIONS, MAX_OPEN_TASKS, MIN_FEEDBACK_CHARS, PLAYS_TO_POST, REFERRAL_CREDITS, REQUIRED_SECONDS, TASK_TTL_HOURS, fmt } from "@/lib/money";
+import { CREDIT_PACKS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, FEATURED_OPTIONS, MAX_OPEN_TASKS, MIN_FEEDBACK_CHARS, REFERRAL_CREDITS, REQUIRED_SECONDS, TASK_TTL_HOURS, fmt } from "@/lib/money";
 
 export const metadata: Metadata = {
   title: "How it works",
@@ -70,11 +70,12 @@ export default function HowItWorks() {
             Alex adds a short code to their Roblox profile so we know the account is really theirs.
             {EARLY_BIRD_CREDITS > 0 && <> The first {EARLY_BIRD_ACCOUNTS} developers also start with {EARLY_BIRD_CREDITS} free credits.</>}
           </Step>
-          <Step n={2} title={`Alex plays ${PLAYS_TO_POST} games from other developers`}>
-            {minutes} minutes each, plus a review of at least {MIN_FEEDBACK_CHARS} characters. Alex now has {PLAYS_TO_POST} credits, and can post a game.
+          <Step n={2} title="Alex adds a game">
+            Alex pastes the Roblox link. The game shows on the site right away.
           </Step>
-          <Step n={3} title="Alex adds a game and asks for 3 players">
-            The 3 credits are set aside for the game. It now shows up on the Play &amp; earn page for other developers.
+          <Step n={3} title="Alex plays 3 games and asks for 3 players">
+            {minutes} minutes each, plus a review of at least {MIN_FEEDBACK_CHARS} characters, gives Alex 3 credits.
+            Alex spends them on 3 players. The game now shows up on the Play &amp; earn page for other developers.
           </Step>
           <Step n={4} title="Three people play Alex's game">
             Each one plays {minutes} minutes and writes a review. Each one earns 1 credit. Alex gets 3 real players and 3 pieces of feedback.
