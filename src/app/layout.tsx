@@ -69,6 +69,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <span>© {new Date().getFullYear()} Spawnswap. Not affiliated with Roblox Corporation.</span>
             <span className="hidden h-3 w-px bg-navy/15 sm:block" aria-hidden />
             <Link href="/how-it-works" className="transition hover:text-navy">How It Works</Link>
+            <Link href="/guides" className="transition hover:text-navy">Guides</Link>
             <Link href="/terms" className="transition hover:text-navy">Terms</Link>
             <Link href="/privacy" className="transition hover:text-navy">Privacy</Link>
             <Link href="/privacy#cookies" className="transition hover:text-navy">Cookies</Link>
