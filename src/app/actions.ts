@@ -14,8 +14,7 @@ import { del } from "@vercel/blob";
 import { isOwnUpload, parseTrailer } from "@/lib/trailer";
 import { checkTrailer } from "@/lib/trailerCheck";
 import { requireAdmin } from "@/lib/admin";
-import { COMMENT_COOLDOWN_MS, COMMENT_MAX_CHARS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS, PLAYS_TO_POST, REFERRAL_CREDITS } from "@/lib/money";
-import { postingRequirement } from "@/lib/community";
+import { COMMENT_COOLDOWN_MS, COMMENT_MAX_CHARS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS, REFERRAL_CREDITS } from "@/lib/money";
 import { emailEnabled, sendEmail } from "@/lib/email";
 import { operator } from "@/lib/legal";
 import { daysUntil, parseReleaseDate } from "@/lib/release";
@@ -250,9 +249,6 @@ export async function addGame(_: FormState, f: FormData): Promise<FormState> {
 
   const existing = await db.game.findUnique({ where: { placeId } });
   if (existing?.ownerId === user.id) redirect(`/dashboard/games/${existing.id}`);
-  const req = await postingRequirement(user.id);
-  if (req.left > 0)
-    return { error: `Play ${req.left} more game${req.left === 1 ? "" : "s"} first. Everyone plays ${PLAYS_TO_POST} games before posting, so every game gets players.` };
   if (existing) {
     // Someone claimed it, never installed the script and never ran a campaign: let the real owner take it after a day.
     // (The script is optional now, so a game that's actually in use is never taken away.)

@@ -36,8 +36,6 @@ export const GOAL_PLAYERS = 100;
 export const EARLY_BIRD_ACCOUNTS = 30;
 export const EARLY_BIRD_CREDITS = 20;
 
-/** Community rule: play (and review) this many other games before you can post your own. */
-export const PLAYS_TO_POST = 3;
 /** Invite link bonus. The new user gets it at signup, the inviter once the new user finishes a first verified play. */
 export const REFERRAL_CREDITS = 5;
 /** Anti-abuse: an inviter can collect the invite bonus this many times at most. */
