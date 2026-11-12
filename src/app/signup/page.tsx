@@ -12,18 +12,18 @@ export default async function Signup({ searchParams }: { searchParams: Promise<{
         <p className="eyebrow">Free account</p>
         <h1 className="mt-1 page-title">Get your game seen</h1>
       </div>
-      {code && <p className="rounded-ctl border border-coral/40 bg-coral/10 px-4 py-3 text-sm">A friend invited you. You start with +{REFERRAL_CREDITS} bonus credits.</p>}
+      {code && <p className="rounded-ctl border border-lime/40 bg-lime/10 px-4 py-3 text-sm">A friend invited you. You start with +{REFERRAL_CREDITS} bonus credits.</p>}
       <Form action={signup} submit="Create account">
         <input type="hidden" name="ref" value={code} />
         <div><label htmlFor="displayName" className="label">Name or studio</label><input id="displayName" name="displayName" className="input" /></div>
         <div><label htmlFor="email" className="label">Email</label><input id="email" name="email" type="email" required className="input" /></div>
         <div><label htmlFor="password" className="label">Password</label><input id="password" name="password" type="password" minLength={8} required className="input" /></div>
         <label className="flex items-start gap-3 text-sm text-mute">
-          <input id="agree" name="agree" type="checkbox" required className="mt-0.5 h-5 w-5 shrink-0 accent-[#ff7a63]" />
+          <input id="agree" name="agree" type="checkbox" required className="mt-0.5 h-5 w-5 shrink-0 accent-[#c8f031]" />
           <span>I&apos;m 13 or older and agree to the <Link href="/terms" className="text-cream underline">Terms</Link> and <Link href="/privacy" className="text-cream underline">Privacy Policy</Link>.</span>
         </label>
       </Form>
-      <p className="text-center text-sm text-mute">Have an account? <Link href="/login" className="text-coral">Log in</Link></p>
+      <p className="text-center text-sm text-mute">Have an account? <Link href="/login" className="text-lime">Log in</Link></p>
     </div>
   );
 }

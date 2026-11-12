@@ -12,7 +12,7 @@ const minutes = Math.round(REQUIRED_SECONDS / 60);
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <li className="flex gap-4">
-      <span className="font-display w-6 shrink-0 text-xl font-bold leading-6 text-coral tabular-nums">{n}</span>
+      <span className="font-display w-6 shrink-0 text-xl font-bold leading-6 text-lime tabular-nums">{n}</span>
       <div>
         <h3 className="font-semibold">{title}</h3>
         <div className="mt-1 text-sm leading-relaxed text-mute">{children}</div>
@@ -42,17 +42,17 @@ export default function HowItWorks() {
         </p>
       </header>
 
-      <section className="border-l-2 border-coral pl-5 sm:pl-6">
+      <section className="border-l-2 border-lime pl-5 sm:pl-6">
         <h2 className="text-2xl font-bold">The one rule: 1 credit = 1 real player</h2>
         <div className="mt-4 grid gap-6 sm:grid-cols-2">
           <div>
-            <div className="text-sm font-semibold text-coral">You earn 1 credit</div>
+            <div className="text-sm font-semibold text-lime">You earn 1 credit</div>
             <p className="mt-1 text-sm leading-relaxed text-cream/90">
               every time you play another developer&apos;s game for {minutes} minutes and leave a short review.
             </p>
           </div>
           <div>
-            <div className="text-sm font-semibold text-coral">You spend 1 credit</div>
+            <div className="text-sm font-semibold text-lime">You spend 1 credit</div>
             <p className="mt-1 text-sm leading-relaxed text-cream/90">
               every time a real player does the same for your game: plays it for {minutes} minutes and reviews it.
             </p>

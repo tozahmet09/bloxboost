@@ -176,7 +176,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         <Head id="all-title" eyebrow={soon.length > 0 ? "04 — New" : "03 — New"} title="All games" sub="Play for fun. These don't give credits right now.">
           <div className="flex gap-4 text-sm" role="tablist" aria-label="Sort games">
             {([["/", "Newest", !byLikes], ["/?sort=liked", "Most liked", byLikes]] as const).map(([href, label, on]) => (
-              <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-coral font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>
+              <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-lime font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>
                 {label}
               </Link>
             ))}
@@ -184,7 +184,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         </Head>
         {fresh.length === 0 ? (
           <p className="text-sm text-mute">
-            Nothing here yet. <Link href="/signup" className="text-coral underline underline-offset-4">Add the first game.</Link>
+            Nothing here yet. <Link href="/signup" className="text-lime underline underline-offset-4">Add the first game.</Link>
           </p>
         ) : (
           <Rail label="All games">
@@ -195,16 +195,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
       </div>
 
-      {/* Cream band (the 30% of navy/cream/coral): full width, no frame, runs straight into the cream footer. */}
-      <section className="relative left-1/2 w-screen -translate-x-1/2 bg-cream text-navy">
+      {/* Developer band: full width, a shade darker than the page, with a hairline on top. */}
+      <section className="relative left-1/2 w-screen -translate-x-1/2 border-t border-line bg-navy-deep/70 text-cream">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1fr_2fr]">
           <div>
-            <p className="font-mono text-[11px] font-medium uppercase tracking-[.08em] text-coral-ink">For developers</p>
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[.08em] text-lime-ink">For developers</p>
             <h2 className="mt-2 text-[28px] font-semibold leading-[1.1] tracking-[-0.03em]">Your first 100 real players.</h2>
-            <p className="mt-2 max-w-sm text-sm text-navy/70">Play other games to earn credits. Each credit brings one real player to yours.</p>
+            <p className="mt-2 max-w-sm text-sm text-mute">Play other games to earn credits. Each credit brings one real player to yours.</p>
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
               <Link href="/signup" className="btn">Get players</Link>
-              <Link href="/how-it-works" className="inline-flex items-center gap-1 text-sm font-medium text-navy/70 transition hover:text-navy">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Link href="/how-it-works" className="inline-flex items-center gap-1 text-sm font-medium text-mute transition hover:text-cream">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
             </div>
           </div>
           <ol className="grid gap-8 sm:grid-cols-3">
@@ -214,9 +214,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
               ["Get real players", "Each credit brings one player who played 10+ minutes and left a review."],
             ] as const).map(([t, d], i) => (
               <li key={t}>
-                <div className="font-mono text-[32px] leading-none tabular-nums text-coral-ink">0{i + 1}</div>
+                <div className="font-mono text-[32px] leading-none tabular-nums text-lime-ink">0{i + 1}</div>
                 <div className="mt-4 font-semibold">{t}</div>
-                <p className="mt-1 text-sm text-navy/70">{d}</p>
+                <p className="mt-1 text-sm text-mute">{d}</p>
               </li>
             ))}
           </ol>
@@ -231,7 +231,7 @@ function Head({ id, title, sub, eyebrow, accent, children }: { id: string; title
   return (
     <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div>
-        {eyebrow && <p className={`mb-1.5 font-mono text-xs ${accent ? "text-coral" : "text-faint"}`}>{eyebrow}</p>}
+        {eyebrow && <p className={`mb-1.5 font-mono text-xs ${accent ? "text-lime" : "text-faint"}`}>{eyebrow}</p>}
         <h2 id={id} className="h-section">{title}</h2>
         {sub && <p className="sub">{sub}</p>}
       </div>

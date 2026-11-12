@@ -23,7 +23,7 @@ export default async function ResetPassword({ searchParams }: { searchParams: Pr
         <div><label htmlFor="password" className="label">New password</label><input id="password" name="password" type="password" autoComplete="new-password" minLength={8} required className="input" /></div>
         <div><label htmlFor="confirm" className="label">Type it again</label><input id="confirm" name="confirm" type="password" autoComplete="new-password" minLength={8} required className="input" /></div>
       </Form>
-      <p className="text-center text-sm text-mute"><Link href="/forgot-password" className="text-coral">Get a new link</Link></p>
+      <p className="text-center text-sm text-mute"><Link href="/forgot-password" className="text-lime">Get a new link</Link></p>
     </div>
   );
 }

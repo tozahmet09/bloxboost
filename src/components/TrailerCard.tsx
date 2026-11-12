@@ -178,7 +178,7 @@ function Meta({ game }: { game: TrailerGame }) {
       {game.tested && (
         <>
           <span aria-hidden>·</span>
-          <span className="inline-flex items-center gap-1 font-body text-coral" title="Played in our video series">
+          <span className="inline-flex items-center gap-1 font-body text-lime" title="Played in our video series">
             <Clapperboard className="h-3 w-3" aria-hidden /> Tested
           </span>
         </>
@@ -203,12 +203,12 @@ export function TrailerCard({ game, href }: { game: TrailerGame; href?: string }
         <div className="absolute inset-0 transition duration-300 ease-out group-hover:scale-[1.04] group-hover:brightness-110">
           <Media game={game} active={active} />
         </div>
-        {game.earns && <span className="absolute left-1.5 top-1.5 rounded-[6px] bg-coral px-1.5 py-0.5 font-mono text-[11px] font-medium text-navy">+1 credit</span>}
+        {game.earns && <span className="absolute left-1.5 top-1.5 rounded-[6px] bg-lime px-1.5 py-0.5 font-mono text-[11px] font-medium text-navy">+1 credit</span>}
       </div>
       <div className="mt-2.5 flex gap-2.5">
         {game.rank && <span className="font-mono text-lg leading-none tabular-nums text-faint">{game.rank}</span>}
         <div className="min-w-0 space-y-0.5">
-          <div className="truncate text-sm font-semibold transition group-hover:text-coral">{game.name}</div>
+          <div className="truncate text-sm font-semibold transition group-hover:text-lime">{game.name}</div>
           <Meta game={game} />
         </div>
       </div>
@@ -277,7 +277,7 @@ export function ImmersiveHero({ games }: { games: TrailerGame[] }) {
         <div className="relative mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-10 sm:pb-14 lg:pb-16">
           <div key={`t-${g.id}`} className="max-w-xl animate-rise-in">
             <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[.06em] text-cream/80">
-              <span className={`h-1.5 w-1.5 rounded-full ${g.playing > 0 ? "bg-verified" : "bg-coral"}`} aria-hidden />
+              <span className={`h-1.5 w-1.5 rounded-full ${g.playing > 0 ? "bg-verified" : "bg-lime"}`} aria-hidden />
               {g.playing > 0 ? `${g.playing.toLocaleString()} playing now` : "New on Spawnswap"}
               {g.genre && g.genre !== "All" && <> · {g.genre}</>}
             </p>

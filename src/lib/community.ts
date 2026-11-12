@@ -34,39 +34,54 @@ export async function topGames(take = 20, days?: number) {
   return rows.map((r) => ({ ...byId.get(r.gameId)!, recentLikes: r._count.gameId })).filter((g) => g.id);
 }
 
-/** Developers ranked by the likes all their games got. */
+const userSelect = { id: true, displayName: true, robloxUsername: true, robloxVerified: true, robloxUserId: true } as const;
+
+/** Developers ranked by the minutes testers spent in their games (likes break ties). */
 export async function topDevs(take = 20) {
-  const rows = await db.game.groupBy({
-    by: ["ownerId"],
-    where: { hiddenAt: null },
-    _sum: { likeCount: true },
-    _count: { id: true },
-    orderBy: { _sum: { likeCount: "desc" } },
-    take,
+  const rows = await db.playTask.groupBy({
+    by: ["gameId"],
+    where: { playedSeconds: { gt: 0 }, game: { hiddenAt: null } },
+    _sum: { playedSeconds: true },
   });
-  const users = await db.user.findMany({ where: { id: { in: rows.map((r) => r.ownerId) } }, select: { id: true, displayName: true, robloxUsername: true, robloxVerified: true } });
+  const games = await db.game.findMany({
+    where: { hiddenAt: null },
+    select: { id: true, ownerId: true, likeCount: true },
+  });
+  const secs = new Map(rows.map((r) => [r.gameId, r._sum.playedSeconds ?? 0]));
+  const byOwner = new Map<string, { seconds: number; likes: number; games: number }>();
+  for (const g of games) {
+    const o = byOwner.get(g.ownerId) ?? { seconds: 0, likes: 0, games: 0 };
+    o.seconds += secs.get(g.id) ?? 0;
+    o.likes += g.likeCount;
+    o.games += 1;
+    byOwner.set(g.ownerId, o);
+  }
+  const ranked = [...byOwner.entries()]
+    .filter(([, s]) => s.seconds >= 60 || s.likes > 0)
+    .sort((a, b) => b[1].seconds - a[1].seconds || b[1].likes - a[1].likes)
+    .slice(0, take);
+  const users = await db.user.findMany({ where: { id: { in: ranked.map(([id]) => id) } }, select: userSelect });
   const byId = new Map(users.map((u) => [u.id, u]));
-  return rows
-    .filter((r) => (r._sum.likeCount ?? 0) > 0)
-    .map((r) => ({ user: byId.get(r.ownerId)!, likes: r._sum.likeCount ?? 0, games: r._count.id }));
+  return ranked
+    .map(([id, s]) => ({ user: byId.get(id)!, minutes: Math.floor(s.seconds / 60), likes: s.likes, games: s.games }))
+    .filter((r) => r.user);
 }
 
-/** Players ranked by likes on their comments, then by games they played and reviewed. */
-export async function topPlayers(take = 20) {
-  const [likeRows, playRows] = await Promise.all([
-    db.comment.groupBy({ by: ["userId"], _sum: { likeCount: true }, orderBy: { _sum: { likeCount: "desc" } }, take: 100 }),
-    db.playTask.groupBy({ by: ["playerId"], where: { status: "COMPLETED" }, _count: { id: true }, orderBy: { _count: { id: "desc" } }, take: 100 }),
+/** Testers ranked by the minutes they spent playing other devs' games (finished plays break ties). */
+export async function topTesters(take = 20) {
+  const [timeRows, doneRows] = await Promise.all([
+    db.playTask.groupBy({ by: ["playerId"], where: { playedSeconds: { gt: 0 } }, _sum: { playedSeconds: true } }),
+    db.playTask.groupBy({ by: ["playerId"], where: { status: "COMPLETED" }, _count: { id: true } }),
   ]);
-  const score = new Map<string, { likes: number; plays: number }>();
-  for (const r of likeRows) score.set(r.userId, { likes: r._sum.likeCount ?? 0, plays: 0 });
-  for (const r of playRows) score.set(r.playerId, { likes: score.get(r.playerId)?.likes ?? 0, plays: r._count.id });
-  const ranked = [...score.entries()]
-    .filter(([, s]) => s.likes > 0 || s.plays > 0)
-    .sort((a, b) => b[1].likes - a[1].likes || b[1].plays - a[1].plays)
+  const done = new Map(doneRows.map((r) => [r.playerId, r._count.id]));
+  const ranked = timeRows
+    .map((r) => ({ id: r.playerId, seconds: r._sum.playedSeconds ?? 0, plays: done.get(r.playerId) ?? 0 }))
+    .filter((r) => r.seconds >= 60)
+    .sort((a, b) => b.seconds - a.seconds || b.plays - a.plays)
     .slice(0, take);
-  const users = await db.user.findMany({ where: { id: { in: ranked.map(([id]) => id) } }, select: { id: true, displayName: true, robloxUsername: true, robloxVerified: true } });
+  const users = await db.user.findMany({ where: { id: { in: ranked.map((r) => r.id) } }, select: userSelect });
   const byId = new Map(users.map((u) => [u.id, u]));
-  return ranked.map(([id, s]) => ({ user: byId.get(id)!, ...s })).filter((r) => r.user);
+  return ranked.map((r) => ({ user: byId.get(r.id)!, minutes: Math.floor(r.seconds / 60), plays: r.plays })).filter((r) => r.user);
 }
 
 /** Public name: the verified Roblox name if linked, otherwise the display name. */

@@ -6,21 +6,28 @@
   Premium, not vibecoded (see the vault page "09 Premium, Not Vibecoded"):
   - Shapes (fills, borders, rings) only on things you can click: buttons, inputs, game thumbnails.
   - Sections are separated by spacing and the occasional hairline, never framed in panels.
-  - One accent (coral) for the main action. No glow, no gradient text.
+  - One accent (lime) for the main action. No glow, no gradient text.
 */
 
 @layer base {
   body { @apply overflow-x-clip bg-navy font-body text-[15px] text-cream antialiased; }
   h1, h2, h3 { @apply font-display font-semibold tracking-[-0.025em]; text-wrap: balance; }
-  :focus-visible { @apply outline outline-2 outline-offset-2 outline-coral; }
-  ::selection { @apply bg-coral text-navy; }
+  :focus-visible { @apply outline outline-2 outline-offset-2 outline-lime; }
+  ::selection { @apply bg-lime text-navy; }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex min-h-[40px] items-center justify-center gap-2 rounded-ctl bg-coral px-4 text-sm font-semibold text-navy
-      transition duration-150 ease-out hover:bg-coral-deep active:scale-[.98]
-      disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100;
+    @apply relative isolate inline-flex min-h-[40px] items-center justify-center gap-2 overflow-hidden rounded-ctl bg-lime px-4 text-sm font-bold text-navy
+      shadow-[0_0_20px_-4px_rgba(200,240,49,.55)] transition duration-150 ease-out
+      hover:-translate-y-px hover:bg-lime-deep hover:shadow-[0_0_28px_-2px_rgba(200,240,49,.75)] active:translate-y-0 active:scale-[.97]
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:active:scale-100;
+  }
+  /* A light streak runs across the main buttons now and then. */
+  .btn::after {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 40%; z-index: -1; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    animation: shine 4.5s ease-in-out infinite;
   }
   .btn-quiet {
     @apply inline-flex min-h-[40px] items-center justify-center gap-2 rounded-ctl border border-line px-4 text-sm font-medium text-cream
@@ -29,20 +36,20 @@
   }
   .input {
     @apply min-h-[44px] w-full rounded-ctl border border-line bg-panel px-3 py-2 text-cream outline-none transition
-      placeholder:text-faint hover:border-faint focus:border-coral;
+      placeholder:text-faint hover:border-faint focus:border-lime;
   }
   .label { @apply mb-1.5 block text-sm text-mute; }
-  .eyebrow { @apply font-mono text-[11px] font-medium uppercase tracking-[.08em] text-faint; }
+  .eyebrow { @apply font-display text-xs font-bold uppercase tracking-[.1em] text-lime; }
   .chip { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold; }
   .rule { @apply border-t border-line; }
   /* Section title row: title + one quiet line, optional text link on the right. */
   .h-section { @apply text-lg font-semibold tracking-[-0.02em] sm:text-[22px]; }
   .sub { @apply mt-1 text-sm text-mute; }
   .link { @apply inline-flex items-center gap-1 text-sm font-medium text-mute transition hover:text-cream; }
-  .link-accent { @apply inline-flex items-center gap-1 text-sm font-semibold text-coral transition hover:text-coral-deep; }
+  .link-accent { @apply inline-flex items-center gap-1 text-sm font-semibold text-lime transition hover:text-lime-deep; }
   /* Plain page: title + content, no framing. Used by forms, dashboard and legal pages. */
-  .page-title { @apply text-[28px] font-bold leading-tight sm:text-[32px]; }
-  .notice { @apply border-l-2 border-coral py-1 pl-3 text-sm text-mute; }
+  .page-title { @apply text-[30px] font-extrabold leading-tight tracking-[-0.03em] sm:text-[44px]; }
+  .notice { @apply border-l-2 border-lime py-1 pl-3 text-sm text-mute; }
 }
 
 /* A game tile grows into its game page instead of a hard cut (Chrome/Edge/Safari 18+; others just navigate). */
@@ -53,3 +60,6 @@
   @view-transition { navigation: none; }
   *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
 }
+
+@keyframes shine { 0% { transform: translateX(-120%) skewX(-20deg); } 55%, 100% { transform: translateX(320%) skewX(-20deg); } }
+@keyframes drift { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: var(--o); } 90% { opacity: var(--o); } 100% { transform: translateY(-110vh); opacity: 0; } }

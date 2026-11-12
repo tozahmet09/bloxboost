@@ -49,7 +49,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
       )}
 
       {startedOpen && (
-        <div className="flex flex-wrap items-center gap-4 border-l-2 border-coral py-1 pl-4">
+        <div className="flex flex-wrap items-center gap-4 border-l-2 border-lime py-1 pl-4">
           <p className="min-w-0 flex-1 text-sm">
             Saved for you. Play {mins} min as <b>{user.robloxUsername}</b>, then come back to review.
           </p>
@@ -57,7 +57,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
         </div>
       )}
 
-      {tasks.length === 0 && <p className="text-mute">Nothing yet. <Link href="/play" className="text-coral underline">Pick a game</Link>.</p>}
+      {tasks.length === 0 && <p className="text-mute">Nothing yet. <Link href="/play" className="text-lime underline">Pick a game</Link>.</p>}
 
       <ul className="divide-y divide-line border-y border-line">
         {tasks.map((t) => {
@@ -71,12 +71,12 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
                   {t.status === "PENDING" && (
                     <div className="mt-2 flex items-center gap-3">
                       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-line">
-                        <div className="h-full rounded-full bg-coral transition-[width] duration-700" style={{ width: `${Math.max(pct, 3)}%` }} />
+                        <div className="h-full rounded-full bg-lime transition-[width] duration-700" style={{ width: `${Math.max(pct, 3)}%` }} />
                       </div>
                       <span className="text-xs text-mute tabular-nums">{Math.floor(t.playedSeconds / 60)}/{mins} min</span>
                     </div>
                   )}
-                  {t.status === "PLAYED" && <div className="text-sm text-coral">Done playing. How was it?</div>}
+                  {t.status === "PLAYED" && <div className="text-sm text-lime">Done playing. How was it?</div>}
                   {t.status === "COMPLETED" && (
                     <div className="inline-flex items-center gap-1.5 text-sm text-verified"><CheckCircle2 className="h-4 w-4" /> Reviewed</div>
                   )}
@@ -85,7 +85,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
                   <a href={robloxGameUrl(t.game.placeId)} target="_blank" rel="noopener" className="btn-quiet">Play</a>
                 )}
                 {t.status === "COMPLETED" && (
-                  <span className="inline-flex items-center gap-1 text-sm text-mute"><Ticket className="h-4 w-4 text-coral" /> +1</span>
+                  <span className="inline-flex items-center gap-1 text-sm text-mute"><Ticket className="h-4 w-4 text-lime" /> +1</span>
                 )}
               </div>
               {t.status === "COMPLETED" && t.completedAt && t.completedAt.getTime() > justNow && <Burst label="+1 credit" />}

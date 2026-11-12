@@ -62,7 +62,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
       {game.hiddenAt && (
         <p className="text-sm text-mute">
           Only you can see this page. The game is hidden.{" "}
-          <Link href={`/dashboard/games/${game.id}#visibility`} className="text-coral underline-offset-4 hover:underline">Show it again</Link>
+          <Link href={`/dashboard/games/${game.id}#visibility`} className="text-lime underline-offset-4 hover:underline">Show it again</Link>
         </p>
       )}
       {/* Same view-transition name as the homepage card, so the card grows into this player. */}
@@ -112,11 +112,11 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
                 <>
                   <span aria-hidden>·</span>
                   {game.seriesVideoUrl ? (
-                    <a href={game.seriesVideoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-coral underline-offset-4 hover:underline">
+                    <a href={game.seriesVideoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-lime underline-offset-4 hover:underline">
                       <Clapperboard className="h-3.5 w-3.5" /> Tested in our series · Watch episode
                     </a>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-coral"><Clapperboard className="h-3.5 w-3.5" /> Tested in our series</span>
+                    <span className="inline-flex items-center gap-1 text-lime"><Clapperboard className="h-3.5 w-3.5" /> Tested in our series</span>
                   )}
                 </>
               )}
@@ -138,7 +138,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
             {user ? (
               <CommentForm gameId={game.id} />
             ) : (
-              <p className="text-sm text-mute"><Link href="/signup" className="text-coral underline">Make a free account</Link> to like and comment.</p>
+              <p className="text-sm text-mute"><Link href="/signup" className="text-lime underline">Make a free account</Link> to like and comment.</p>
             )}
             {game.comments.length === 0 ? (
               <p className="text-sm text-mute">No comments yet. Played it? Say what you liked.</p>
@@ -148,7 +148,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
                   <li key={c.id} className="space-y-1 py-3">
                     <div className="flex items-center gap-2 text-xs text-mute">
                       <span className="font-semibold text-cream">{publicName(c.user)}</span>
-                      {c.user.id === game.ownerId && <span className="chip bg-coral/10 text-coral">Dev</span>}
+                      {c.user.id === game.ownerId && <span className="chip bg-lime/10 text-lime">Dev</span>}
                       <span>{ago(c.createdAt)}</span>
                     </div>
                     <p className="whitespace-pre-line text-sm">{c.body}</p>
@@ -180,7 +180,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
             <div>
               <div className="eyebrow">Average rating</div>
               <div className="mt-1 flex items-center gap-1 font-display text-3xl font-bold tabular-nums">
-                {stats._avg.rating.toFixed(1)} <Star className="h-5 w-5 fill-coral text-coral" />
+                {stats._avg.rating.toFixed(1)} <Star className="h-5 w-5 fill-lime text-lime" />
               </div>
             </div>
           )}

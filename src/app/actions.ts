@@ -99,7 +99,7 @@ export async function requestPasswordReset(_: FormState, f: FormData): Promise<F
   });
   const link = `${await siteUrl()}/reset-password?token=${token}`;
   const text = `Hi ${user.displayName},\n\nSomeone (hopefully you) asked to reset your Spawnswap password. Open this link to choose a new one:\n\n${link}\n\nThe link works once, for ${RESET_MINUTES} minutes. If you didn't ask for this, you can ignore this email and your password stays the same.`;
-  const html = `<p>Hi ${escapeHtml(user.displayName)},</p><p>Someone (hopefully you) asked to reset your Spawnswap password.</p><p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#ff7a63;color:#0f1a2e;border-radius:8px;text-decoration:none;font-weight:600">Choose a new password</a></p><p>Or paste this link into your browser:<br>${link}</p><p>The link works once, for ${RESET_MINUTES} minutes. If you didn't ask for this, ignore this email and your password stays the same.</p>`;
+  const html = `<p>Hi ${escapeHtml(user.displayName)},</p><p>Someone (hopefully you) asked to reset your Spawnswap password.</p><p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#c8f031;color:#0b1426;border-radius:8px;text-decoration:none;font-weight:600">Choose a new password</a></p><p>Or paste this link into your browser:<br>${link}</p><p>The link works once, for ${RESET_MINUTES} minutes. If you didn't ask for this, ignore this email and your password stays the same.</p>`;
   const ok = await sendEmail(email, "Reset your Spawnswap password", text, html);
   if (!ok && emailEnabled()) return { error: "We couldn't send the email just now. Try again in a few minutes." };
   return sent;

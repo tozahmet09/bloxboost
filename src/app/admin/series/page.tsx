@@ -33,7 +33,7 @@ export default async function SeriesAdmin() {
             <div className="min-w-0 flex-1 basis-48">
               <Link href={`/games/${g.id}`} className="font-semibold hover:underline">{displayName(g.name)}</Link>
               <span className="text-mute"> by {g.owner.displayName}</span>
-              {g.seriesTestedAt && <span className="ml-2 text-coral">Tested</span>}
+              {g.seriesTestedAt && <span className="ml-2 text-lime">Tested</span>}
             </div>
             <form action={adminSetSeries} className="flex flex-1 basis-80 flex-wrap items-center gap-2">
               <input type="hidden" name="gameId" value={g.id} />

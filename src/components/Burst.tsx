@@ -1,3 +1,5 @@
+import { SfxOnMount } from "./Sfx";
+
 /** A short spark burst for reward moments. Pure CSS, removed by its parent after use. */
 export function Burst({ label }: { label: string }) {
   const sparks = Array.from({ length: 12 }, (_, i) => {
@@ -7,14 +9,15 @@ export function Burst({ label }: { label: string }) {
   });
   return (
     <div className="relative flex items-center justify-center py-6" role="status">
+      <SfxOnMount name="ding" />
       {sparks.map((s, i) => (
         <span
           key={i}
-          className="absolute h-1.5 w-1.5 animate-spark rounded-full bg-coral"
+          className="absolute h-1.5 w-1.5 animate-spark rounded-full bg-lime"
           style={{ ["--dx" as string]: s.dx, ["--dy" as string]: s.dy, animationDelay: s.d }}
         />
       ))}
-      <span className="animate-pop font-display text-2xl font-bold text-coral">{label}</span>
+      <span className="animate-pop font-display text-2xl font-bold text-lime">{label}</span>
     </div>
   );
 }
