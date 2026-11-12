@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 function Step({ n, title, done, optional, children }: { n: number; title: string; done: boolean; optional?: boolean; children: React.ReactNode }) {
   return (
     <li className="grid grid-cols-[28px_1fr] gap-x-3 py-6">
-      {done ? <CheckCircle2 className="mt-0.5 h-6 w-6 text-coral" /> : <Circle className="mt-0.5 h-6 w-6 text-line" />}
+      {done ? <CheckCircle2 className="mt-0.5 h-6 w-6 text-lime" /> : <Circle className="mt-0.5 h-6 w-6 text-line" />}
       <div className="min-w-0 space-y-3">
         <h2 className="text-lg font-bold">
           {n}. {title} {optional && <span className="ml-1 font-body text-sm font-normal text-mute">optional</span>}
@@ -83,7 +83,7 @@ export default async function GamePage({
           </div>
           <GoalBar count={game.tasks.length} />
           <p className="flex flex-wrap gap-x-4 text-xs text-mute">
-            {avg && <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-coral text-coral" /> {avg} avg</span>}
+            {avg && <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-lime text-lime" /> {avg} avg</span>}
             <span>{visits7d} visits from Spawnswap this week</span>
             <span>{game.playing.toLocaleString()} playing on Roblox</span>
           </p>
@@ -98,7 +98,7 @@ export default async function GamePage({
       {game.hiddenAt && (
         <p className="text-sm text-mute">
           This game is hidden. Nobody else can see it or get it in the player queue.{" "}
-          <a href="#visibility" className="text-coral underline-offset-4 hover:underline">Show it again</a>
+          <a href="#visibility" className="text-lime underline-offset-4 hover:underline">Show it again</a>
         </p>
       )}
       {notice === "paid" && <p className="text-sm text-verified">Payment received.</p>}
@@ -191,7 +191,7 @@ export default async function GamePage({
         </Step>
 
         <Step n={5} title="Spotlight on the homepage" done={featured} optional>
-          {(needTrailer || !game.trailerUrl) && <p className="text-sm text-coral">Needs a trailer first (step 1).</p>}
+          {(needTrailer || !game.trailerUrl) && <p className="text-sm text-lime">Needs a trailer first (step 1).</p>}
           <form action="/api/checkout" method="post" className="flex flex-wrap gap-3">
             <input type="hidden" name="kind" value="FEATURED" />
             <input type="hidden" name="gameId" value={game.id} />
@@ -215,7 +215,7 @@ export default async function GamePage({
                 <div className="flex flex-wrap items-center gap-2 text-xs text-mute">
                   <span className="inline-flex" aria-label={`${t.rating} of 5`}>
                     {[1, 2, 3, 4, 5].map((n) => (
-                      <Star key={n} className={`h-3.5 w-3.5 ${n <= (t.rating ?? 0) ? "fill-coral text-coral" : "text-line"}`} />
+                      <Star key={n} className={`h-3.5 w-3.5 ${n <= (t.rating ?? 0) ? "fill-lime text-lime" : "text-line"}`} />
                     ))}
                   </span>
                   <span>{t.player.robloxUsername}</span>

@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
-import { ChevronDown } from "lucide-react";
+import { Geist, Geist_Mono, Outfit } from "next/font/google";
+import { Box, ChevronDown } from "lucide-react";
 import { NavLinks } from "@/components/NavLinks";
 import "./globals.css";
 import { getUser } from "@/lib/auth";
 import { CreditCounter } from "@/components/CreditCounter";
+import { Particles } from "@/components/Particles";
+import { SoundToggle } from "@/components/Sfx";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // One sans for everything (headlines are just tighter and heavier), plus a mono for numbers, counts and small labels.
 const body = Geist({ subsets: ["latin"], variable: "--font-body" });
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+// Chunky rounded-geometric headlines, to match the blocky game look.
+const display = Outfit({ subsets: ["latin"], weight: ["600", "700", "800", "900"], variable: "--font-display" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "https://spawnswap.com"),
@@ -23,16 +27,22 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getUser();
   return (
-    <html lang="en" className={`${body.variable} ${mono.variable}`}>
+    <html lang="en" className={`${body.variable} ${mono.variable} ${display.variable}`}>
       <body>
-        <header className="sticky top-0 z-30 border-b border-white/[.06] bg-navy/70 backdrop-blur-xl backdrop-saturate-150">
+        {/* The voxel night world: fixed behind every page, edges only (the middle of the picture is empty sky). */}
+        <div aria-hidden className="pointer-events-none fixed inset-0 z-0 bg-navy bg-[url(/world.webp)] bg-cover bg-top bg-no-repeat max-sm:opacity-60" />
+        {/* Dims the art behind the content column so text stays easy to read; the world shows fully at the sides. */}
+        <div aria-hidden className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(90deg,transparent_0%,rgba(6,20,39,.72)_20%,rgba(6,20,39,.72)_80%,transparent_100%)]" />
+        <Particles />
+        <header className="sticky top-0 z-30 border-b border-white/[.08] bg-navy/60 backdrop-blur-xl backdrop-saturate-150">
           <nav className="mx-auto flex h-14 max-w-6xl items-center gap-1 px-4 sm:gap-2">
-            <Link href="/" className="mr-1 flex items-center gap-2 font-display text-[17px] font-bold tracking-[-0.02em] sm:mr-5" aria-label="Spawnswap home">
-              <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-coral font-display text-[13px] font-bold text-navy">S</span>
+            <Link href="/" className="mr-1 flex items-center gap-2 font-display text-[19px] font-extrabold tracking-[-0.02em] sm:mr-5" aria-label="Spawnswap home">
+              <span aria-hidden className="flex h-7 w-7 rotate-[-12deg] items-center justify-center rounded-[6px] bg-lime shadow-[0_0_14px_rgba(200,240,49,.6)]"><Box className="h-4 w-4 text-navy" strokeWidth={2.5} /></span>
               <span className="hidden min-[420px]:inline">Spawnswap</span>
             </Link>
             <NavLinks />
             <div className="ml-auto flex items-center gap-1 text-sm sm:gap-2">
+              <SoundToggle />
               {user ? (
                 <>
                   <Link href="/dashboard" className="hidden min-h-[40px] items-center px-2 text-mute transition hover:text-cream md:flex">My Games</Link>
@@ -63,18 +73,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </nav>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-8 sm:py-12">{children}</main>
-        <footer className="bg-cream text-navy/60">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 border-t border-navy/10 px-4 pb-10 pt-8 text-xs">
+        <main className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:py-12">{children}</main>
+        <footer className="relative z-10 bg-navy-deep text-faint">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 border-t border-line px-4 pb-10 pt-8 text-xs">
             <span>© {new Date().getFullYear()} Spawnswap. Not affiliated with Roblox Corporation.</span>
-            <span className="hidden h-3 w-px bg-navy/15 sm:block" aria-hidden />
-            <Link href="/how-it-works" className="transition hover:text-navy">How It Works</Link>
-            <Link href="/guides" className="transition hover:text-navy">Guides</Link>
-            <Link href="/terms" className="transition hover:text-navy">Terms</Link>
-            <Link href="/privacy" className="transition hover:text-navy">Privacy</Link>
-            <Link href="/privacy#cookies" className="transition hover:text-navy">Cookies</Link>
-            <Link href="/refund" className="transition hover:text-navy">Refunds</Link>
-            <Link href="/contact" className="transition hover:text-navy">Contact</Link>
+            <span className="hidden h-3 w-px bg-line sm:block" aria-hidden />
+            <Link href="/how-it-works" className="transition hover:text-cream">How It Works</Link>
+            <Link href="/guides" className="transition hover:text-cream">Guides</Link>
+            <Link href="/terms" className="transition hover:text-cream">Terms</Link>
+            <Link href="/privacy" className="transition hover:text-cream">Privacy</Link>
+            <Link href="/privacy#cookies" className="transition hover:text-cream">Cookies</Link>
+            <Link href="/refund" className="transition hover:text-cream">Refunds</Link>
+            <Link href="/contact" className="transition hover:text-cream">Contact</Link>
             <span className="sm:ml-auto">For ages 13+.</span>
           </div>
         </footer>

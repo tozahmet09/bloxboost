@@ -43,10 +43,10 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
             key={p.id}
             name="pack"
             value={p.id}
-            className={`group relative rounded-media border p-5 text-left transition active:scale-[.98] ${p.id === best ? "border-coral/60" : "border-line hover:border-mute"}`}
+            className={`group relative rounded-media border p-5 text-left transition active:scale-[.98] ${p.id === best ? "border-lime/60" : "border-line hover:border-mute"}`}
           >
-            {p.id === best && <span className="chip absolute right-3 top-3 bg-coral text-navy">Best value</span>}
-            <Ticket className="h-5 w-5 text-coral" />
+            {p.id === best && <span className="chip absolute right-3 top-3 bg-lime text-navy">Best value</span>}
+            <Ticket className="h-5 w-5 text-lime" />
             <div className="mt-3 font-display text-3xl font-bold tabular-nums">{p.credits}</div>
             <div className="text-sm text-mute">players</div>
             <div className="mt-4 flex items-baseline justify-between">

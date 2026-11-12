@@ -14,7 +14,7 @@ export default function ForgotPassword() {
       <Form action={requestPasswordReset} submit="Send reset link">
         <div><label htmlFor="email" className="label">Email</label><input id="email" name="email" type="email" autoComplete="email" required className="input" /></div>
       </Form>
-      <p className="text-center text-sm text-mute">Remembered it? <Link href="/login" className="text-coral">Log in</Link></p>
+      <p className="text-center text-sm text-mute">Remembered it? <Link href="/login" className="text-lime">Log in</Link></p>
     </div>
   );
 }

@@ -22,10 +22,10 @@ export default function Guides() {
           <li key={g.slug}>
             <Link href={`/guides/${g.slug}`} className="group flex items-start justify-between gap-6 py-5">
               <div>
-                <h2 className="font-semibold transition group-hover:text-coral">{g.title}</h2>
+                <h2 className="font-semibold transition group-hover:text-lime">{g.title}</h2>
                 <p className="mt-1 text-sm leading-relaxed text-mute">{g.description}</p>
               </div>
-              <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-mute transition group-hover:text-coral" />
+              <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-mute transition group-hover:text-lime" />
             </Link>
           </li>
         ))}

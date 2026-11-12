@@ -45,14 +45,14 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
               <p key={i} className="mt-3 leading-relaxed text-mute">{p}</p>
             ))}
             {s.list && (
-              <ul className="mt-3 list-disc space-y-1.5 pl-5 leading-relaxed text-mute marker:text-coral">
+              <ul className="mt-3 list-disc space-y-1.5 pl-5 leading-relaxed text-mute marker:text-lime">
                 {s.list.map((li) => <li key={li}>{li}</li>)}
               </ul>
             )}
           </section>
         ))}
       </div>
-      <section className="mt-12 border-l-2 border-coral pl-5">
+      <section className="mt-12 border-l-2 border-lime pl-5">
         <h2 className="text-xl font-bold">Try a play swap</h2>
         <p className="mt-2 text-sm leading-relaxed text-mute">Play other developers&apos; games, earn credits, get real players on yours. Free to start.</p>
         <div className="mt-4 flex flex-wrap gap-3">

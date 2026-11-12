@@ -13,7 +13,7 @@ export function GoalBar({ count, compact }: { count: number; compact?: boolean }
         {done && <span className="text-verified">Goal reached</span>}
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-line">
-        <div className={`h-full rounded-full ${done ? "bg-verified" : "bg-coral"} transition-[width] duration-700`} style={{ width: `${Math.max(pct, count ? 2 : 0)}%` }} />
+        <div className={`h-full rounded-full ${done ? "bg-verified" : "bg-lime"} transition-[width] duration-700`} style={{ width: `${Math.max(pct, count ? 2 : 0)}%` }} />
       </div>
     </div>
   );

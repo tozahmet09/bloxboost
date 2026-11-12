@@ -151,7 +151,7 @@ export function TrailerUpload({
           send(e.dataTransfer.files[0]);
         }}
         className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-ctl border border-dashed px-4 py-8 text-center transition ${
-          dragging ? "border-coral bg-panel" : "border-line hover:border-mute"
+          dragging ? "border-lime bg-panel" : "border-line hover:border-mute"
         } ${busy ? "pointer-events-none opacity-70" : ""}`}
       >
         <input
@@ -164,21 +164,21 @@ export function TrailerUpload({
         />
         {progress !== null ? (
           <>
-            <Film className="h-6 w-6 text-coral" />
+            <Film className="h-6 w-6 text-lime" />
             <span className="font-semibold">Uploading… {progress}%</span>
             <span className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-line">
-              <span className="block h-full bg-coral transition-all" style={{ width: `${progress}%` }} />
+              <span className="block h-full bg-lime transition-all" style={{ width: `${progress}%` }} />
             </span>
           </>
         ) : saving ? (
           <>
-            <Film className="h-6 w-6 text-coral" />
+            <Film className="h-6 w-6 text-lime" />
             <span className="font-semibold">Checking your trailer…</span>
             <span className="text-xs text-mute">We look at it for kid safety and quality. About 30 seconds.</span>
           </>
         ) : (
           <>
-            <Upload className="h-6 w-6 text-coral" />
+            <Upload className="h-6 w-6 text-lime" />
             <span className="font-semibold">{trailer ? "Upload a new video" : "Upload your trailer"}</span>
             <span className="text-xs text-mute">
               Drop a file here or click. 16:9 gameplay, 720p or higher, 10 to 30 seconds. MP4, WebM or MOV up to {TRAILER_MAX_MB} MB.

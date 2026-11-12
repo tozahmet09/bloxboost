@@ -40,8 +40,8 @@ export function LikeButton({
         aria-label={`${label} (${s.count})`}
         className={
           size === "md"
-            ? `btn-quiet ${s.liked ? "border-coral text-coral" : ""}`
-            : `inline-flex min-h-[36px] items-center gap-1.5 rounded-ctl px-2 text-xs ${s.liked ? "text-coral" : "text-mute hover:text-cream"}`
+            ? `btn-quiet ${s.liked ? "border-lime text-lime" : ""}`
+            : `inline-flex min-h-[36px] items-center gap-1.5 rounded-ctl px-2 text-xs ${s.liked ? "text-lime" : "text-mute hover:text-cream"}`
         }
       >
         <Heart className={`${size === "md" ? "h-4 w-4" : "h-3.5 w-3.5"} ${s.liked ? "fill-current" : ""}`} />
