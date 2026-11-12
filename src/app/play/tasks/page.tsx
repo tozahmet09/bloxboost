@@ -44,7 +44,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
       {watching && <PresencePoller />}
       {watching && (
         <p className="notice">
-          Keep this page open while you play (a phone works too). We check your Roblox status every minute, so minutes only count while you&apos;re in the game.
+          You can close this page and just play. We check your Roblox status every minute, so minutes only count while you&apos;re in the game. Come back here after to leave your review.
         </p>
       )}
 
