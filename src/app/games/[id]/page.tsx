@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { BadgeCheck, Play, Star, Trash2, Users } from "lucide-react";
+import { BadgeCheck, Clapperboard, Play, Star, Trash2, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth";
 import { parseTrailer } from "@/lib/trailer";
@@ -40,7 +40,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
     where: { id },
     select: {
       id: true, name: true, description: true, universeId: true, genre: true, playing: true, visits: true, iconUrl: true, trailerUrl: true,
-      scriptLastSeen: true, likeCount: true, ownerId: true, releaseAt: true, hiddenAt: true,
+      scriptLastSeen: true, likeCount: true, ownerId: true, releaseAt: true, hiddenAt: true, seriesTestedAt: true, seriesVideoUrl: true,
       owner: { select: nameSel },
       comments: { orderBy: [{ likeCount: "desc" }, { createdAt: "desc" }], take: 100, include: { user: { select: { id: true, ...nameSel } } } },
     },
@@ -106,6 +106,18 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
                 <>
                   <span aria-hidden>·</span>
                   <span className="inline-flex items-center gap-1 text-cream"><BadgeCheck className="h-3.5 w-3.5" /> Verified</span>
+                </>
+              )}
+              {game.seriesTestedAt && (
+                <>
+                  <span aria-hidden>·</span>
+                  {game.seriesVideoUrl ? (
+                    <a href={game.seriesVideoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-coral underline-offset-4 hover:underline">
+                      <Clapperboard className="h-3.5 w-3.5" /> Tested in our series · Watch episode
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-coral"><Clapperboard className="h-3.5 w-3.5" /> Tested in our series</span>
+                  )}
                 </>
               )}
             </div>

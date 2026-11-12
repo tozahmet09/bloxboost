@@ -65,6 +65,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <ChevronRight className="h-4 w-4 text-mute" />
         </Link>
       )}
+      {toReview !== null && (
+        <Link href="/admin/series" className="flex items-center gap-3 rounded-ctl border border-line px-4 py-3 text-sm hover:border-mute">
+          <span className="flex-1">Video series: mark games you tested</span>
+          <ChevronRight className="h-4 w-4 text-mute" />
+        </Link>
+      )}
 
       {games.length === 0 ? (
         <div className="py-14 text-center">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BadgeCheck, Heart, Play, Users } from "lucide-react";
+import { BadgeCheck, Clapperboard, Heart, Play, Users } from "lucide-react";
 import type { Trailer } from "@/lib/trailer";
 import { GameIcon } from "./GameIcon";
 
@@ -23,6 +23,8 @@ export type TrailerGame = {
   trailer: Trailer | null;
   /** Has the in-game tracker script installed. */
   verified?: boolean;
+  /** Played in the "testing games on SpawnSwap" video series. */
+  tested?: boolean;
   likes?: number;
   /** Shown as a rank badge on leaderboard rows of cards. */
   rank?: number;
@@ -172,6 +174,14 @@ function Meta({ game }: { game: TrailerGame }) {
         <span className="inline-flex items-center text-mute" title="Verified: in-game tracker installed">
           <BadgeCheck className="h-3.5 w-3.5" aria-label="Verified" />
         </span>
+      )}
+      {game.tested && (
+        <>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1 font-body text-coral" title="Played in our video series">
+            <Clapperboard className="h-3 w-3" aria-hidden /> Tested
+          </span>
+        </>
       )}
     </div>
   );

@@ -456,6 +456,28 @@ export async function adminDecideTrailer(f: FormData) {
   revalidatePath("/");
 }
 
+/** Marks a game as played in the video series (badge on its page and cards), with an optional episode link. */
+export async function adminSetSeries(f: FormData) {
+  await requireAdmin();
+  const id = str(f, "gameId");
+  if (str(f, "action") === "remove") {
+    await db.game.update({ where: { id }, data: { seriesTestedAt: null, seriesVideoUrl: null } });
+  } else {
+    const raw = str(f, "videoUrl").slice(0, 500);
+    let url: string | null = null;
+    try {
+      const u = new URL(raw);
+      if (u.protocol === "https:") url = u.toString();
+    } catch {}
+    const game = await db.game.findUnique({ where: { id }, select: { seriesTestedAt: true } });
+    if (!game) return;
+    await db.game.update({ where: { id }, data: { seriesTestedAt: game.seriesTestedAt ?? new Date(), seriesVideoUrl: url } });
+  }
+  revalidatePath("/admin/series");
+  revalidatePath(`/games/${id}`);
+  revalidatePath("/");
+}
+
 /** Runs the check on trailers uploaded before checks existed, a few at a time. Anything not approved is hidden until an admin decides. */
 export async function adminCheckOldTrailers() {
   await requireAdmin();
