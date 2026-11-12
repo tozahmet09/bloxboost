@@ -85,6 +85,10 @@ model Game {
   releaseAt      DateTime?
   // Set when the dev hides the game. Hidden games are off every public page and get no players until shown again.
   hiddenAt       DateTime?
+  // Set by an admin when the game was played in ahmet's "testing games on SpawnSwap" video series. Shows a badge.
+  seriesTestedAt DateTime?
+  // Optional link to that episode (TikTok / YouTube). Shown as "Watch episode" on the game page.
+  seriesVideoUrl String?
   likeCount      Int        @default(0)
   createdAt      DateTime   @default(now())
   owner          User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)

@@ -11,7 +11,7 @@ import { releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
-type Row = { id: string; name: string; description: string; universeId: string | null; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null; scriptLastSeen: Date | null; likeCount: number };
+type Row = { id: string; name: string; description: string; universeId: string | null; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null; scriptLastSeen: Date | null; likeCount: number; seriesTestedAt?: Date | null };
 // Pick fields one by one: this goes to the browser, so the game's tracker secret must never be in it.
 const toCard = (g: Row): TrailerGame => ({
   id: g.id,
@@ -23,6 +23,7 @@ const toCard = (g: Row): TrailerGame => ({
   trailer: parseTrailer(g.trailerUrl),
   verified: isVerifiedGame(g),
   likes: g.likeCount,
+  tested: !!g.seriesTestedAt,
 });
 
 /** First sentence or two of the description, short enough for the hero. */
