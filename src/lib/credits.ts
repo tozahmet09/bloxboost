@@ -132,7 +132,8 @@ const PRESENCE_EVERY_S = 50;
  * Roblox doesn't tell anonymous callers WHICH game, so this is weaker than the script
  * (hence the Verified badge for script games). If Roblox does return the universe, a
  * different game doesn't count.
- * Called from the player's "My progress" page while it's open, so it needs no cron.
+ * Called once a minute by /api/cron/presence (outside scheduler), and also from the
+ * player's "My progress" page while it's open.
  */
 export async function presenceTick(limit = 50) {
   const now = new Date();
@@ -161,7 +162,8 @@ export async function presenceTick(limit = 50) {
     }
     // First "in game" answer starts the clock; later ones add the time since the last one.
     const since = t.lastPingAt ? (now.getTime() - t.lastPingAt.getTime()) / 1000 : 0;
-    const add = Math.min(Math.round(since), 90); // a longer gap means we lost track: don't credit it
+    // Up to one missed check (~2 min) still counts; a longer gap means we lost track, so it isn't credited.
+    const add = since <= 150 ? Math.round(since) : 0;
     const played = t.playedSeconds + add;
     const r = await db.playTask.updateMany({
       where: same,
