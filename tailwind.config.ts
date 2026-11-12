@@ -9,7 +9,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: { DEFAULT: "#0b1426", deep: "#070d1a" }, // page background
+        navy: { DEFAULT: "#061427", deep: "#040d1c" }, // page background
         panel: "#13213a", // filled controls (inputs, thumbnails while loading)
         line: "#22304d", // hairlines and control borders
         cream: { DEFAULT: "#f2f5ec", deep: "#dfe5d6" }, // main text

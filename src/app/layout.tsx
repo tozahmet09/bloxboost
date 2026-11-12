@@ -29,8 +29,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${body.variable} ${mono.variable} ${display.variable}`}>
       <body>
+        {/* The voxel night world: fixed behind every page, edges only (the middle of the picture is empty sky). */}
+        <div aria-hidden className="pointer-events-none fixed inset-0 z-0 bg-navy bg-[url(/world.webp)] bg-cover bg-top bg-no-repeat max-sm:opacity-60" />
+        {/* Dims the art behind the content column so text stays easy to read; the world shows fully at the sides. */}
+        <div aria-hidden className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(90deg,transparent_0%,rgba(6,20,39,.72)_20%,rgba(6,20,39,.72)_80%,transparent_100%)]" />
         <Particles />
-        <header className="sticky top-0 z-30 border-b border-white/[.06] bg-navy/70 backdrop-blur-xl backdrop-saturate-150">
+        <header className="sticky top-0 z-30 border-b border-white/[.08] bg-navy/60 backdrop-blur-xl backdrop-saturate-150">
           <nav className="mx-auto flex h-14 max-w-6xl items-center gap-1 px-4 sm:gap-2">
             <Link href="/" className="mr-1 flex items-center gap-2 font-display text-[19px] font-extrabold tracking-[-0.02em] sm:mr-5" aria-label="Spawnswap home">
               <span aria-hidden className="flex h-7 w-7 rotate-[-12deg] items-center justify-center rounded-[6px] bg-lime shadow-[0_0_14px_rgba(200,240,49,.6)]"><Box className="h-4 w-4 text-navy" strokeWidth={2.5} /></span>
