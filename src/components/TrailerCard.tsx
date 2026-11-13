@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BadgeCheck, Clapperboard, Heart, Play, Users } from "lucide-react";
+import { BadgeCheck, Clapperboard, Heart, Play, Ticket, Users } from "lucide-react";
+import { playGame } from "@/app/actions";
 import type { Trailer } from "@/lib/trailer";
 import { GameIcon } from "./GameIcon";
 
@@ -41,7 +42,7 @@ export type TrailerGame = {
 };
 
 function useAutoplay(id: string, t: Trailer | null) {
-  const ref = useRef<HTMLAnchorElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   useEffect(() => {
     const el = ref.current;
@@ -188,37 +189,47 @@ function Meta({ game }: { game: TrailerGame }) {
 }
 
 /**
- * Game tile: 16:9 still (trailer plays when in view), name and one line of facts underneath.
- * The thumbnail is the only shape (it is clickable). On hover it lifts with a soft two-layer shadow.
- * Corners are concentric: 12px tile, 6px inset, so the +1 tag gets 6px.
+ * Game tile: 16:9 still (trailer plays when in view), name and one line of facts, then one Play button.
+ * The picture and the name open the game's page (likes, reviews, comments, the dev). The button plays the game:
+ * games that give credits start a credit task, the rest open on Roblox. Coming-soon games link to their trailer instead.
  */
-export function TrailerCard({ game, href }: { game: TrailerGame; href?: string }) {
+export function TrailerCard({ game }: { game: TrailerGame }) {
   const { ref, active } = useAutoplay(game.id, game.trailer);
+  const page = `/games/${game.id}`;
   return (
-    <a ref={ref} href={href ?? `/games/${game.id}`} className="group block min-w-0">
-      <div
-        className="relative aspect-video overflow-hidden rounded-media bg-panel transition duration-200 ease-out group-hover:-translate-y-1 group-hover:shadow-lift"
-        style={game.vt ? { viewTransitionName: `game-${game.id}` } : undefined}
-      >
-        <div className="absolute inset-0 transition duration-300 ease-out group-hover:scale-[1.04] group-hover:brightness-110">
-          <Media game={game} active={active} />
+    <div ref={ref} className="flex min-w-0 flex-col">
+      <a href={page} className="group block" aria-label={`${game.name}: open game page`}>
+        <div
+          className="relative aspect-video overflow-hidden rounded-media bg-panel transition duration-200 ease-out group-hover:-translate-y-1 group-hover:shadow-lift"
+          style={game.vt ? { viewTransitionName: `game-${game.id}` } : undefined}
+        >
+          <div className="absolute inset-0 transition duration-300 ease-out group-hover:scale-[1.04] group-hover:brightness-110">
+            <Media game={game} active={active} />
+          </div>
+          {game.earns && <span className="absolute left-1.5 top-1.5 rounded-[6px] bg-lime px-1.5 py-0.5 font-mono text-[11px] font-medium text-navy">+1 credit</span>}
         </div>
-        {game.earns && <span className="absolute left-1.5 top-1.5 rounded-[6px] bg-lime px-1.5 py-0.5 font-mono text-[11px] font-medium text-navy">+1 credit</span>}
-      </div>
-      <div className="mt-2.5 flex gap-2.5">
-        {game.rank && <span className="font-mono text-lg leading-none tabular-nums text-faint">{game.rank}</span>}
-        <div className="min-w-0 space-y-0.5">
-          <div className="truncate text-sm font-semibold transition group-hover:text-lime">{game.name}</div>
-          <Meta game={game} />
+        <div className="mt-2.5 flex gap-2.5">
+          {game.rank && <span className="font-mono text-lg leading-none tabular-nums text-faint">{game.rank}</span>}
+          <div className="min-w-0 space-y-0.5">
+            <div className="truncate text-sm font-semibold transition group-hover:text-lime">{game.name}</div>
+            <Meta game={game} />
+          </div>
         </div>
+      </a>
+      <div className="mt-3">
+        {game.release ? (
+          <a href={page} className="btn-quiet min-h-[36px] w-full">Watch trailer</a>
+        ) : game.earns ? (
+          <form action={playGame}>
+            <input type="hidden" name="gameId" value={game.id} />
+            <button className="btn min-h-[36px] w-full"><Ticket className="h-4 w-4" /> Play · +1 credit</button>
+          </form>
+        ) : (
+          <a href={`/go/${game.id}`} target="_blank" rel="noopener" className="btn-quiet min-h-[36px] w-full font-semibold hover:border-lime hover:text-lime"><Play className="h-3.5 w-3.5 fill-current" /> Play</a>
+        )}
       </div>
-    </a>
+    </div>
   );
-}
-
-/** Same tile, pointing somewhere else (e.g. /play) and always showing the +1 credit tag. */
-export function EarnRow({ game, href }: { game: TrailerGame; href: string }) {
-  return <TrailerCard game={{ ...game, earns: true }} href={href} />;
 }
 
 const HERO_MS = 7000;

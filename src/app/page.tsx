@@ -5,7 +5,7 @@ import { parseTrailer } from "@/lib/trailer";
 import { earningGameIds, isVerifiedGame } from "@/lib/credits";
 import { topGames } from "@/lib/community";
 import { Rail } from "@/components/Rail";
-import { EarnRow, ImmersiveHero, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
+import { ImmersiveHero, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
 import { displayName, gameThumbnails } from "@/lib/thumbs";
 import { releaseLabel } from "@/lib/release";
 
@@ -138,7 +138,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           <p className="text-sm text-mute">No games are giving credits right now. New ones arrive all the time.</p>
         ) : (
           <Rail label="Games that give credits">
-            {earnRow.map((g) => <EarnRow key={g.id} game={g} href="/play" />)}
+            {earnRow.map((g) => <TrailerCard key={g.id} game={g} />)}
           </Rail>
         )}
       </section>
