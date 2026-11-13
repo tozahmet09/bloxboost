@@ -261,7 +261,7 @@ export function ImmersiveHero({ games }: { games: TrailerGame[] }) {
   }, [i, reduced]);
 
   const still = stillOf(g);
-  const playHref = g.earns ? "/play" : `/games/${g.id}`;
+  const playHref = `/games/${g.id}`;
 
   return (
     <section

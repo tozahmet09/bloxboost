@@ -11,7 +11,7 @@ export default function NotFound() {
       <p className="mt-2 text-mute">The game may have been removed, or the link is wrong.</p>
       <div className="mt-6 flex items-center justify-center gap-5">
         <Link href="/" className="btn">Browse games</Link>
-        <Link href="/play" className="link">Play &amp; earn <ArrowRight className="h-3.5 w-3.5" /></Link>
+        <Link href="/#earn-title" className="link">Play &amp; earn <ArrowRight className="h-3.5 w-3.5" /></Link>
       </div>
     </div>
   );

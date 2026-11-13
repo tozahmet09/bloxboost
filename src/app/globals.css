@@ -43,7 +43,7 @@
   .chip { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold; }
   .rule { @apply border-t border-line; }
   /* Section title row: title + one quiet line, optional text link on the right. */
-  .h-section { @apply text-lg font-semibold tracking-[-0.02em] sm:text-[22px]; }
+  .h-section { @apply scroll-mt-24 text-lg font-semibold tracking-[-0.02em] sm:text-[22px]; }
   .sub { @apply mt-1 text-sm text-mute; }
   .link { @apply inline-flex items-center gap-1 text-sm font-medium text-mute transition hover:text-cream; }
   .link-accent { @apply inline-flex items-center gap-1 text-sm font-semibold text-lime transition hover:text-lime-deep; }
