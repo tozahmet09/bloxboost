@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import "server-only";
 import { createHash } from "crypto";
 import { db } from "./db";
@@ -119,6 +120,7 @@ export async function heartbeat(secret: string, robloxUserIds: string[]) {
     });
     updated += r.count;
   }
+  await payPlayed({ gameId: game.id });
   return { updated, watch };
 }
 
@@ -177,11 +179,31 @@ export async function presenceTick(limit = 50) {
     });
     counted += r.count;
   }
+  await payPlayed({ id: { in: tasks.map((t) => t.id) } });
   return { checked: tasks.length, counted };
 }
 
-/** Player leaves feedback on a played game: they earn 1 credit, the campaign delivers 1 player. */
-export async function completeTask(playerId: string, taskId: string, rating: number, feedback: string) {
+/** Pays every task that just reached the playtime (PLAYED): 10 minutes is all it takes, feedback is optional. */
+export async function payPlayed(where: Prisma.PlayTaskWhereInput = {}) {
+  const ready = await db.playTask.findMany({ where: { ...where, status: "PLAYED" }, select: { id: true, playerId: true }, take: 100 });
+  for (const t of ready) await completeTask(t.playerId, t.id).catch(() => false);
+  return ready.length;
+}
+
+/**
+ * Optional, Uber-style rating after the credit is paid. rating 1-5 (+ optional text) or skip.
+ * A skip is stored as feedback "" with no rating, so the prompt doesn't come back. Only once per play.
+ */
+export async function rateTask(playerId: string, taskId: string, rating: number | null, feedback: string) {
+  const r = await db.playTask.updateMany({
+    where: { id: taskId, playerId, status: "COMPLETED", rating: null, feedback: null },
+    data: { rating, feedback },
+  });
+  return r.count > 0;
+}
+
+/** Player finished the playtime: they earn 1 credit, the campaign delivers 1 player. */
+export async function completeTask(playerId: string, taskId: string) {
   // Accounts linked before we stored the Roblox account's age: look it up once, for the invite bonus check.
   const me = await db.user.findUnique({ where: { id: playerId }, select: { robloxUserId: true, robloxCreatedAt: true, referredById: true, referralPaid: true } });
   if (me?.robloxUserId && !me.robloxCreatedAt && me.referredById && !me.referralPaid) {
@@ -194,7 +216,7 @@ export async function completeTask(playerId: string, taskId: string, rating: num
     // Flip PLAYED -> COMPLETED in one step: a double-click can't earn the credit twice.
     const done = await tx.playTask.updateMany({
       where: { id: t.id, status: "PLAYED" },
-      data: { status: "COMPLETED", rating, feedback, completedAt: new Date() },
+      data: { status: "COMPLETED", completedAt: new Date() },
     });
     if (!done.count) return false;
     const player = await tx.user.update({ where: { id: playerId }, data: { credits: { increment: 1 } } });

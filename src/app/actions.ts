@@ -9,12 +9,12 @@ import { createSession, destroySession, getUser, hashPassword, requireUser, veri
 import { linkRoblox } from "@/lib/robloxOauth";
 import { fetchRobloxGame, lookupRobloxUser, parsePlaceId, robloxProfile } from "@/lib/roblox";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
-import { completeTask, startTask } from "@/lib/credits";
+import { rateTask, startTask } from "@/lib/credits";
 import { del } from "@vercel/blob";
 import { isOwnUpload, parseTrailer } from "@/lib/trailer";
 import { checkTrailer } from "@/lib/trailerCheck";
 import { requireAdmin } from "@/lib/admin";
-import { COMMENT_COOLDOWN_MS, COMMENT_MAX_CHARS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, MIN_FEEDBACK_CHARS, REFERRAL_CREDITS } from "@/lib/money";
+import { COMMENT_COOLDOWN_MS, COMMENT_MAX_CHARS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, REFERRAL_CREDITS } from "@/lib/money";
 import { emailEnabled, sendEmail } from "@/lib/email";
 import { operator } from "@/lib/legal";
 import { daysUntil, parseReleaseDate } from "@/lib/release";
@@ -513,17 +513,27 @@ export async function playGame(f: FormData) {
   redirect(`/play/tasks?started=${r.placeId}`);
 }
 
-export async function submitFeedback(_: FormState, f: FormData): Promise<FormState> {
+/** Drop a game you started but don't want to finish. Frees one of your open slots and gives the spot back to the dev. */
+export async function abandonTask(f: FormData) {
   const user = await requireUser();
-  const rating = parseInt(str(f, "rating"), 10);
-  const feedback = str(f, "feedback");
-  if (!(rating >= 1 && rating <= 5)) return { error: "Pick a rating from 1 to 5." };
-  if (feedback.length < MIN_FEEDBACK_CHARS)
-    return { error: `Write at least ${MIN_FEEDBACK_CHARS} characters. Devs use this to improve their game.` };
-  const ok = await completeTask(user.id, str(f, "taskId"), rating, feedback.slice(0, 2000));
-  if (!ok) return { error: "This game isn't ready for feedback yet." };
+  await db.playTask.updateMany({
+    where: { id: str(f, "taskId"), playerId: user.id, status: { in: ["PENDING", "PLAYED"] } },
+    data: { status: "EXPIRED" },
+  });
+  revalidatePath("/play");
   revalidatePath("/play/tasks");
-  return { ok: "+1 credit earned!" };
+}
+
+/** Optional rating after a paid play: stars (+ optional words), or skip. */
+export async function rateGame(_: FormState, f: FormData): Promise<FormState> {
+  const user = await requireUser();
+  const skip = str(f, "skip") === "1";
+  const rating = parseInt(str(f, "rating"), 10);
+  if (!skip && !(rating >= 1 && rating <= 5)) return { error: "Tap the stars to rate, or skip." };
+  const ok = await rateTask(user.id, str(f, "taskId"), skip ? null : rating, skip ? "" : str(f, "feedback").slice(0, 2000));
+  if (!ok) return { error: "Already rated." };
+  revalidatePath("/play/tasks");
+  return { ok: skip ? "Skipped" : "Thanks! The dev will see it." };
 }
 
 // ---------- community ----------

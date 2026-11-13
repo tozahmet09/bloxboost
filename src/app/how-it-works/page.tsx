@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CREDIT_PACKS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, FEATURED_OPTIONS, MAX_OPEN_TASKS, MIN_FEEDBACK_CHARS, REFERRAL_CREDITS, REQUIRED_SECONDS, TASK_TTL_HOURS, fmt } from "@/lib/money";
+import { CREDIT_PACKS, EARLY_BIRD_ACCOUNTS, EARLY_BIRD_CREDITS, FEATURED_OPTIONS, MAX_OPEN_TASKS, REFERRAL_CREDITS, REQUIRED_SECONDS, TASK_TTL_HOURS, fmt } from "@/lib/money";
 
 export const metadata: Metadata = {
   title: "How it works",
@@ -48,13 +48,13 @@ export default function HowItWorks() {
           <div>
             <div className="text-sm font-semibold text-lime">You earn 1 credit</div>
             <p className="mt-1 text-sm leading-relaxed text-cream/90">
-              every time you play another developer&apos;s game for {minutes} minutes and leave a short review.
+              every time you play another developer&apos;s game for {minutes} minutes.
             </p>
           </div>
           <div>
             <div className="text-sm font-semibold text-lime">You spend 1 credit</div>
             <p className="mt-1 text-sm leading-relaxed text-cream/90">
-              every time a real player does the same for your game: plays it for {minutes} minutes and reviews it.
+              every time a real player does the same for your game: plays it for {minutes} minutes.
             </p>
           </div>
         </div>
@@ -74,11 +74,11 @@ export default function HowItWorks() {
             Alex pastes the Roblox link. The game shows on the site right away.
           </Step>
           <Step n={3} title="Alex plays 3 games and asks for 3 players">
-            {minutes} minutes each, plus a review of at least {MIN_FEEDBACK_CHARS} characters, gives Alex 3 credits.
+            {minutes} minutes each gives Alex 3 credits.
             Alex spends them on 3 players. The game now shows up on the Play &amp; earn page for other developers.
           </Step>
           <Step n={4} title="Three people play Alex's game">
-            Each one plays {minutes} minutes and writes a review. Each one earns 1 credit. Alex gets 3 real players and 3 pieces of feedback.
+            Each one plays {minutes} minutes and earns 1 credit. Alex gets 3 real players, and most of them leave a star rating.
           </Step>
           <Step n={5} title="Alex wants more players">
             Play more games to earn more credits for free, or buy a pack to skip the playing.
@@ -90,14 +90,14 @@ export default function HowItWorks() {
         <div>
           <h2 className="text-xl font-bold">If you just want to play</h2>
           <p className="mt-2 text-sm leading-relaxed text-mute">
-            Browse trailers on the homepage, play what looks good, like and comment on game pages. It&apos;s all free.
+            Browse trailers on the homepage, play what looks good, like games and read real player feedback on game pages. It&apos;s all free.
             Playing through Play &amp; earn also gives you credits, in case you make a game later.
           </p>
         </div>
         <div>
           <h2 className="text-xl font-bold">If you made a game</h2>
           <p className="mt-2 text-sm leading-relaxed text-mute">
-            Every player you get played for real and left a review, so you learn what works and what to fix.
+            Every player you get played for real, and after playing they can rate it, so you learn what works and what to fix.
             Add a 10 to 30 second trailer: games with a trailer are shown first.
           </p>
         </div>

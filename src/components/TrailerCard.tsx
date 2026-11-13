@@ -190,7 +190,7 @@ function Meta({ game }: { game: TrailerGame }) {
 
 /**
  * Game tile: 16:9 still (trailer plays when in view), name and one line of facts, then one Play button.
- * The picture and the name open the game's page (likes, reviews, comments, the dev). The button plays the game:
+ * The picture and the name open the game's page (likes, feedback, the dev). The button plays the game:
  * games that give credits start a credit task, the rest open on Roblox. Coming-soon games link to their trailer instead.
  */
 export function TrailerCard({ game }: { game: TrailerGame }) {
