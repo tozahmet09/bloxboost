@@ -2,12 +2,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { parseTrailer } from "@/lib/trailer";
-import { earningGameIds, isVerifiedGame } from "@/lib/credits";
-import { topGames } from "@/lib/community";
+import { earningGameIds, isVerifiedGame, playQueue } from "@/lib/credits";
+import { getUser } from "@/lib/auth";
 import { Rail } from "@/components/Rail";
 import { ImmersiveHero, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
 import { displayName, gameThumbnails } from "@/lib/thumbs";
-import { releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
@@ -39,50 +38,33 @@ function pitchOf(d: string) {
 export default async function Home({ searchParams }: { searchParams: Promise<{ sort?: string; deleted?: string }> }) {
   const { sort, deleted } = await searchParams;
   const now = new Date();
-  const earning = await earningGameIds();
-  const mark = (g: TrailerGame) => ((g.earns = earning.has(g.id)), g);
-  // Games that give a credit right now, verified (tracker script) first, then newest.
+  const user = await getUser();
+  // Games that give THIS player a credit: logged in, the ones they haven't played yet (not their own); logged out, every game with free slots.
+  const earning = user ? new Set((await playQueue(user.id)).map((c) => c.gameId)) : await earningGameIds();
   const earn = (
     await db.game.findMany({ where: { id: { in: [...earning] }, hiddenAt: null }, orderBy: { createdAt: "desc" }, take: 24 })
   )
     .map(toCard)
-    .map(mark)
+    .map((g) => ({ ...g, earns: true }))
     .sort((a, b) => Number(!!b.verified) - Number(!!a.verified));
-  // "Most liked this week", falling back to all-time while the site is quiet.
-  let hot = (await topGames(6, 7)).map(toCard).map(mark);
-  if (hot.length < 3) hot = (await topGames(6)).map(toCard).map(mark);
-  hot.forEach((g, i) => (g.rank = i + 1));
   const featuredRows = await db.game.findMany({ where: { featuredUntil: { gt: now }, hiddenAt: null }, take: 12 });
-  const featured = featuredRows.map(toCard).map(mark);
+  const featured = featuredRows.map(toCard);
   featured.sort(() => Math.random() - 0.5); // a different featured game leads the hero on each visit
 
-  // Not out yet: soonest release first. They stay out of "All games" until their day.
-  const soon = (await db.game.findMany({ where: { releaseAt: { gt: now }, hiddenAt: null }, orderBy: { releaseAt: "asc" }, take: 24 })).map((g) => ({
-    ...toCard(g),
-    release: releaseLabel(g.releaseAt!, now),
-  }));
-
-  // Everything that doesn't give a credit right now. Trailers first, newest first within each group.
+  // Every released game, credit or not. Here the button is always just "Play" (credits live in the row above).
   const byLikes = sort === "liked";
   const fresh = (
     await db.game.findMany({
-      where: {
-        id: { notIn: [...earning] },
-        hiddenAt: null,
-        AND: [
-          { OR: [{ featuredUntil: null }, { featuredUntil: { lte: now } }] },
-          { OR: [{ releaseAt: null }, { releaseAt: { lte: now } }] },
-        ],
-      },
+      where: { hiddenAt: null, OR: [{ releaseAt: null }, { releaseAt: { lte: now } }] },
       orderBy: byLikes ? [{ likeCount: "desc" }, { createdAt: "desc" }] : { createdAt: "desc" },
-      take: 30,
+      take: 40,
     })
   )
     .map(toCard)
     .sort((a, b) => (byLikes ? 0 : Number(!!b.trailer) - Number(!!a.trailer)));
 
   // Wide Roblox screenshots for every card on the page (one cached call).
-  const all = [...featured, ...earn, ...hot, ...soon, ...fresh];
+  const all = [...featured, ...earn, ...fresh];
   const universe = new Map<string, string | null>();
   for (const r of [...featuredRows, ...(await db.game.findMany({ where: { id: { in: all.map((g) => g.id) } }, select: { id: true, universeId: true } }))]) universe.set(r.id, r.universeId);
   const thumbs = await gameThumbnails([...universe.values()]);
@@ -90,15 +72,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   // Hero: paid featured games first, then games that give credits, then the most liked and newest. Up to 5, each with a picture.
   const heroIds = new Set<string>();
-  const hero = [...featured, ...earn, ...hot, ...fresh].filter((g) => (g.thumb || g.trailer) && !heroIds.has(g.id) && heroIds.add(g.id)).slice(0, 5);
+  const hero = [...featured, ...earn, ...fresh].filter((g) => (g.thumb || g.trailer) && !heroIds.has(g.id) && heroIds.add(g.id)).slice(0, 5);
 
   // Only the first card of each game gets a view-transition name (two elements with one name cancel the animation).
   const named = new Set<string>();
   const vt = (list: TrailerGame[]) => list.map((g) => (named.has(g.id) ? g : (named.add(g.id), { ...g, vt: true })));
-  const featuredRest = vt(featured);
   const earnRow = vt(earn);
-  const hotRow = vt(hot);
-  const soonRow = vt(soon);
   const freshRow = vt(fresh);
 
   return (
@@ -131,11 +110,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       )}
 
       <section aria-labelledby="earn-title">
-        <Head id="earn-title" eyebrow="01 — Earn" accent title="Play & earn credits" sub="Play 10 minutes and leave a review. You get 1 credit, worth 1 real player for your game.">
+        <Head id="earn-title" eyebrow="01 — Earn" accent title="Play & earn credits" sub="Play 10 minutes, get 1 credit, worth 1 real player for your game.">
           <Link href="/play" className="link-accent">Start earning <ArrowRight className="h-3.5 w-3.5" /></Link>
         </Head>
         {earn.length === 0 ? (
-          <p className="text-sm text-mute">No games are giving credits right now. New ones arrive all the time.</p>
+          <p className="text-sm text-mute">No games give you a credit right now. New ones arrive all the time.</p>
         ) : (
           <Rail label="Games that give credits">
             {earnRow.map((g) => <TrailerCard key={g.id} game={g} />)}
@@ -143,37 +122,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         )}
       </section>
 
-      {featuredRest.length > 0 && (
-        <section aria-labelledby="featured-title">
-          <Head id="featured-title" title="Featured" />
-          <Rail label="Featured games">
-            {featuredRest.map((g) => <TrailerCard key={g.id} game={g} />)}
-          </Rail>
-        </section>
-      )}
-
-      {hot.length > 0 && (
-        <section aria-labelledby="hot-title">
-          <Head id="hot-title" eyebrow="02 — Top" title="Most liked this week">
-            <Link href="/leaderboard" className="link">Leaderboards <ArrowRight className="h-3.5 w-3.5" /></Link>
-          </Head>
-          <Rail label="Most liked this week">
-            {hotRow.map((g) => <TrailerCard key={g.id} game={g} />)}
-          </Rail>
-        </section>
-      )}
-
-      {soon.length > 0 && (
-        <section aria-labelledby="soon-title">
-          <Head id="soon-title" eyebrow="03 — Soon" title="Coming soon" sub="Games with a release date. Watch the trailer now, play on launch day." />
-          <Rail label="Coming soon">
-            {soonRow.map((g) => <TrailerCard key={g.id} game={g} />)}
-          </Rail>
-        </section>
-      )}
-
       <section aria-labelledby="all-title">
-        <Head id="all-title" eyebrow={soon.length > 0 ? "04 — New" : "03 — New"} title="All games" sub="Play for fun. These don't give credits right now.">
+        <Head id="all-title" eyebrow="02 — All" title="All games" sub="Every game on Spawnswap. Play anything you like.">
           <div className="flex gap-4 text-sm" role="tablist" aria-label="Sort games">
             {([["/", "Newest", !byLikes], ["/?sort=liked", "Most liked", byLikes]] as const).map(([href, label, on]) => (
               <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-lime font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>
@@ -210,8 +160,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           <ol className="grid gap-8 sm:grid-cols-3">
             {([
               ["Add your game", "Paste the Roblox link. It shows on the site right away."],
-              ["Earn credits", "Play other games 10 minutes and leave a review. Each one earns 1 credit."],
-              ["Get real players", "Each credit brings one player who played 10+ minutes and left a review."],
+              ["Earn credits", "Play other games for 10 minutes. Each one earns 1 credit."],
+              ["Get real players", "Each credit brings one real player who plays 10+ minutes."],
             ] as const).map(([t, d], i) => (
               <li key={t}>
                 <div className="font-mono text-[32px] leading-none tabular-nums text-lime-ink">0{i + 1}</div>

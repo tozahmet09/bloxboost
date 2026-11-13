@@ -23,8 +23,8 @@ export default function Terms() {
 
       <h2>Credits</h2>
       <ul>
-        <li>One credit brings one player who plays your game for at least 10 minutes and leaves a review.</li>
-        <li>You earn credits by playing other games for 10 minutes and leaving an honest review, or you buy them.</li>
+        <li>One credit brings one player who plays your game for at least 10 minutes. Leaving a rating is optional.</li>
+        <li>You earn credits by playing other games for 10 minutes, or you buy them. Ratings are optional, and must be honest.</li>
         <li>Credits have no cash value, can&apos;t be transferred or exchanged for Robux or money, and don&apos;t expire.</li>
         <li>Credits reserved for a campaign come back to you if you stop it before they are used.</li>
         <li>Invite bonus: a friend who joins with your link gets 5 credits, and you get 5 when they finish their first verified play on someone else&apos;s game. Their Roblox account must be at least 30 days old, and you can collect the bonus up to 50 times. Inviting yourself or alt accounts voids the bonus.</li>
@@ -36,7 +36,7 @@ export default function Terms() {
         <li>Alt accounts, bots, scripts or anything that fakes playtime or reviews.</li>
         <li>Changing the playtime check script to report players who did not play.</li>
         <li>Paying or rewarding people outside Spawnswap to play through it.</li>
-        <li>Copy-paste, spam or abusive reviews or comments, and trading or buying likes.</li>
+        <li>Copy-paste, spam or abusive ratings or feedback, and trading or buying likes.</li>
       </ul>
 
       <h2>Your games and trailers</h2>

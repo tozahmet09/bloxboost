@@ -1,18 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { BadgeCheck, Clapperboard, Heart, Play, Star, Ticket, Trash2, Users } from "lucide-react";
+import { BadgeCheck, Clapperboard, Heart, Play, Star, Ticket, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth";
 import { parseTrailer } from "@/lib/trailer";
 import { earningGameIds, isVerifiedGame } from "@/lib/credits";
 import { robloxAvatars } from "@/lib/avatars";
 import { publicName } from "@/lib/community";
-import { deleteComment, playGame, toggleCommentLike, toggleLike } from "@/app/actions";
+import { playGame, toggleLike } from "@/app/actions";
 import { GameIcon } from "@/components/GameIcon";
 import { displayName, gameThumbnails } from "@/lib/thumbs";
 import { LikeButton } from "@/components/LikeButton";
-import { CommentForm } from "@/components/CommentForm";
 import { isUpcoming, releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
@@ -44,23 +43,21 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
       id: true, name: true, description: true, universeId: true, genre: true, playing: true, visits: true, iconUrl: true, trailerUrl: true,
       scriptLastSeen: true, likeCount: true, ownerId: true, releaseAt: true, hiddenAt: true, seriesTestedAt: true, seriesVideoUrl: true,
       owner: { select: devSel },
-      comments: { orderBy: [{ likeCount: "desc" }, { createdAt: "desc" }], take: 100, include: { user: { select: { id: true, ...nameSel } } } },
     },
   });
   if (!game || (game.hiddenAt && user?.id !== game.ownerId)) notFound();
   game.name = displayName(game.name);
   const done = { gameId: id, status: "COMPLETED" } as const;
-  const [stats, byStars, reviews, liked, myCommentLikes, earning, devGames] = await Promise.all([
+  const [stats, byStars, reviews, liked, earning, devGames] = await Promise.all([
     db.playTask.aggregate({ where: done, _count: { id: true }, _avg: { rating: true } }),
     db.playTask.groupBy({ by: ["rating"], where: { ...done, rating: { not: null } }, _count: { _all: true } }),
     db.playTask.findMany({
-      where: { ...done, feedback: { not: null } },
+      where: { ...done, rating: { not: null } },
       orderBy: { completedAt: "desc" },
       take: 20,
       select: { id: true, rating: true, feedback: true, completedAt: true, player: { select: nameSel } },
     }),
     user ? db.like.findUnique({ where: { userId_gameId: { userId: user.id, gameId: id } } }) : null,
-    user ? db.commentLike.findMany({ where: { userId: user.id, comment: { gameId: id } }, select: { commentId: true } }) : [],
     earningGameIds(),
     db.game.findMany({
       where: { ownerId: game.ownerId, hiddenAt: null, id: { not: id } },
@@ -69,7 +66,6 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
       select: { id: true, name: true, iconUrl: true, likeCount: true, universeId: true },
     }),
   ]);
-  const likedComments = new Set(myCommentLikes.map((c) => c.commentId));
   const t = parseTrailer(game.trailerUrl);
   const [thumbs, avatars] = await Promise.all([
     gameThumbnails([t ? null : game.universeId, ...devGames.map((g) => g.universeId)]),
@@ -172,7 +168,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
       <dl className="grid grid-cols-2 gap-x-6 gap-y-5 border-y border-line py-5 sm:grid-cols-5">
         <Stat label="Likes" value={game.likeCount.toLocaleString()} icon={<Heart className="h-4 w-4 fill-lime text-lime" />} />
         <Stat label="Rating" value={stats._avg.rating ? stats._avg.rating.toFixed(1) : "–"} icon={stats._avg.rating ? <Star className="h-4 w-4 fill-lime text-lime" /> : null} />
-        <Stat label="Reviews" value={stats._count.id.toLocaleString()} />
+        <Stat label="Ratings" value={ratingCount.toLocaleString()} />
         <Stat label="Playing now" value={game.playing.toLocaleString()} icon={<Users className="h-4 w-4 text-mute" />} />
         <Stat label="Roblox visits" value={game.visits.toLocaleString()} />
       </dl>
@@ -188,7 +184,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
 
           {/* Reviews: players who played 10+ minutes, with stars. */}
           <div id="reviews" className="space-y-4">
-            <h2 className="h-section">Player reviews <span className="text-mute tabular-nums">{stats._count.id}</span></h2>
+            <h2 className="h-section">Feedback <span className="text-mute tabular-nums">{ratingCount}</span></h2>
             {ratingCount > 0 && (
               <div className="flex flex-wrap items-center gap-8">
                 <div>
@@ -212,7 +208,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
             )}
             {reviews.length === 0 ? (
               <p className="text-sm text-mute">
-                No reviews yet. Reviews come from players who played 10+ minutes.{" "}
+                No feedback yet. Only players who played 10+ minutes can leave feedback, so every review here is real.{" "}
                 {earns && <span className="text-cream">Play it now and earn 1 credit for yours.</span>}
               </p>
             ) : (
@@ -224,48 +220,13 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
                       {r.rating && <Stars n={r.rating} />}
                       {r.completedAt && <span>{ago(r.completedAt)}</span>}
                     </div>
-                    <p className="whitespace-pre-line text-sm">{r.feedback}</p>
+                    {r.feedback && <p className="whitespace-pre-line text-sm">{r.feedback}</p>}
                   </li>
                 ))}
               </ul>
             )}
           </div>
 
-          <div id="comments" className="space-y-4">
-            <h2 className="h-section">Comments <span className="text-mute tabular-nums">{game.comments.length}</span></h2>
-            {user ? (
-              <CommentForm gameId={game.id} />
-            ) : (
-              <p className="text-sm text-mute"><Link href="/signup" className="text-lime underline">Make a free account</Link> to like and comment.</p>
-            )}
-            {game.comments.length === 0 ? (
-              <p className="text-sm text-mute">No comments yet. Played it? Say what you liked.</p>
-            ) : (
-              <ul className="divide-y divide-line border-y border-line">
-                {game.comments.map((c) => (
-                  <li key={c.id} className="space-y-1 py-3">
-                    <div className="flex items-center gap-2 text-xs text-mute">
-                      <span className="font-semibold text-cream">{publicName(c.user)}</span>
-                      {c.user.id === game.ownerId && <span className="chip bg-lime/10 text-lime">Dev</span>}
-                      <span>{ago(c.createdAt)}</span>
-                    </div>
-                    <p className="whitespace-pre-line text-sm">{c.body}</p>
-                    <div className="flex items-center gap-1">
-                      <LikeButton size="sm" liked={likedComments.has(c.id)} count={c.likeCount} action={toggleCommentLike} field="id" value={c.id} label="Like comment" />
-                      {(isOwner || user?.id === c.user.id) && (
-                        <form action={deleteComment}>
-                          <input type="hidden" name="id" value={c.id} />
-                          <button aria-label="Delete comment" className="inline-flex min-h-[36px] items-center gap-1 rounded-ctl px-2 text-xs text-mute hover:text-danger">
-                            <Trash2 className="h-3.5 w-3.5" /> Delete
-                          </button>
-                        </form>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
         </div>
 
         {/* The developer: who made it and what else they made. */}

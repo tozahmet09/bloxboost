@@ -53,7 +53,7 @@ export const GUIDES: Guide[] = [
         h: "5. Swap plays with other developers",
         p: [
           "Other small developers have the same problem you do. A play swap means you play their game and they (or someone else) play yours. You get real players and real feedback, and it costs nothing but time.",
-          "Spawnswap is built around this: play another developer's game for 10 minutes and leave a review to earn 1 credit, then spend credits to get real players on your own game. Plays are checked with Roblox, so there are no bots.",
+          "Spawnswap is built around this: play another developer's game for 10 minutes to earn 1 credit, then spend credits to get real players on your own game. Plays are checked with Roblox, so there are no bots.",
         ],
       },
       {
@@ -73,7 +73,7 @@ export const GUIDES: Guide[] = [
         list: [
           "Average play time: are people staying longer after each update?",
           "Return rate: do players come back the next day?",
-          "Reviews and comments: what do several people say?",
+          "Ratings and feedback: what do several people say?",
         ],
       },
     ],
@@ -107,7 +107,7 @@ export const GUIDES: Guide[] = [
         list: [
           "Feedback threads in developer communities (r/robloxgamedev, Roblox developer Discord servers).",
           "Other developers. They know what to look for and they will be honest, especially if you review their game too.",
-          "Play-swap sites like Spawnswap, where every player plays your game for 10 minutes and has to leave a written review.",
+          "Play-swap sites like Spawnswap, where every player plays your game for 10 minutes and can leave a star rating.",
         ],
       },
       {
@@ -163,7 +163,7 @@ export const GUIDES: Guide[] = [
       {
         h: "Where Spawnswap fits",
         p: [
-          "Spawnswap is a free play swap for Roblox developers. You play other developers' games for 10 minutes and leave a review to earn credits, then spend credits to get real players on your own game. Credit packs exist if you want to skip the playing, but earning is always free.",
+          "Spawnswap is a free play swap for Roblox developers. You play other developers' games for 10 minutes to earn credits, then spend credits to get real players on your own game. Credit packs exist if you want to skip the playing, but earning is always free.",
         ],
       },
     ],

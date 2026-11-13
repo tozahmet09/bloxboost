@@ -63,7 +63,7 @@ export default async function GamePage({
   const script = trackerScript(appUrl, game.secret);
   const live = !!game.scriptLastSeen && game.scriptLastSeen.getTime() > Date.now() - SCRIPT_ALIVE_MS;
   const featured = !!game.featuredUntil && game.featuredUntil > new Date();
-  const ratings = game.tasks.map((t) => t.rating ?? 0);
+  const ratings = game.tasks.flatMap((t) => (t.rating ? [t.rating] : []));
   const avg = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : null;
   const since = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
   const visits7d = await db.visit.count({ where: { gameId: game.id, day: { gte: since } } });
@@ -205,19 +205,23 @@ export default async function GamePage({
       </ol>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-bold">Reviews</h2>
+        <h2 className="text-xl font-bold">Players</h2>
         {game.tasks.length === 0 ? (
-          <p className="text-sm text-mute">Reviews from players show up here.</p>
+          <p className="text-sm text-mute">Players who played 10+ minutes show up here, with their rating if they left one.</p>
         ) : (
           <ul className="divide-y divide-line">
             {game.tasks.map((t) => (
               <li key={t.id} className="space-y-1 py-4">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-mute">
-                  <span className="inline-flex" aria-label={`${t.rating} of 5`}>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Star key={n} className={`h-3.5 w-3.5 ${n <= (t.rating ?? 0) ? "fill-lime text-lime" : "text-line"}`} />
-                    ))}
-                  </span>
+                  {t.rating ? (
+                    <span className="inline-flex" aria-label={`${t.rating} of 5`}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star key={n} className={`h-3.5 w-3.5 ${n <= (t.rating ?? 0) ? "fill-lime text-lime" : "text-line"}`} />
+                      ))}
+                    </span>
+                  ) : (
+                    <span>No rating</span>
+                  )}
                   <span>{t.player.robloxUsername}</span>
                   <span>· {Math.round(t.playedSeconds / 60)} min played</span>
                   {t.verifiedBy === "SCRIPT" ? (
@@ -226,7 +230,7 @@ export default async function GamePage({
                     <span>· checked via Roblox status</span>
                   )}
                 </div>
-                <p className="max-w-prose whitespace-pre-wrap">{t.feedback}</p>
+                {t.feedback && <p className="max-w-prose whitespace-pre-wrap">{t.feedback}</p>}
               </li>
             ))}
           </ul>

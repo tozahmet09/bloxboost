@@ -2,15 +2,14 @@ import Link from "next/link";
 import { CheckCircle2, ExternalLink, Ticket } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { expireStaleTasks, isVerifiedGame } from "@/lib/credits";
+import { expireStaleTasks, isVerifiedGame, payPlayed } from "@/lib/credits";
 import { REQUIRED_SECONDS } from "@/lib/money";
 import { robloxGameUrl } from "@/lib/roblox";
 import { GameIcon } from "@/components/GameIcon";
-import { Form } from "@/components/Form";
 import { Burst } from "@/components/Burst";
 import { PresencePoller } from "@/components/PresencePoller";
-import { StarPicker } from "@/components/StarPicker";
-import { submitFeedback } from "@/app/actions";
+import { RateForm } from "@/components/RateForm";
+import { AbandonButton } from "@/components/AbandonButton";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +17,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
   const user = await requireUser();
   const { started } = await searchParams;
   await expireStaleTasks();
+  await payPlayed({ playerId: user.id });
   const tasks = await db.playTask.findMany({
     where: { playerId: user.id, status: { not: "EXPIRED" } },
     include: { game: true },
@@ -44,7 +44,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
       {watching && <PresencePoller />}
       {watching && (
         <p className="notice">
-          You can close this page and just play. We check your Roblox status every minute, so minutes only count while you&apos;re in the game. Come back here after to leave your review.
+          You can close this page and just play. We check your Roblox status every minute, so minutes only count while you&apos;re in the game. Your credit comes in by itself once you hit 10 minutes.
         </p>
       )}
 
@@ -76,27 +76,22 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
                       <span className="text-xs text-mute tabular-nums">{Math.floor(t.playedSeconds / 60)}/{mins} min</span>
                     </div>
                   )}
-                  {t.status === "PLAYED" && <div className="text-sm text-lime">Done playing. How was it?</div>}
                   {t.status === "COMPLETED" && (
-                    <div className="inline-flex items-center gap-1.5 text-sm text-verified"><CheckCircle2 className="h-4 w-4" /> Reviewed</div>
+                    <div className="inline-flex items-center gap-1.5 text-sm text-verified"><CheckCircle2 className="h-4 w-4" /> Played {mins} min · credit earned</div>
                   )}
                 </div>
                 {t.status === "PENDING" && (
                   <a href={robloxGameUrl(t.game.placeId)} target="_blank" rel="noopener" className="btn-quiet">Play</a>
+                )}
+                {t.status === "PENDING" && (
+                  <AbandonButton taskId={t.id} name={t.game.name} />
                 )}
                 {t.status === "COMPLETED" && (
                   <span className="inline-flex items-center gap-1 text-sm text-mute"><Ticket className="h-4 w-4 text-lime" /> +1</span>
                 )}
               </div>
               {t.status === "COMPLETED" && t.completedAt && t.completedAt.getTime() > justNow && <Burst label="+1 credit" />}
-              {t.status === "PLAYED" && (
-                <Form action={submitFeedback} submit={<><Ticket className="h-4 w-4" /> Send review, get +1</>} className="space-y-3">
-                  <input type="hidden" name="taskId" value={t.id} />
-                  <StarPicker name="rating" />
-                  <textarea name="feedback" aria-label="Your review" rows={3} required minLength={20} className="input" placeholder="What was fun? What was confusing?" />
-                  <p className="text-xs text-faint">Your review and stars show on the game&apos;s page.</p>
-                </Form>
-              )}
+              {t.status === "COMPLETED" && t.rating === null && t.feedback === null && <RateForm taskId={t.id} game={t.game.name} />}
             </li>
           );
         })}
