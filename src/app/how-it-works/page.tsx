@@ -151,7 +151,7 @@ export default function HowItWorks() {
 
       <section className="flex flex-wrap items-center gap-3">
         <Link href="/signup" className="btn">Get players</Link>
-        <Link href="/play" className="btn-quiet">Play &amp; earn</Link>
+        <Link href="/#earn-title" className="btn-quiet">Play &amp; earn</Link>
       </section>
     </article>
   );

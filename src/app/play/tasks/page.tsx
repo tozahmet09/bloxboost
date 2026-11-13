@@ -13,9 +13,9 @@ import { AbandonButton } from "@/components/AbandonButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function Tasks({ searchParams }: { searchParams: Promise<{ started?: string }> }) {
+export default async function Tasks({ searchParams }: { searchParams: Promise<{ started?: string; error?: string }> }) {
   const user = await requireUser();
-  const { started } = await searchParams;
+  const { started, error } = await searchParams;
   await expireStaleTasks();
   await payPlayed({ playerId: user.id });
   const tasks = await db.playTask.findMany({
@@ -38,9 +38,10 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
           <p className="eyebrow">My progress</p>
           <h1 className="mt-1 page-title">Games you&apos;re playing</h1>
         </div>
-        <Link href="/play" className="btn-quiet">Find more</Link>
+        <Link href="/#earn-title" className="btn-quiet">Find games</Link>
       </div>
 
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       {watching && <PresencePoller />}
       {watching && (
         <p className="notice">
@@ -57,7 +58,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
         </div>
       )}
 
-      {tasks.length === 0 && <p className="text-mute">Nothing yet. <Link href="/play" className="text-lime underline">Pick a game</Link>.</p>}
+      {tasks.length === 0 && <p className="text-mute">Nothing yet. <Link href="/#earn-title" className="text-lime underline">Pick a game that gives credits</Link>.</p>}
 
       <ul className="divide-y divide-line border-y border-line">
         {tasks.map((t) => {

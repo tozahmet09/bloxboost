@@ -7,6 +7,7 @@ import { getUser } from "@/lib/auth";
 import { Rail } from "@/components/Rail";
 import { ImmersiveHero, TrailerCard, type TrailerGame } from "@/components/TrailerCard";
 import { displayName, gameThumbnails } from "@/lib/thumbs";
+import { releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const featured = featuredRows.map(toCard);
   featured.sort(() => Math.random() - 0.5); // a different featured game leads the hero on each visit
 
+  // Not out yet: soonest release first. They join "All games" on their day.
+  const soon = (await db.game.findMany({ where: { releaseAt: { gt: now }, hiddenAt: null }, orderBy: { releaseAt: "asc" }, take: 24 })).map((g) => ({
+    ...toCard(g),
+    release: releaseLabel(g.releaseAt!, now),
+  }));
+
   // Every released game, credit or not. Here the button is always just "Play" (credits live in the row above).
   const byLikes = sort === "liked";
   const fresh = (
@@ -64,7 +71,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     .sort((a, b) => (byLikes ? 0 : Number(!!b.trailer) - Number(!!a.trailer)));
 
   // Wide Roblox screenshots for every card on the page (one cached call).
-  const all = [...featured, ...earn, ...fresh];
+  const all = [...featured, ...earn, ...fresh, ...soon];
   const universe = new Map<string, string | null>();
   for (const r of [...featuredRows, ...(await db.game.findMany({ where: { id: { in: all.map((g) => g.id) } }, select: { id: true, universeId: true } }))]) universe.set(r.id, r.universeId);
   const thumbs = await gameThumbnails([...universe.values()]);
@@ -79,6 +86,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const vt = (list: TrailerGame[]) => list.map((g) => (named.has(g.id) ? g : (named.add(g.id), { ...g, vt: true })));
   const earnRow = vt(earn);
   const freshRow = vt(fresh);
+  const soonRow = vt(soon);
 
   return (
     <div className="-mb-8 space-y-14 sm:-mb-12 sm:space-y-16">
@@ -94,7 +102,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           </h1>
           <p className="mt-3 max-w-md text-mute">Watch trailers and play new games. Developers play each other&apos;s games to get real players.</p>
           <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
-            <Link href="/play" className="btn">Play &amp; earn credits</Link>
+            <Link href="#earn-title" className="btn">Play &amp; earn credits</Link>
             <Link href="/how-it-works" className="link">How it works <ArrowRight className="h-3.5 w-3.5" /></Link>
           </div>
         </section>
@@ -111,7 +119,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
       <section aria-labelledby="earn-title">
         <Head id="earn-title" eyebrow="01 — Earn" accent title="Play & earn credits" sub="Play 10 minutes, get 1 credit, worth 1 real player for your game.">
-          <Link href="/play" className="link-accent">Start earning <ArrowRight className="h-3.5 w-3.5" /></Link>
+          <Link href="/play" className="link-accent">My progress <ArrowRight className="h-3.5 w-3.5" /></Link>
         </Head>
         {earn.length === 0 ? (
           <p className="text-sm text-mute">No games give you a credit right now. New ones arrive all the time.</p>
@@ -142,6 +150,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           </Rail>
         )}
       </section>
+
+      {soon.length > 0 && (
+        <section aria-labelledby="soon-title">
+          <Head id="soon-title" eyebrow="03 — Soon" title="Coming soon" sub="Games with a release date. Watch the trailer now, play on launch day." />
+          <Rail label="Coming soon">
+            {soonRow.map((g) => <TrailerCard key={g.id} game={g} />)}
+          </Rail>
+        </section>
+      )}
 
       </div>
 

@@ -44,7 +44,7 @@ export default async function Leaderboard({ searchParams }: { searchParams: Prom
   const rest = people.slice(3);
   const empty = (
     <p className="py-16 text-center text-mute">
-      Nobody here yet. <Link href="/play" className="font-semibold text-lime hover:underline">Play a game</Link> and take the #1 spot.
+      Nobody here yet. <Link href="/#earn-title" className="font-semibold text-lime hover:underline">Play a game</Link> and take the #1 spot.
     </p>
   );
 
