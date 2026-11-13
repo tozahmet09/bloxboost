@@ -94,6 +94,7 @@ export default async function Tasks({ searchParams }: { searchParams: Promise<{ 
                   <input type="hidden" name="taskId" value={t.id} />
                   <StarPicker name="rating" />
                   <textarea name="feedback" aria-label="Your review" rows={3} required minLength={20} className="input" placeholder="What was fun? What was confusing?" />
+                  <p className="text-xs text-faint">Your review and stars show on the game&apos;s page.</p>
                 </Form>
               )}
             </li>
