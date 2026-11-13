@@ -42,7 +42,7 @@ export default async function Play({ searchParams }: { searchParams: Promise<{ e
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">Play &amp; earn</p>
+          <p className="eyebrow">Progress</p>
           <h1 className="mt-1 page-title">Play {mins} min, get +1 credit</h1>
           <p className="mt-1 text-sm text-mute">Playing as <b className="text-cream">{user.robloxUsername}</b></p>
         </div>
