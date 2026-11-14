@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Star } from "lucide-react";
 import { topDevs, topGames, topTesters, publicName } from "@/lib/community";
 import { robloxAvatars } from "@/lib/avatars";
 import { GameIcon } from "@/components/GameIcon";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Leaderboards" };
 
 const TABS = [
-  { id: "games", label: "Top games", sub: "Games with the most likes." },
+  { id: "games", label: "Top games", sub: "Games ranked by the minutes players spent in them." },
   { id: "devs", label: "Top devs", sub: "Developers ranked by the minutes testers spent in their games." },
   { id: "testers", label: "Top testers", sub: "Testers ranked by minutes played in other devs' games." },
 ] as const;
@@ -75,9 +75,15 @@ export default async function Leaderboard({ searchParams }: { searchParams: Prom
                 <GameIcon url={g.iconUrl} className="h-12 w-12 shrink-0 rounded-ctl" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold group-hover:text-lime">{g.name}</div>
-                  <div className="text-xs text-mute">{g.genre}</div>
+                  <div className="text-xs text-mute">
+                    {g.genre}
+                    {g.rating ? <span className="sm:hidden"> · ★ {g.rating.toFixed(1)}</span> : null}
+                  </div>
                 </div>
-                <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums"><Heart className="h-4 w-4 text-lime" /> <CountUp value={g.likeCount} /></span>
+                <span className="hidden w-20 items-center justify-end gap-1 text-sm tabular-nums text-mute sm:inline-flex" title={g.ratings ? `${g.ratings} rating${g.ratings === 1 ? "" : "s"}` : "No ratings yet"}>
+                  {g.rating ? <><Star className="h-3.5 w-3.5 fill-lime text-lime" /> {g.rating.toFixed(1)}</> : "–"}
+                </span>
+                <span className="w-24 text-right text-sm font-semibold tabular-nums"><CountUp value={g.minutes} /> min</span>
               </Link>
             </li>
           ))}

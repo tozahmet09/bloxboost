@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BadgeCheck, Clapperboard, Heart, Play, Ticket, Users } from "lucide-react";
+import { BadgeCheck, Clapperboard, Play, Ticket, Users } from "lucide-react";
 import { playGame } from "@/app/actions";
 import type { Trailer } from "@/lib/trailer";
 import { GameIcon } from "./GameIcon";
@@ -26,7 +26,6 @@ export type TrailerGame = {
   verified?: boolean;
   /** Played in the "testing games on SpawnSwap" video series. */
   tested?: boolean;
-  likes?: number;
   /** Shown as a rank badge on leaderboard rows of cards. */
   rank?: number;
   /** The owner still has player slots, so playing it earns a credit. */
@@ -163,14 +162,6 @@ function Meta({ game }: { game: TrailerGame }) {
           <Users className="h-3 w-3" /> {game.playing.toLocaleString()}
         </span>
       )}
-      {!!game.likes && (
-        <>
-          <span aria-hidden>·</span>
-          <span className="inline-flex items-center gap-1 tabular-nums">
-            <Heart className="h-3 w-3" /> {game.likes.toLocaleString()}
-          </span>
-        </>
-      )}
       {game.verified && (
         <span className="inline-flex items-center text-mute" title="Verified: in-game tracker installed">
           <BadgeCheck className="h-3.5 w-3.5" aria-label="Verified" />
@@ -190,7 +181,7 @@ function Meta({ game }: { game: TrailerGame }) {
 
 /**
  * Game tile: 16:9 still (trailer plays when in view), name and one line of facts, then one Play button.
- * The picture and the name open the game's page (likes, feedback, the dev). The button plays the game:
+ * The picture and the name open the game's page (ratings, feedback, the dev). The button plays the game:
  * games that give credits start a credit task, the rest open on Roblox. Coming-soon games link to their trailer instead.
  */
 export function TrailerCard({ game }: { game: TrailerGame }) {

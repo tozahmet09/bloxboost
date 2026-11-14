@@ -1,17 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { BadgeCheck, Clapperboard, Heart, Play, Star, Ticket, Users } from "lucide-react";
+import { BadgeCheck, Clapperboard, Play, Star, Ticket, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth";
 import { parseTrailer } from "@/lib/trailer";
 import { earningGameIds, isVerifiedGame } from "@/lib/credits";
 import { robloxAvatars } from "@/lib/avatars";
 import { publicName } from "@/lib/community";
-import { playGame, toggleLike } from "@/app/actions";
+import { playGame } from "@/app/actions";
 import { GameIcon } from "@/components/GameIcon";
 import { displayName, gameThumbnails } from "@/lib/thumbs";
-import { LikeButton } from "@/components/LikeButton";
 import { isUpcoming, releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
@@ -41,14 +40,14 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
     where: { id },
     select: {
       id: true, name: true, description: true, universeId: true, genre: true, playing: true, visits: true, iconUrl: true, trailerUrl: true,
-      scriptLastSeen: true, likeCount: true, ownerId: true, releaseAt: true, hiddenAt: true, seriesTestedAt: true, seriesVideoUrl: true,
+      scriptLastSeen: true, ownerId: true, releaseAt: true, hiddenAt: true, seriesTestedAt: true, seriesVideoUrl: true,
       owner: { select: devSel },
     },
   });
   if (!game || (game.hiddenAt && user?.id !== game.ownerId)) notFound();
   game.name = displayName(game.name);
   const done = { gameId: id, status: "COMPLETED" } as const;
-  const [stats, byStars, reviews, liked, earning, devGames] = await Promise.all([
+  const [stats, byStars, reviews, earning, devGames] = await Promise.all([
     db.playTask.aggregate({ where: done, _count: { id: true }, _avg: { rating: true } }),
     db.playTask.groupBy({ by: ["rating"], where: { ...done, rating: { not: null } }, _count: { _all: true } }),
     db.playTask.findMany({
@@ -57,13 +56,12 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
       take: 20,
       select: { id: true, rating: true, feedback: true, completedAt: true, player: { select: nameSel } },
     }),
-    user ? db.like.findUnique({ where: { userId_gameId: { userId: user.id, gameId: id } } }) : null,
     earningGameIds(),
     db.game.findMany({
       where: { ownerId: game.ownerId, hiddenAt: null, id: { not: id } },
-      orderBy: { likeCount: "desc" },
+      orderBy: { createdAt: "desc" },
       take: 4,
-      select: { id: true, name: true, iconUrl: true, likeCount: true, universeId: true },
+      select: { id: true, name: true, iconUrl: true, genre: true, universeId: true },
     }),
   ]);
   const t = parseTrailer(game.trailerUrl);
@@ -110,7 +108,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
         )}
       </div>
 
-      {/* Title, then the two things you came for: play it and like it. */}
+      {/* Title, then the two things you came for: play it. */}
       <header className="space-y-5">
         <div className="flex min-w-0 gap-4">
           <GameIcon url={game.iconUrl} className="h-16 w-16 shrink-0 rounded-ctl" />
@@ -159,14 +157,12 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
           ) : (
             <a href={`/go/${game.id}`} target="_blank" rel="noopener" className="btn h-12 px-6 text-[15px]"><Play className="h-4 w-4 fill-current" /> Play on Roblox</a>
           )}
-          <LikeButton size="lg" liked={!!liked} count={game.likeCount} action={toggleLike} field="gameId" value={game.id} />
           {isOwner && <Link href={`/dashboard/games/${game.id}`} className="link ml-1">Manage game</Link>}
         </div>
       </header>
 
       {/* Numbers in one line, no boxes. */}
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-5 border-y border-line py-5 sm:grid-cols-5">
-        <Stat label="Likes" value={game.likeCount.toLocaleString()} icon={<Heart className="h-4 w-4 fill-lime text-lime" />} />
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-5 border-y border-line py-5 sm:grid-cols-4">
         <Stat label="Rating" value={stats._avg.rating ? stats._avg.rating.toFixed(1) : "–"} icon={stats._avg.rating ? <Star className="h-4 w-4 fill-lime text-lime" /> : null} />
         <Stat label="Ratings" value={ratingCount.toLocaleString()} />
         <Stat label="Playing now" value={game.playing.toLocaleString()} icon={<Users className="h-4 w-4 text-mute" />} />
@@ -266,7 +262,7 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-semibold transition group-hover:text-lime">{displayName(g.name)}</span>
-                        <span className="inline-flex items-center gap-1 font-mono text-xs text-faint"><Heart className="h-3 w-3" /> {g.likeCount}</span>
+                        <span className="block text-xs text-faint">{g.genre}</span>
                       </span>
                     </Link>
                   </li>

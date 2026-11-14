@@ -248,7 +248,7 @@ export default async function GamePage({
         ) : (
           <p className="max-w-prose text-sm text-mute">
             Takes the game off the homepage, the leaderboard and the player queue. Running campaigns pause and keep their credits.
-            Nothing is deleted: likes, comments and reviews stay, and you can show it again any time.
+            Nothing is deleted: comments and reviews stay, and you can show it again any time.
             {featured && " The spotlight time you paid for keeps running while it's hidden."}
           </p>
         )}

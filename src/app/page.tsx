@@ -11,7 +11,7 @@ import { releaseLabel } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
 
-type Row = { id: string; name: string; description: string; universeId: string | null; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null; scriptLastSeen: Date | null; likeCount: number; seriesTestedAt?: Date | null };
+type Row = { id: string; name: string; description: string; universeId: string | null; genre: string; playing: number; iconUrl: string | null; trailerUrl: string | null; scriptLastSeen: Date | null; seriesTestedAt?: Date | null };
 // Pick fields one by one: this goes to the browser, so the game's tracker secret must never be in it.
 const toCard = (g: Row): TrailerGame => ({
   id: g.id,
@@ -22,7 +22,6 @@ const toCard = (g: Row): TrailerGame => ({
   iconUrl: g.iconUrl,
   trailer: parseTrailer(g.trailerUrl),
   verified: isVerifiedGame(g),
-  likes: g.likeCount,
   tested: !!g.seriesTestedAt,
 });
 
@@ -36,8 +35,8 @@ function pitchOf(d: string) {
   return end > 60 ? cut.slice(0, end + 1) : cut.replace(/\s+\S*$/, "") + "…";
 }
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ sort?: string; deleted?: string }> }) {
-  const { sort, deleted } = await searchParams;
+export default async function Home({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
+  const { deleted } = await searchParams;
   const now = new Date();
   const user = await getUser();
   // Games that give THIS player a credit: logged in, the ones they haven't played yet (not their own); logged out, every game with free slots.
@@ -59,16 +58,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   }));
 
   // Every released game, credit or not. Here the button is always just "Play" (credits live in the row above).
-  const byLikes = sort === "liked";
   const fresh = (
     await db.game.findMany({
       where: { hiddenAt: null, OR: [{ releaseAt: null }, { releaseAt: { lte: now } }] },
-      orderBy: byLikes ? [{ likeCount: "desc" }, { createdAt: "desc" }] : { createdAt: "desc" },
+      orderBy: { createdAt: "desc" },
       take: 40,
     })
   )
     .map(toCard)
-    .sort((a, b) => (byLikes ? 0 : Number(!!b.trailer) - Number(!!a.trailer)));
+    .sort((a, b) => Number(!!b.trailer) - Number(!!a.trailer));
 
   // Wide Roblox screenshots for every card on the page (one cached call).
   const all = [...featured, ...earn, ...fresh, ...soon];
@@ -77,7 +75,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const thumbs = await gameThumbnails([...universe.values()]);
   for (const g of all) g.thumb = thumbs.get(universe.get(g.id) ?? "") ?? null;
 
-  // Hero: paid featured games first, then games that give credits, then the most liked and newest. Up to 5, each with a picture.
+  // Hero: paid featured games first, then games that give credits, then the newest. Up to 5, each with a picture.
   const heroIds = new Set<string>();
   const hero = [...featured, ...earn, ...fresh].filter((g) => (g.thumb || g.trailer) && !heroIds.has(g.id) && heroIds.add(g.id)).slice(0, 5);
 
@@ -131,15 +129,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       </section>
 
       <section aria-labelledby="all-title">
-        <Head id="all-title" eyebrow="02 — All" title="All games" sub="Every game on Spawnswap. Play anything you like.">
-          <div className="flex gap-4 text-sm" role="tablist" aria-label="Sort games">
-            {([["/", "Newest", !byLikes], ["/?sort=liked", "Most liked", byLikes]] as const).map(([href, label, on]) => (
-              <Link key={href} href={href} role="tab" aria-selected={on} className={`border-b-2 pb-1 transition ${on ? "border-lime font-semibold text-cream" : "border-transparent text-mute hover:text-cream"}`}>
-                {label}
-              </Link>
-            ))}
-          </div>
-        </Head>
+        <Head id="all-title" eyebrow="02 — All" title="All games" sub="Every game on Spawnswap. Play anything you like." />
         {fresh.length === 0 ? (
           <p className="text-sm text-mute">
             Nothing here yet. <Link href="/signup" className="text-lime underline underline-offset-4">Add the first game.</Link>
