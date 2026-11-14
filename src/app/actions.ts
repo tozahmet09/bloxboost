@@ -513,7 +513,7 @@ export async function playGame(f: FormData) {
   redirect(`/play/tasks?started=${r.placeId}`);
 }
 
-/** Drop a game you started but don't want to finish. Frees one of your open slots and gives the spot back to the dev. */
+/** Drop a game you started. Only the progress is lost: the game goes back to the credit list and can be played again. */
 export async function abandonTask(f: FormData) {
   const user = await requireUser();
   await db.playTask.updateMany({
