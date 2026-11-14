@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import { BadgeCheck, CheckCircle2, Circle, Eye, EyeOff, RefreshCw, Star, Pause, Play as PlayIcon, X } from "lucide-react";
+import { Archive, ArchiveRestore, BadgeCheck, CheckCircle2, Circle, RefreshCw, Star, Pause, Play as PlayIcon, X } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { FEATURED_OPTIONS, SCRIPT_ALIVE_MS, fmt } from "@/lib/money";
@@ -12,6 +12,7 @@ import { GoalBar } from "@/components/GoalBar";
 import { CopyButton } from "@/components/CopyButton";
 import { Form } from "@/components/Form";
 import { TrailerUpload } from "@/components/TrailerUpload";
+import { DeleteGameButton } from "@/components/DeleteGameButton";
 import { cancelCampaign, createCampaign, refreshGame, setGameHidden, setReleaseDate, toggleCampaign } from "@/app/actions";
 import { isUpcoming, releaseLabel } from "@/lib/release";
 
@@ -97,8 +98,8 @@ export default async function GamePage({
       </header>
       {game.hiddenAt && (
         <p className="text-sm text-mute">
-          This game is hidden. Nobody else can see it or get it in the player queue.{" "}
-          <a href="#visibility" className="text-lime underline-offset-4 hover:underline">Show it again</a>
+          This game is archived. Nobody else can see it or get it in the player queue.{" "}
+          <a href="#visibility" className="text-lime underline-offset-4 hover:underline">Unarchive</a>
         </p>
       )}
       {notice === "paid" && <p className="text-sm text-verified">Payment received.</p>}
@@ -238,27 +239,37 @@ export default async function GamePage({
       </section>
 
       <section id="visibility" className="scroll-mt-24 space-y-3 border-t border-line pt-8">
-        <h2 className="text-xl font-bold">{game.hiddenAt ? "Hidden" : "Hide this game"}</h2>
-        {q.visibility === "hidden" && <p className="text-sm text-verified">Game hidden.</p>}
+        <h2 className="text-xl font-bold">{game.hiddenAt ? "Archived" : "Archive this game"}</h2>
+        {q.visibility === "hidden" && <p className="text-sm text-verified">Game archived.</p>}
         {q.visibility === "shown" && <p className="text-sm text-verified">Game is public again.</p>}
         {game.hiddenAt ? (
           <p className="max-w-prose text-sm text-mute">
-            Hidden since {game.hiddenAt.toISOString().slice(0, 10)}. Show it again to put it back on the site. Your campaigns stay paused until you resume them above.
+            Archived since {game.hiddenAt.toISOString().slice(0, 10)}. Unarchive it to put it back on the site. Your campaigns stay paused until you resume them above.
           </p>
         ) : (
           <p className="max-w-prose text-sm text-mute">
             Takes the game off the homepage, the leaderboard and the player queue. Running campaigns pause and keep their credits.
-            Nothing is deleted: comments and reviews stay, and you can show it again any time.
-            {featured && " The spotlight time you paid for keeps running while it's hidden."}
+            Nothing is deleted: reviews and stats stay, and you can unarchive it any time.
+            {featured && " The spotlight time you paid for keeps running while it's archived."}
           </p>
         )}
         <form action={setGameHidden}>
           <input type="hidden" name="gameId" value={game.id} />
           <input type="hidden" name="hide" value={game.hiddenAt ? "0" : "1"} />
           <button className="btn-quiet">
-            {game.hiddenAt ? <><Eye className="h-4 w-4" /> Show game</> : <><EyeOff className="h-4 w-4" /> Hide game</>}
+            {game.hiddenAt ? <><ArchiveRestore className="h-4 w-4" /> Unarchive</> : <><Archive className="h-4 w-4" /> Archive game</>}
           </button>
         </form>
+      </section>
+
+      <section id="delete" className="scroll-mt-24 space-y-3 border-t border-line pt-8">
+        <h2 className="text-xl font-bold">Delete this game</h2>
+        <p className="max-w-prose text-sm text-mute">
+          Removes the game from SpawnSwap for good: its page, reviews and stats. Your Roblox game is not touched.
+          Credits still reserved in campaigns come back to you.
+          {featured && " Spotlight time you paid for is lost."}
+        </p>
+        <DeleteGameButton gameId={game.id} name={game.name} />
       </section>
     </div>
   );

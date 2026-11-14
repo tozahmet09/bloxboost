@@ -82,8 +82,8 @@ export default async function GamePublic({ params }: { params: Promise<{ id: str
     <div className="space-y-10">
       {game.hiddenAt && (
         <p className="text-sm text-mute">
-          Only you can see this page. The game is hidden.{" "}
-          <Link href={`/dashboard/games/${game.id}#visibility`} className="text-lime underline-offset-4 hover:underline">Show it again</Link>
+          Only you can see this page. The game is archived.{" "}
+          <Link href={`/dashboard/games/${game.id}#visibility`} className="text-lime underline-offset-4 hover:underline">Unarchive</Link>
         </p>
       )}
       {/* Same view-transition name as the homepage card, so the card grows into this player. */}

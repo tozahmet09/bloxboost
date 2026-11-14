@@ -12,8 +12,8 @@ import { GoalBar } from "@/components/GoalBar";
 
 export const dynamic = "force-dynamic";
 
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ reset?: string }> }) {
-  const { reset } = await searchParams;
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ reset?: string; deleted?: string }> }) {
+  const { reset, deleted } = await searchParams;
   const user = await requireUser();
   const games = await db.game.findMany({
     where: { ownerId: user.id },
@@ -37,6 +37,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   return (
     <div className="space-y-8">
       {reset && <p role="status" className="notice">Your password was changed. Any other devices were logged out.</p>}
+      {deleted && <p role="status" className="notice">Game deleted from SpawnSwap.</p>}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">My games</p>
@@ -94,7 +95,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                           <BadgeCheck className="h-3 w-3" /> Verified
                         </span>
                       )}
-                      {g.hiddenAt && <span className="text-xs text-faint">Hidden</span>}
+                      {g.hiddenAt && <span className="text-xs text-faint">Archived</span>}
                       {coming > 0 && !g.hiddenAt && <span className="text-xs text-mute">{coming} on the way</span>}
                     </div>
                     <GoalBar count={g._count.tasks} compact />

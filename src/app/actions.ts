@@ -284,7 +284,7 @@ export async function createCampaign(_: FormState, f: FormData): Promise<FormSta
   const user = await requireUser();
   const game = await db.game.findFirst({ where: { id: str(f, "gameId"), ownerId: user.id } });
   if (!game) return { error: "Pick one of your games." };
-  if (game.hiddenAt) return { error: "This game is hidden. Show it again to start a campaign." };
+  if (game.hiddenAt) return { error: "This game is archived. Unarchive it to start a campaign." };
   const n = parseInt(str(f, "players"), 10);
   if (!(n >= 1 && n <= 10000)) return { error: "Choose between 1 and 10,000 players." };
   const ok = await db.$transaction(async (tx) => {
@@ -343,6 +343,30 @@ export async function setGameHidden(f: FormData) {
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/games/${game.id}`);
   redirect(`/dashboard/games/${game.id}?visibility=${hide ? "hidden" : "shown"}#visibility`);
+}
+
+/**
+ * The dev deletes their game from SpawnSwap (not from Roblox). Credits still reserved in open campaigns
+ * are refunded first, then the game row goes; campaigns, play tasks, visits, likes and comments cascade,
+ * payments keep their record with gameId set to null. Credits players already earned stay theirs.
+ */
+export async function deleteGame(f: FormData) {
+  const user = await requireUser();
+  const game = await db.game.findFirst({ where: { id: str(f, "gameId"), ownerId: user.id }, select: { id: true } });
+  if (!game) return;
+  await db.$transaction(async (tx) => {
+    const camps = await tx.campaign.findMany({ where: { gameId: game.id, status: { in: ["ACTIVE", "PAUSED"] } } });
+    let refund = 0;
+    for (const c of camps) {
+      const open = await tx.playTask.count({ where: { campaignId: c.id, status: { in: ["PENDING", "PLAYED"] } } });
+      refund += Math.max(0, c.targetPlayers - c.delivered - open);
+    }
+    const gone = await tx.game.deleteMany({ where: { id: game.id, ownerId: user.id } });
+    if (gone.count && refund > 0) await tx.user.update({ where: { id: user.id }, data: { credits: { increment: refund } } });
+  });
+  revalidatePath("/");
+  revalidatePath("/dashboard");
+  redirect("/dashboard?deleted=1");
 }
 
 export async function refreshGame(f: FormData) {
