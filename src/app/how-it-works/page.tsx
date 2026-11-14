@@ -90,7 +90,7 @@ export default function HowItWorks() {
         <div>
           <h2 className="text-xl font-bold">If you just want to play</h2>
           <p className="mt-2 text-sm leading-relaxed text-mute">
-            Browse trailers on the homepage, play what looks good, like games and read real player feedback on game pages. It&apos;s all free.
+            Browse trailers on the homepage, play what looks good and read real player ratings and feedback on game pages. It&apos;s all free.
             Playing through Play &amp; earn also gives you credits, in case you make a game later.
           </p>
         </div>

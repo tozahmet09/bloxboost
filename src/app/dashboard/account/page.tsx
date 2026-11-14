@@ -21,7 +21,7 @@ export default async function Account() {
         <h2 className="text-xl font-bold">Delete account</h2>
         <div className="space-y-2 text-sm text-mute">
           <p>
-            This removes your account, your {games === 1 ? "game" : `${games} games`}, trailers, likes, comments and reviews,
+            This removes your account, your {games === 1 ? "game" : `${games} games`}, trailers, comments and reviews,
             and unlinks your Roblox account. It can&apos;t be undone.
           </p>
           <p>

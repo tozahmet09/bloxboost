@@ -17,26 +17,36 @@ export async function ensureReferralCode(userId: string) {
 
 const since = (days: number) => new Date(Date.now() - days * 864e5);
 
-/** Most liked games, overall or in the last N days. */
-export async function topGames(take = 20, days?: number) {
-  if (!days) {
-    return db.game.findMany({ where: { likeCount: { gt: 0 }, hiddenAt: null }, orderBy: [{ likeCount: "desc" }, { createdAt: "asc" }], take });
-  }
-  const rows = await db.like.groupBy({
-    by: ["gameId"],
-    where: { createdAt: { gte: since(days) }, game: { hiddenAt: null } },
-    _count: { gameId: true },
-    orderBy: { _count: { gameId: "desc" } },
-    take,
-  });
-  const games = await db.game.findMany({ where: { id: { in: rows.map((r) => r.gameId) } } });
+/**
+ * Games ranked by the minutes players spent in them (tracked play time, can't be faked with clicks).
+ * The average star rating comes along for display only: one 5-star vote shouldn't put a game first.
+ */
+export async function topGames(take = 20) {
+  const [timeRows, ratingRows] = await Promise.all([
+    db.playTask.groupBy({ by: ["gameId"], where: { playedSeconds: { gt: 0 }, game: { hiddenAt: null } }, _sum: { playedSeconds: true } }),
+    db.playTask.groupBy({ by: ["gameId"], where: { status: "COMPLETED", rating: { not: null } }, _avg: { rating: true }, _count: { rating: true } }),
+  ]);
+  const ranked = timeRows
+    .map((r) => ({ gameId: r.gameId, seconds: r._sum.playedSeconds ?? 0 }))
+    .filter((r) => r.seconds >= 60)
+    .sort((a, b) => b.seconds - a.seconds)
+    .slice(0, take);
+  const games = await db.game.findMany({ where: { id: { in: ranked.map((r) => r.gameId) } }, select: { id: true, name: true, genre: true, iconUrl: true } });
   const byId = new Map(games.map((g) => [g.id, g]));
-  return rows.map((r) => ({ ...byId.get(r.gameId)!, recentLikes: r._count.gameId })).filter((g) => g.id);
+  const ratings = new Map(ratingRows.map((r) => [r.gameId, { avg: r._avg.rating, count: r._count.rating }]));
+  return ranked
+    .filter((r) => byId.has(r.gameId))
+    .map((r) => ({
+      ...byId.get(r.gameId)!,
+      minutes: Math.floor(r.seconds / 60),
+      rating: ratings.get(r.gameId)?.avg ?? null,
+      ratings: ratings.get(r.gameId)?.count ?? 0,
+    }));
 }
 
 const userSelect = { id: true, displayName: true, robloxUsername: true, robloxVerified: true, robloxUserId: true } as const;
 
-/** Developers ranked by the minutes testers spent in their games (likes break ties). */
+/** Developers ranked by the minutes testers spent in their games. */
 export async function topDevs(take = 20) {
   const rows = await db.playTask.groupBy({
     by: ["gameId"],
@@ -45,25 +55,24 @@ export async function topDevs(take = 20) {
   });
   const games = await db.game.findMany({
     where: { hiddenAt: null },
-    select: { id: true, ownerId: true, likeCount: true },
+    select: { id: true, ownerId: true },
   });
   const secs = new Map(rows.map((r) => [r.gameId, r._sum.playedSeconds ?? 0]));
-  const byOwner = new Map<string, { seconds: number; likes: number; games: number }>();
+  const byOwner = new Map<string, { seconds: number; games: number }>();
   for (const g of games) {
-    const o = byOwner.get(g.ownerId) ?? { seconds: 0, likes: 0, games: 0 };
+    const o = byOwner.get(g.ownerId) ?? { seconds: 0, games: 0 };
     o.seconds += secs.get(g.id) ?? 0;
-    o.likes += g.likeCount;
     o.games += 1;
     byOwner.set(g.ownerId, o);
   }
   const ranked = [...byOwner.entries()]
-    .filter(([, s]) => s.seconds >= 60 || s.likes > 0)
-    .sort((a, b) => b[1].seconds - a[1].seconds || b[1].likes - a[1].likes)
+    .filter(([, s]) => s.seconds >= 60)
+    .sort((a, b) => b[1].seconds - a[1].seconds || b[1].games - a[1].games)
     .slice(0, take);
   const users = await db.user.findMany({ where: { id: { in: ranked.map(([id]) => id) } }, select: userSelect });
   const byId = new Map(users.map((u) => [u.id, u]));
   return ranked
-    .map(([id, s]) => ({ user: byId.get(id)!, minutes: Math.floor(s.seconds / 60), likes: s.likes, games: s.games }))
+    .map(([id, s]) => ({ user: byId.get(id)!, minutes: Math.floor(s.seconds / 60), games: s.games }))
     .filter((r) => r.user);
 }
 

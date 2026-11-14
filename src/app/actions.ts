@@ -538,24 +538,6 @@ export async function rateGame(_: FormState, f: FormData): Promise<FormState> {
 
 // ---------- community ----------
 
-export async function toggleLike(f: FormData) {
-  const user = await getUser();
-  const gameId = str(f, "gameId");
-  if (!user) redirect("/login");
-  if (!(await db.game.findFirst({ where: { id: gameId, hiddenAt: null }, select: { id: true } }))) return;
-  await db.$transaction(async (tx) => {
-    const removed = await tx.like.deleteMany({ where: { userId: user.id, gameId } });
-    if (removed.count) {
-      await tx.game.update({ where: { id: gameId }, data: { likeCount: { decrement: 1 } } });
-    } else {
-      await tx.like.create({ data: { userId: user.id, gameId } });
-      await tx.game.update({ where: { id: gameId }, data: { likeCount: { increment: 1 } } });
-    }
-  });
-  revalidatePath(`/games/${gameId}`);
-  revalidatePath("/");
-}
-
 export async function addComment(_: FormState, f: FormData): Promise<FormState> {
   const user = await getUser();
   if (!user) return { error: "Log in to comment." };
@@ -577,22 +559,5 @@ export async function deleteComment(f: FormData) {
   const c = await db.comment.findUnique({ where: { id: str(f, "id") }, include: { game: { select: { ownerId: true } } } });
   if (!c || (c.userId !== user.id && c.game.ownerId !== user.id)) return;
   await db.comment.delete({ where: { id: c.id } });
-  revalidatePath(`/games/${c.gameId}`);
-}
-
-export async function toggleCommentLike(f: FormData) {
-  const user = await getUser();
-  const c = await db.comment.findUnique({ where: { id: str(f, "id") }, select: { id: true, gameId: true, userId: true } });
-  if (!c) return;
-  if (!user) redirect("/login");
-  if (c.userId === user.id) return; // no liking your own comment
-  await db.$transaction(async (tx) => {
-    const removed = await tx.commentLike.deleteMany({ where: { userId: user.id, commentId: c.id } });
-    if (removed.count) await tx.comment.update({ where: { id: c.id }, data: { likeCount: { decrement: 1 } } });
-    else {
-      await tx.commentLike.create({ data: { userId: user.id, commentId: c.id } });
-      await tx.comment.update({ where: { id: c.id }, data: { likeCount: { increment: 1 } } });
-    }
-  });
   revalidatePath(`/games/${c.gameId}`);
 }

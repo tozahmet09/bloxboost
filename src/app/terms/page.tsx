@@ -36,7 +36,7 @@ export default function Terms() {
         <li>Alt accounts, bots, scripts or anything that fakes playtime or reviews.</li>
         <li>Changing the playtime check script to report players who did not play.</li>
         <li>Paying or rewarding people outside Spawnswap to play through it.</li>
-        <li>Copy-paste, spam or abusive ratings or feedback, and trading or buying likes.</li>
+        <li>Copy-paste, spam or abusive ratings or feedback, and trading or buying ratings.</li>
       </ul>
 
       <h2>Your games and trailers</h2>
@@ -45,7 +45,7 @@ export default function Terms() {
         <li>Trailers must show the real game and be content you have the right to use.</li>
         <li>Games and trailers must be suitable for all ages and follow Roblox community standards. We may remove anything that isn&apos;t.</li>
         <li>You let us show your game&apos;s name, icon and trailer on Spawnswap to promote it.</li>
-        <li>Comments and likes are public. Developers can delete comments on their own games, and we may remove anything that breaks these rules.</li>
+        <li>Ratings, feedback and comments are public. Developers can delete comments on their own games, and we may remove anything that breaks these rules.</li>
       </ul>
 
       <h2>Purchases</h2>
