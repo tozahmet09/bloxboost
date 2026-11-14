@@ -77,7 +77,7 @@ export default async function Stats() {
             <li key={g.id} className="flex flex-wrap gap-x-4 py-2">
               <span className="w-36 text-mute tabular-nums">{day(g.createdAt)}</span>
               <span className="min-w-0 flex-1 truncate">{g.name}</span>
-              <span className="text-mute">{g.hiddenAt ? "hidden" : g.releaseAt && g.releaseAt > new Date() ? "coming soon" : "live"}</span>
+              <span className="text-mute">{g.hiddenAt ? "archived" : g.releaseAt && g.releaseAt > new Date() ? "coming soon" : "live"}</span>
             </li>
           ))}
         </ul>
