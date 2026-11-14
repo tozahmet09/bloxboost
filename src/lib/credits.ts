@@ -126,11 +126,13 @@ export async function heartbeat(secret: string, robloxUserIds: string[]) {
 
 /** Minimum gap between two presence checks of the same task. */
 const PRESENCE_EVERY_S = 50;
+/** Longest gap between two "in game" answers that still counts as playing. */
+const MAX_GAP_S = 300;
 
 /**
  * Script-free playtime: for games without the tracker, ask Roblox whether each waiting
  * player is currently in a game, about once a minute, and add the time between two
- * "in game" answers in a row. Any "not in game" answer breaks the streak.
+ * "in game" answers (up to 5 min apart). "Online" only pauses; offline or another game ends the streak.
  * Roblox doesn't tell anonymous callers WHICH game, so this is weaker than the script
  * (hence the Verified badge for script games). If Roblox does return the universe, a
  * different game doesn't count.
@@ -159,13 +161,21 @@ export async function presenceTick(limit = 50) {
     // Every write checks the task wasn't touched since we read it, so two checks at once can't double count.
     const same = { id: t.id, status: "PENDING", presenceCheckedAt: t.presenceCheckedAt, lastPingAt: t.lastPingAt };
     if (!inThisGame) {
-      await db.playTask.updateMany({ where: same, data: { presenceCheckedAt: now, lastPingAt: null } });
+      // Roblox often says just "online" while someone really is in a game (browser tab or app in front),
+      // so that answer only pauses the clock. It stops for good when they're offline, in another game,
+      // or no "in game" answer came for too long.
+      const otherGame = !!p?.inGame;
+      const tooLong = !!t.lastPingAt && now.getTime() - t.lastPingAt.getTime() > MAX_GAP_S * 1000;
+      const lost = !p || p.offline || otherGame || tooLong;
+      await db.playTask.updateMany({ where: same, data: { presenceCheckedAt: now, ...(lost ? { lastPingAt: null } : {}) } });
       continue;
     }
-    // First "in game" answer starts the clock; later ones add the time since the last one.
+    // First "in game" answer starts the clock; later ones add the time since the last one,
+    // so time only counts between two "in game" answers.
     const since = t.lastPingAt ? (now.getTime() - t.lastPingAt.getTime()) / 1000 : 0;
-    // Up to one missed check (~2 min) still counts; a longer gap means we lost track, so it isn't credited.
-    const add = since <= 150 ? Math.round(since) : 0;
+    // Answers come late or flip to "online" now and then: up to 5 minutes between two "in game"
+    // answers still counts; a longer gap means we lost track, so it isn't credited.
+    const add = since <= MAX_GAP_S ? Math.round(since) : 0;
     const played = t.playedSeconds + add;
     const r = await db.playTask.updateMany({
       where: same,

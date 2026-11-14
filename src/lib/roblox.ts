@@ -74,7 +74,8 @@ export async function robloxProfile(userId: string): Promise<{ description: stri
   return { description: u.description ?? "", created: created && !isNaN(created.getTime()) ? created : null };
 }
 
-export type Presence = { inGame: boolean; universeId: string | null };
+/** offline = 0, online on the website/app = 1, in a game = 2, in Studio = 3 (Roblox's userPresenceType). */
+export type Presence = { inGame: boolean; offline: boolean; universeId: string | null };
 
 /**
  * Online status of up to 50 users from Roblox's public presence API (no login needed).
@@ -96,6 +97,7 @@ export async function fetchPresence(userIds: string[]): Promise<Map<string, Pres
   for (const p of data) {
     out.set(String(p.userId), {
       inGame: p.userPresenceType === 2,
+      offline: !p.userPresenceType,
       universeId: p.universeId ? String(p.universeId) : null,
     });
   }
