@@ -44,7 +44,8 @@ export async function playQueue(playerId: string) {
       game: {
         ownerId: { not: playerId },
         hiddenAt: null,
-        tasks: { none: { playerId } },
+        // An abandoned or timed-out game (EXPIRED) comes back, so the credit isn't lost, only the progress.
+        tasks: { none: { playerId, status: { not: "EXPIRED" } } },
       },
     },
     include: { game: true, _count: { select: { tasks: { where: { status: { in: ["PENDING", "PLAYED"] } } } } } },
@@ -80,8 +81,21 @@ export async function startTask(playerId: string, gameId: string) {
     });
     if (other) return { error: `Finish ${other.game.name} first. You can only play one game without the Verified badge at a time.` };
   }
-  const task = await db.playTask.create({
-    data: { gameId, campaignId: c.id, playerId, robloxUserId: player.robloxUserId },
+  // One row per player and game: playing again after Abandon starts that row over from zero.
+  const fresh = {
+    campaignId: c.id,
+    robloxUserId: player.robloxUserId,
+    status: "PENDING",
+    playedSeconds: 0,
+    lastPingAt: null,
+    presenceCheckedAt: null,
+    verifiedBy: null,
+    createdAt: new Date(),
+  };
+  const task = await db.playTask.upsert({
+    where: { gameId_playerId: { gameId, playerId } },
+    create: { gameId, playerId, ...fresh },
+    update: fresh,
   });
   return { task, placeId: c.game.placeId };
 }
